@@ -2378,17 +2378,7 @@ html, body { overflow-x: hidden; }
                Para reajustar: agrega ?debug a la URL o pulsa "d" → click en la oreja
                copia las coordenadas exactas al portapapeles.
                ====================================================================== -->
-          <button class="ear-point-btn" data-piercing="helix"          aria-label="Helix"          style="--x:38%;--y:13%"><span>helix</span></button>
-          <button class="ear-point-btn" data-piercing="forward_helix"  aria-label="Forward helix"  style="--x:32%;--y:23%"><span>forward helix</span></button>
-          <button class="ear-point-btn" data-piercing="industrial"     aria-label="Industrial"     style="--x:47%;--y:11%"><span>industrial</span></button>
-          <button class="ear-point-btn" data-piercing="flat"           aria-label="Flat"           style="--x:47%;--y:22%"><span>flat</span></button>
-          <button class="ear-point-btn" data-piercing="rook"           aria-label="Rook"           style="--x:47%;--y:32%"><span>rook</span></button>
-          <button class="ear-point-btn" data-piercing="daith"          aria-label="Daith"          style="--x:51%;--y:44%"><span>daith</span></button>
-          <button class="ear-point-btn" data-piercing="conch"          aria-label="Conch"          style="--x:53%;--y:53%"><span>conch</span></button>
-          <button class="ear-point-btn" data-piercing="tragus"         aria-label="Tragus"         style="--x:60%;--y:51%"><span>tragus</span></button>
-          <button class="ear-point-btn" data-piercing="antitragus"     aria-label="Antitragus"     style="--x:53%;--y:65%"><span>antitragus</span></button>
-          <button class="ear-point-btn" data-piercing="lobulo_alto"    aria-label="Lobulo alto"    style="--x:53%;--y:73%"><span>lob. alto</span></button>
-          <button class="ear-point-btn" data-piercing="lobulo"         aria-label="Lobulo"         style="--x:53%;--y:82%"><span>lobulo</span></button>
+          <div class="ear-points-layer" id="ear-points-layer" aria-label="Puntos del planeador"></div>
 
           <style id="ear-fix-v3">
             .ear-canvas { padding: 12px; min-height: auto; }
@@ -2484,6 +2474,77 @@ html, body { overflow-x: hidden; }
               font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
               font-size: 11px; padding: 6px 10px; border-radius: 8px;
               pointer-events: none; z-index: 10; white-space: pre;
+            }
+            .ear-points-layer { position: absolute; inset: 0; z-index: 2; }
+            .ear-photo.is-admin .ear-point-btn { cursor: grab; touch-action: none; }
+            .ear-photo.is-admin .ear-point-btn:active { cursor: grabbing; }
+            .ear-photo.is-admin .ear-point-btn.is-disabled { opacity: .38; filter: grayscale(.6); }
+            .ear-photo.is-admin .ear-point-btn span { opacity: 1; color: var(--accent, #5fd4a8); }
+            .ear-point-coords {
+              position: absolute; top: calc(100% + 4px); left: 50%;
+              transform: translateX(-50%);
+              font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+              font-size: 9px; color: var(--accent, #5fd4a8);
+              background: rgba(10,13,12,.9); border: 1px solid rgba(95,212,168,.35);
+              border-radius: 999px; padding: 2px 5px; white-space: nowrap;
+              opacity: 0; pointer-events: none;
+            }
+            .ear-photo.is-admin .ear-point-coords { opacity: 1; }
+            .ear-debug-crosshair {
+              position: absolute; width: 20px; height: 20px;
+              transform: translate(-50%, -50%); pointer-events: none; z-index: 9;
+              opacity: 0;
+            }
+            .ear-photo.debug .ear-debug-crosshair { opacity: 1; }
+            .ear-debug-crosshair::before,
+            .ear-debug-crosshair::after {
+              content: ''; position: absolute; background: var(--accent, #5fd4a8);
+            }
+            .ear-debug-crosshair::before { left: 9px; top: 0; width: 1px; height: 20px; }
+            .ear-debug-crosshair::after { left: 0; top: 9px; width: 20px; height: 1px; }
+            .ear-admin-panel {
+              margin-top: 18px; padding: 16px; border: 1px solid rgba(95,212,168,.28);
+              border-radius: 14px; background: rgba(95,212,168,.045);
+            }
+            .ear-admin-panel h3 { margin: 0 0 4px; font-size: 15px; }
+            .ear-admin-panel h4 { margin: 0 0 4px; font-size: 14px; }
+            .ear-admin-panel p { margin: 0; }
+            .ear-admin-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+            .ear-admin-field { display: flex; flex-direction: column; gap: 5px; }
+            .ear-admin-field > span {
+              font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-mute, #8d9994);
+            }
+            .ear-admin-field input,
+            .ear-admin-field textarea,
+            .ear-admin-field select {
+              width: 100%; border: 1px solid var(--line, rgba(255,255,255,.12));
+              border-radius: 9px; background: rgba(10,13,12,.74); color: var(--text, #eef3f1);
+              padding: 9px 10px; font: inherit; min-height: 40px;
+            }
+            .ear-admin-field input[type="checkbox"] {
+              width: auto; min-height: 0; padding: 0; margin: 0 6px 0 0; accent-color: var(--accent, #5fd4a8);
+            }
+            .ear-admin-field textarea { min-height: 74px; resize: vertical; }
+            .ear-admin-field.is-wide { grid-column: 1 / -1; }
+            .ear-admin-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+            .ear-admin-actions .btn { min-height: 40px; }
+            .ear-admin-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+            .ear-admin-pill {
+              border: 1px solid var(--line, rgba(255,255,255,.12)); border-radius: 999px;
+              background: rgba(255,255,255,.04); color: var(--text, #eef3f1);
+              padding: 7px 10px; font-size: 12px; cursor: pointer;
+            }
+            .ear-admin-pill.is-active { border-color: var(--accent, #5fd4a8); color: var(--accent, #5fd4a8); }
+            .ear-admin-json { margin-top: 12px; }
+            .ear-admin-json textarea {
+              width: 100%; min-height: 120px; resize: vertical;
+              font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
+              border: 1px solid var(--line, rgba(255,255,255,.12)); border-radius: 10px;
+              background: rgba(10,13,12,.82); color: var(--text, #eef3f1); padding: 10px;
+            }
+            @media (max-width: 640px) {
+              .ear-admin-grid { grid-template-columns: 1fr; }
+              .ear-admin-actions .btn { flex: 1 1 calc(50% - 8px); }
             }
           </style>
 
@@ -3244,6 +3305,24 @@ function getHealingLoad(count) {
   return HEALING_LOAD.find(l => count >= l.range[0] && count <= l.range[1]) || HEALING_LOAD[HEALING_LOAD.length - 1];
 }
 
+/* ---------- EAR PLANNER POINTS ----------
+   Coordenadas canonicas: oreja izquierda base, en porcentaje del contenedor.
+   El modo derecha solo espeja visualmente; nunca modifica estos valores base.
+*/
+const EAR_PLANNER_DEFAULT_POINTS = [
+  { id: 'helix',         label: 'Helix',         x: 38, y: 13, enabled: true, category: 'cartilage', complexity: 5, healing: '6 a 12 meses', note: 'Punto externo superior. Requiere evitar presion al dormir.' },
+  { id: 'forward_helix', label: 'Forward helix', x: 32, y: 23, enabled: true, category: 'cartilage', complexity: 5, healing: '6 a 12 meses', note: 'Zona frontal del helix. Depende mucho del pliegue disponible.' },
+  { id: 'industrial',    label: 'Industrial',    x: 47, y: 11, enabled: true, category: 'cartilage', complexity: 7, healing: '6 a 12 meses', note: 'Representa el eje superior del proyecto industrial; requiere anatomia favorable.' },
+  { id: 'flat',          label: 'Flat',          x: 47, y: 22, enabled: true, category: 'cartilage', complexity: 5, healing: '6 a 12 meses', note: 'Area plana superior para tops decorativos.' },
+  { id: 'rook',          label: 'Rook',          x: 47, y: 32, enabled: true, category: 'cartilage', complexity: 6, healing: '6 a 12 meses', note: 'Pliegue interno superior; no todas las anatomias son viables.' },
+  { id: 'daith',         label: 'Daith',         x: 51, y: 44, enabled: true, category: 'cartilage', complexity: 6, healing: '6 a 12 meses', note: 'Pliegue interno profundo. Requiere evaluacion precisa.' },
+  { id: 'conch',         label: 'Conch',         x: 53, y: 53, enabled: true, category: 'cartilage', complexity: 6, healing: '6 a 12 meses', note: 'Centro visual de la oreja. Cuidar audifonos y presion.' },
+  { id: 'tragus',        label: 'Tragus',        x: 60, y: 51, enabled: true, category: 'cartilage', complexity: 5, healing: '4 a 8 meses', note: 'Pestana frontal del canal auditivo. Depende de volumen local.' },
+  { id: 'antitragus',    label: 'Antitragus',    x: 53, y: 65, enabled: true, category: 'cartilage', complexity: 6, healing: '6 a 12 meses', note: 'Cartilago sobre el lobulo. Requiere volumen y angulo adecuados.' },
+  { id: 'lobulo_alto',   label: 'Lobulo alto',   x: 53, y: 73, enabled: true, category: 'lobe',      complexity: 3, healing: '8 a 12 semanas', note: 'Zona superior del lobulo para stacks.' },
+  { id: 'lobulo',        label: 'Lobulo',        x: 53, y: 82, enabled: true, category: 'lobe',      complexity: 2, healing: '6 a 8 semanas', note: 'Base del proyecto de oreja.' }
+];
+
 /* ---------- PIERCINGS ----------
    Cada piercing trae los campos completos solicitados.
    Los tiempos son estimaciones basadas en literatura común; cada anatomía es única.
@@ -3304,6 +3383,24 @@ const PIERCINGS = [
     disclaimer: ANATOMY_REMINDER
   },
   {
+    id: 'forward_helix',
+    nombre: 'Forward helix',
+    zona: 'ear',
+    descripcion: 'Piercing en el borde frontal del helix, cerca de la raiz superior de la oreja. Depende del pliegue disponible.',
+    dolor: 5,
+    cicatrizacion: '6 a 12 meses',
+    joyeria: 'Labret de titanio implant grade, post 1.0-1.2 mm, top pequeno.',
+    molestias: ['Sensibilidad al dormir de lado', 'Roce con cabello o audifonos', 'Bumps por presion'],
+    cuidados: ['Suero fisiologico', 'Evitar presion directa', 'No cambiar la joyeria antes de tiempo'],
+    errores: ['Forzarlo si el pliegue es insuficiente', 'Top demasiado grande', 'Usar argolla inicial'],
+    alertas: ['Bumps persistentes', 'Migracion', 'Dolor que aumenta con presion'],
+    compatibilidad: ['helix', 'flat', 'lobulo_alto'],
+    mantenimiento: 'Medio',
+    inspiracion: 'Studs pequenos, triples delicados, piezas minimalistas alineadas al pliegue.',
+    recomendacion: 'Debe evaluarse el volumen frontal del helix antes de planear una composicion multiple.',
+    disclaimer: ANATOMY_REMINDER
+  },
+  {
     id: 'flat',
     nombre: 'Flat',
     zona: 'ear',
@@ -3355,6 +3452,24 @@ const PIERCINGS = [
     mantenimiento: 'Medio',
     inspiracion: 'Studs pequeños con piedra, formas minimalistas.',
     recomendacion: 'Anatomía decisiva: requiere tragus con buen volumen para alojar la joyería.',
+    disclaimer: ANATOMY_REMINDER
+  },
+  {
+    id: 'antitragus',
+    nombre: 'Antitragus',
+    zona: 'ear',
+    descripcion: 'Piercing en el cartilago sobre el lobulo, frente al tragus. Requiere volumen y angulo adecuados.',
+    dolor: 6,
+    cicatrizacion: '6 a 12 meses',
+    joyeria: 'Labret o curved barbell de titanio implant grade, definido por anatomia.',
+    molestias: ['Sensibilidad al dormir', 'Roce con audifonos', 'Inflamacion persistente si hay presion'],
+    cuidados: ['Suero fisiologico', 'Evitar audifonos in-ear', 'No dormir sobre la zona'],
+    errores: ['Forzarlo si el cartilago es plano', 'Joya inicial pesada', 'Angulo mal planeado'],
+    alertas: ['Bumps recurrentes', 'Migracion', 'Dolor por presion'],
+    compatibilidad: ['lobulo', 'conch', 'tragus'],
+    mantenimiento: 'Medio',
+    inspiracion: 'Studs pequenos y piezas discretas que no invadan el lobulo.',
+    recomendacion: 'Conviene evaluarlo presencialmente por volumen, angulo y presion al dormir.',
     disclaimer: ANATOMY_REMINDER
   },
   {
@@ -3582,6 +3697,7 @@ const Data = {
   PROJECT_PHASES,
   ANATOMY_STATES,
   HEALING_LOAD,
+  EAR_PLANNER_DEFAULT_POINTS,
   ANATOMY_REMINDER,
   ALICYN_DISCLAIMER,
   normalizeZone,
@@ -3592,7 +3708,9 @@ const Data = {
   },
   getHealingLoad,
   earPiercings() {
-    return ['lobulo', 'lobulo_alto', 'helix', 'flat', 'conch', 'tragus', 'daith', 'rook', 'industrial']
+    return EAR_PLANNER_DEFAULT_POINTS
+      .filter(point => point.enabled)
+      .map(point => point.id)
       .map(id => this.byId(id));
   },
   stateById(id) { return ANATOMY_STATES.find(s => s.id === id) || ANATOMY_STATES[0]; }
@@ -4011,7 +4129,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const fill   = document.getElementById('load-fill');
     const label  = document.getElementById('load-label');
     const cnt    = document.getElementById('load-count');
-    const pct    = Math.min((count / 9) * 100, 100);
+    const totalEnabled = Math.max(AlicynData.earPiercings().length, 1);
+    const pct    = Math.min((count / totalEnabled) * 100, 100);
     fill.style.width = pct + '%';
     cnt.textContent = count + (count === 1 ? ' piercing' : ' piercings');
 
@@ -4134,6 +4253,777 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   }
 
   // ── EVALUACIÓN ANATÓMICA ───────────────────────────────────────────────────
+  // Ear Planner v0.3: normalized points, calibration admin, local JSON.
+  const EAR_CALIBRATION_VERSION = 'ear-points-v0.3';
+  const EAR_CALIBRATION_STORAGE_KEY = 'alicyn.earCalibration.v1';
+  const EAR_ADMIN_AUTH_KEY = 'alicyn.earAdminAuth.v1';
+  let earPlannerPoints = [];
+  const earAdmin = {
+    requested: false,
+    debug: false,
+    authenticated: false,
+    selectedId: '',
+    drag: null
+  };
+
+  function hasUrlFlag(name) {
+    return new URLSearchParams(window.location.search).get(name) === '1';
+  }
+
+  function clampPercent(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(100, n));
+  }
+
+  function roundPercent(value) {
+    return Math.round(clampPercent(value) * 10) / 10;
+  }
+
+  function escapePlannerHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function safePlannerSelector(id) {
+    if (window.CSS && typeof window.CSS.escape === 'function') return window.CSS.escape(id);
+    return String(id).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+  }
+
+  function sanitizePlannerId(value) {
+    return String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_-]/g, '');
+  }
+
+  function normalizeEarPoint(point, fallback = {}) {
+    const source = point || {};
+    const id = sanitizePlannerId(source.id || fallback.id);
+    const label = String(source.label || fallback.label || id || 'Punto');
+    return {
+      id,
+      label,
+      x: roundPercent(source.x ?? fallback.x ?? 50),
+      y: roundPercent(source.y ?? fallback.y ?? 50),
+      enabled: source.enabled === undefined ? fallback.enabled !== false : Boolean(source.enabled),
+      category: String(source.category || fallback.category || 'cartilage'),
+      complexity: Math.max(1, Math.min(10, Number(source.complexity ?? fallback.complexity ?? 4) || 4)),
+      healing: String(source.healing || fallback.healing || 'Pendiente de definir'),
+      note: String(source.note || fallback.note || '')
+    };
+  }
+
+  function defaultEarPoints() {
+    return EAR_PLANNER_DEFAULT_POINTS.map(point => normalizeEarPoint(point));
+  }
+
+  function loadEarPlannerPoints() {
+    const defaults = defaultEarPoints();
+    let stored = null;
+    try {
+      stored = JSON.parse(localStorage.getItem(EAR_CALIBRATION_STORAGE_KEY) || 'null');
+    } catch (err) {
+      stored = null;
+    }
+    if (!stored || !Array.isArray(stored.points)) return defaults;
+
+    const defaultsById = new Map(defaults.map(point => [point.id, point]));
+    const normalized = [];
+    stored.points.forEach((point, index) => {
+      const fallback = defaultsById.get(sanitizePlannerId(point && point.id)) || defaults[index] || {};
+      const normalizedPoint = normalizeEarPoint(point, fallback);
+      if (normalizedPoint.id && !normalized.some(item => item.id === normalizedPoint.id)) {
+        normalized.push(normalizedPoint);
+      }
+    });
+    defaults.forEach(point => {
+      if (!normalized.some(item => item.id === point.id)) normalized.push(point);
+    });
+    return normalized.length ? normalized : defaults;
+  }
+
+  function buildEarCalibrationPayload() {
+    return {
+      version: EAR_CALIBRATION_VERSION,
+      updatedAt: new Date().toISOString(),
+      points: earPlannerPoints.map(point => normalizeEarPoint(point))
+    };
+  }
+
+  function enabledEarPlannerPoints() {
+    return earPlannerPoints.filter(point => point.enabled);
+  }
+
+  function visibleEarPlannerPoints() {
+    return earAdmin.requested && earAdmin.authenticated ? earPlannerPoints : enabledEarPlannerPoints();
+  }
+
+  function getEarPoint(id) {
+    return earPlannerPoints.find(point => point.id === id) || null;
+  }
+
+  function getPlannerPiercing(id) {
+    const dataPiercing = AlicynData.byId(id);
+    if (dataPiercing) return dataPiercing;
+    const point = getEarPoint(id);
+    if (!point) return null;
+    return {
+      id: point.id,
+      nombre: point.label,
+      zona: 'ear',
+      descripcion: point.note || 'Punto calibrado del planeador de oreja.',
+      dolor: point.complexity,
+      cicatrizacion: point.healing,
+      joyeria: 'Pendiente de definir con el piercer.',
+      molestias: [],
+      cuidados: [],
+      errores: [],
+      alertas: [],
+      compatibilidad: [],
+      mantenimiento: point.category,
+      inspiracion: point.note || '',
+      recomendacion: point.note || '',
+      disclaimer: AlicynData.ANATOMY_REMINDER
+    };
+  }
+
+  function plannerPointPhase(id) {
+    const p = getPlannerPiercing(id);
+    if (!p) return '';
+    if (p.dolor <= 3) return 'p1';
+    if (p.dolor <= 5) return 'p2';
+    return 'p3';
+  }
+
+  function visualXFromBase(x) {
+    return state.planner.side === 'right' ? roundPercent(100 - Number(x)) : roundPercent(x);
+  }
+
+  function baseXFromVisual(x) {
+    return state.planner.side === 'right' ? roundPercent(100 - Number(x)) : roundPercent(x);
+  }
+
+  function syncEarButtonPosition(btn, point) {
+    const visualX = visualXFromBase(point.x);
+    btn.style.setProperty('--x', visualX + '%');
+    btn.style.setProperty('--y', roundPercent(point.y) + '%');
+    btn.dataset.baseX = roundPercent(point.x) + '%';
+    btn.dataset.x = roundPercent(point.x);
+    btn.dataset.y = roundPercent(point.y);
+    const coords = btn.querySelector('.ear-point-coords');
+    if (coords) coords.textContent = `${roundPercent(point.x)}%, ${roundPercent(point.y)}%`;
+  }
+
+  function syncAllEarButtonPositions() {
+    document.querySelectorAll('.ear-point-btn').forEach(btn => {
+      const point = getEarPoint(btn.dataset.piercing);
+      if (point) syncEarButtonPosition(btn, point);
+    });
+  }
+
+  function renderEarPoints() {
+    const layer = document.getElementById('ear-points-layer');
+    const earPhoto = document.getElementById('ear-photo');
+    if (!layer || !earPhoto) return;
+
+    const points = visibleEarPlannerPoints();
+    layer.innerHTML = points.map(point => `
+      <button type="button"
+        class="ear-point-btn${state.planner.selected.has(point.id) ? ' is-selected' : ''}${point.enabled ? '' : ' is-disabled'}"
+        data-piercing="${escapePlannerHtml(point.id)}"
+        aria-pressed="${state.planner.selected.has(point.id) ? 'true' : 'false'}"
+        aria-label="${escapePlannerHtml(point.label)}">
+        <span>${escapePlannerHtml(point.label)}</span>
+        <em class="ear-point-coords">${roundPercent(point.x)}%, ${roundPercent(point.y)}%</em>
+      </button>
+    `).join('');
+
+    layer.querySelectorAll('.ear-point-btn').forEach(btn => {
+      const point = getEarPoint(btn.dataset.piercing);
+      if (!point) return;
+      syncEarButtonPosition(btn, point);
+      btn.addEventListener('pointerdown', startAdminPointDrag);
+      btn.addEventListener('click', e => {
+        const id = btn.dataset.piercing;
+        if (earAdmin.requested && earAdmin.authenticated) {
+          e.preventDefault();
+          e.stopPropagation();
+          selectAdminPoint(id);
+          return;
+        }
+        if (state.planner.selected.has(id)) {
+          state.planner.selected.delete(id);
+        } else {
+          state.planner.selected.add(id);
+        }
+        renderPlanner();
+      });
+    });
+
+    earPhoto.classList.toggle('is-admin', earAdmin.requested && earAdmin.authenticated);
+    earPhoto.classList.toggle('debug', earAdmin.debug);
+    applyEarSide();
+  }
+
+  function applyEarSide() {
+    const isRight = state.planner.side === 'right';
+    const earPhoto = document.getElementById('ear-photo');
+    if (earPhoto) earPhoto.classList.toggle('is-right', isRight);
+    syncAllEarButtonPositions();
+  }
+
+  function initPlanner() {
+    earPlannerPoints = loadEarPlannerPoints();
+    earAdmin.requested = hasUrlFlag('admin');
+    earAdmin.debug = hasUrlFlag('debug');
+    earAdmin.authenticated = earAdmin.requested && sessionStorage.getItem(EAR_ADMIN_AUTH_KEY) === '1';
+    earAdmin.selectedId = earPlannerPoints[0]?.id || '';
+
+    renderEarPoints();
+    initEarDebug();
+    initEarAdmin();
+
+    document.querySelectorAll('.planner-toggle button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.planner-toggle button').forEach(b => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        state.planner.side = btn.dataset.side;
+        applyEarSide();
+      });
+    });
+
+    document.getElementById('btn-clear-plan')?.addEventListener('click', () => {
+      state.planner.selected.clear();
+      renderPlanner();
+    });
+    document.getElementById('btn-export-plan')?.addEventListener('click', exportPlan);
+    document.getElementById('btn-share-plan')?.addEventListener('click', sharePlan);
+    document.addEventListener('pointermove', onAdminPointDrag);
+    document.addEventListener('pointerup', endAdminPointDrag);
+    document.addEventListener('pointercancel', endAdminPointDrag);
+    renderPlanner();
+  }
+
+  function renderPlanner() {
+    const enabledIds = new Set(enabledEarPlannerPoints().map(point => point.id));
+    [...state.planner.selected].forEach(id => {
+      if (!enabledIds.has(id)) state.planner.selected.delete(id);
+    });
+    const sel = [...state.planner.selected];
+    const count = sel.length;
+
+    document.querySelectorAll('.ear-point-btn').forEach(pt => {
+      const selected = state.planner.selected.has(pt.dataset.piercing);
+      pt.classList.toggle('is-selected', selected);
+      pt.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      if (selected) pt.dataset.phase = plannerPointPhase(pt.dataset.piercing);
+      else delete pt.dataset.phase;
+    });
+    const earPhoto = document.getElementById('ear-photo');
+    if (earPhoto) earPhoto.classList.toggle('has-selection', count > 0);
+    applyEarSide();
+
+    const fill = document.getElementById('load-fill');
+    const label = document.getElementById('load-label');
+    const cnt = document.getElementById('load-count');
+    const enabledCount = Math.max(enabledEarPlannerPoints().length, 1);
+    const pct = Math.min((count / enabledCount) * 100, 100);
+    if (fill) fill.style.width = pct + '%';
+    if (cnt) cnt.textContent = count + (count === 1 ? ' piercing' : ' piercings');
+
+    if (label && fill) {
+      if (count === 0) {
+        label.textContent = '-';
+        fill.style.background = '';
+      } else {
+        const load = AlicynData.getHealingLoad(count);
+        label.textContent = load.label;
+        fill.style.background = load.color;
+      }
+    }
+
+    const output = document.getElementById('phases-output');
+    if (!output) return;
+    if (!count) {
+      output.innerHTML = '<p style="color:var(--text-mute);font-size:13px;margin:0">Aun no has seleccionado piercings.</p>';
+      return;
+    }
+
+    const piercings = sel.map(id => getPlannerPiercing(id)).filter(Boolean);
+    const p1 = piercings.filter(p => p.dolor <= 3);
+    const p2 = piercings.filter(p => p.dolor === 4 || p.dolor === 5);
+    const p3 = piercings.filter(p => p.dolor >= 6);
+
+    const phaseBlock = (phaseLabel, desc, items, color) => {
+      if (!items.length) return '';
+      return `<div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
+          <strong style="font-size:13px">${phaseLabel}</strong>
+        </div>
+        <p style="font-size:11px;color:var(--text-mute);margin:0 0 8px 16px">${desc}</p>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-left:16px">
+          ${items.map(p => `
+            <div style="background:var(--bg-3);border:1px solid var(--line);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:40px">
+              <span style="font-size:13px;font-weight:500">${escapePlannerHtml(p.nombre)}</span>
+              <span style="font-size:11px;color:var(--text-mute);white-space:nowrap">${escapePlannerHtml(p.cicatrizacion)}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    };
+
+    const load = AlicynData.getHealingLoad(count);
+    let html = '';
+    html += phaseBlock('Fase 1 - Base', AlicynData.PROJECT_PHASES[0].desc, p1, 'var(--accent)');
+    html += phaseBlock('Fase 2 - Construccion', AlicynData.PROJECT_PHASES[1].desc, p2, 'var(--warn)');
+    html += phaseBlock('Fase 3 - Cierre', AlicynData.PROJECT_PHASES[2].desc, p3, 'var(--danger)');
+    html += `<div class="disclaimer-box" style="margin-top:8px;font-size:12px">
+      <strong style="color:${load.color}">Carga ${load.label}:</strong> ${load.advice}
+    </div>`;
+    output.innerHTML = html;
+  }
+
+  function pointerToPhotoPercent(event) {
+    const photo = document.getElementById('ear-photo');
+    if (!photo) return null;
+    const rect = photo.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    return {
+      x: clampPercent(((event.clientX - rect.left) / rect.width) * 100),
+      y: clampPercent(((event.clientY - rect.top) / rect.height) * 100)
+    };
+  }
+
+  function ensureEarCrosshair() {
+    const photo = document.getElementById('ear-photo');
+    if (!photo) return null;
+    let crosshair = photo.querySelector('.ear-debug-crosshair');
+    if (!crosshair) {
+      crosshair = document.createElement('div');
+      crosshair.className = 'ear-debug-crosshair';
+      photo.appendChild(crosshair);
+    }
+    return crosshair;
+  }
+
+  function showEarDebug(point, label) {
+    const photo = document.getElementById('ear-photo');
+    if (!photo || !point) return;
+    let readout = photo.querySelector('.ear-debug-readout');
+    if (!readout) {
+      readout = document.createElement('div');
+      readout.className = 'ear-debug-readout';
+      photo.appendChild(readout);
+    }
+    readout.textContent = `${label || 'coord'}\nx: ${roundPercent(point.x)}%   y: ${roundPercent(point.y)}%`;
+    const crosshair = ensureEarCrosshair();
+    if (crosshair) {
+      crosshair.style.left = roundPercent(point.x) + '%';
+      crosshair.style.top = roundPercent(point.y) + '%';
+    }
+  }
+
+  function initEarDebug() {
+    const photo = document.getElementById('ear-photo');
+    if (!photo) return;
+    photo.classList.toggle('debug', earAdmin.debug);
+    photo.addEventListener('click', event => {
+      if (!earAdmin.debug || (earAdmin.requested && earAdmin.authenticated && event.target.closest('.ear-point-btn'))) return;
+      const point = pointerToPhotoPercent(event);
+      if (!point) return;
+      const basePoint = { x: baseXFromVisual(point.x), y: point.y };
+      showEarDebug(point, `base ${roundPercent(basePoint.x)}%, ${roundPercent(basePoint.y)}%`);
+      console.log('[EarDebug]', { visual: point, base: basePoint, side: state.planner.side });
+    });
+  }
+
+  function initEarAdmin() {
+    if (!earAdmin.requested) return;
+    renderEarAdminPanel();
+  }
+
+  function renderEarAdminPanel() {
+    if (!earAdmin.requested) return;
+    const side = document.getElementById('planner-side');
+    if (!side) return;
+    let panel = document.getElementById('ear-admin-panel');
+    if (!panel) {
+      panel = document.createElement('section');
+      panel.id = 'ear-admin-panel';
+      panel.className = 'ear-admin-panel';
+      side.appendChild(panel);
+    }
+
+    if (!earAdmin.authenticated) {
+      panel.innerHTML = `
+        <h3>Admin calibracion</h3>
+        <p>Herramienta interna temporal. No es seguridad real.</p>
+        <div class="ear-admin-grid">
+          <label class="ear-admin-field">
+            <span>Usuario</span>
+            <input id="ear-admin-user" type="text" autocomplete="username">
+          </label>
+          <label class="ear-admin-field">
+            <span>Password</span>
+            <input id="ear-admin-pass" type="password" autocomplete="current-password">
+          </label>
+        </div>
+        <div class="ear-admin-actions">
+          <button class="btn btn-primary" id="ear-admin-login">Entrar</button>
+        </div>`;
+      document.getElementById('ear-admin-login')?.addEventListener('click', () => {
+        const user = document.getElementById('ear-admin-user')?.value || '';
+        const pass = document.getElementById('ear-admin-pass')?.value || '';
+        if (user === 'admin' && pass === 'alicyn2026') {
+          sessionStorage.setItem(EAR_ADMIN_AUTH_KEY, '1');
+          earAdmin.authenticated = true;
+          renderEarPoints();
+          renderEarAdminPanel();
+          showToast('Modo admin activado.');
+        } else {
+          showToast('Credenciales incorrectas.');
+        }
+      });
+      return;
+    }
+
+    if (!earAdmin.selectedId || !getEarPoint(earAdmin.selectedId)) {
+      earAdmin.selectedId = earPlannerPoints[0]?.id || '';
+    }
+    let point = getEarPoint(earAdmin.selectedId) || earPlannerPoints[0];
+    if (!point) {
+      earPlannerPoints = defaultEarPoints();
+      earAdmin.selectedId = earPlannerPoints[0]?.id || '';
+      point = getEarPoint(earAdmin.selectedId) || earPlannerPoints[0];
+    }
+    const payload = JSON.stringify(buildEarCalibrationPayload(), null, 2);
+
+    panel.innerHTML = `
+      <h3>Admin calibracion</h3>
+      <p>Arrastra puntos sobre la oreja o edita los valores. Coordenadas base: oreja izquierda.</p>
+      <div class="ear-admin-actions">
+        <label class="ear-admin-field" style="flex:1 1 160px">
+          <span><input id="ear-admin-debug" type="checkbox" ${earAdmin.debug ? 'checked' : ''}> Grid/debug</span>
+        </label>
+      </div>
+      <div class="ear-admin-list" id="ear-admin-list">
+        ${earPlannerPoints.map(item => `
+          <button type="button" class="ear-admin-pill${item.id === point.id ? ' is-active' : ''}" data-admin-point="${escapePlannerHtml(item.id)}">
+            ${escapePlannerHtml(item.label)} (${roundPercent(item.x)}, ${roundPercent(item.y)})
+          </button>
+        `).join('')}
+      </div>
+      <div class="ear-admin-grid">
+        <label class="ear-admin-field">
+          <span>id</span>
+          <input id="ear-admin-id" value="${escapePlannerHtml(point.id)}">
+        </label>
+        <label class="ear-admin-field">
+          <span>label</span>
+          <input id="ear-admin-label" value="${escapePlannerHtml(point.label)}">
+        </label>
+        <label class="ear-admin-field">
+          <span>x (%)</span>
+          <input id="ear-admin-x" type="number" min="0" max="100" step="0.1" value="${roundPercent(point.x)}">
+        </label>
+        <label class="ear-admin-field">
+          <span>y (%)</span>
+          <input id="ear-admin-y" type="number" min="0" max="100" step="0.1" value="${roundPercent(point.y)}">
+        </label>
+        <label class="ear-admin-field">
+          <span>category</span>
+          <input id="ear-admin-category" value="${escapePlannerHtml(point.category)}">
+        </label>
+        <label class="ear-admin-field">
+          <span>complexity</span>
+          <input id="ear-admin-complexity" type="number" min="1" max="10" step="1" value="${Number(point.complexity) || 4}">
+        </label>
+        <label class="ear-admin-field">
+          <span>healing</span>
+          <input id="ear-admin-healing" value="${escapePlannerHtml(point.healing)}">
+        </label>
+        <label class="ear-admin-field">
+          <span><input id="ear-admin-enabled" type="checkbox" ${point.enabled ? 'checked' : ''}> enabled</span>
+        </label>
+        <label class="ear-admin-field is-wide">
+          <span>note</span>
+          <textarea id="ear-admin-note">${escapePlannerHtml(point.note)}</textarea>
+        </label>
+      </div>
+      <div class="ear-admin-actions">
+        <button class="btn btn-primary" id="ear-admin-save">Guardar</button>
+        <button class="btn" id="ear-admin-export">Exportar JSON</button>
+        <button class="btn" id="ear-admin-copy">Copiar JSON</button>
+        <button class="btn" id="ear-admin-import">Importar JSON</button>
+        <button class="btn btn-danger" id="ear-admin-reset">Resetear</button>
+        <input id="ear-admin-import-file" type="file" accept="application/json,.json" hidden>
+      </div>
+      <div class="ear-admin-json">
+        <textarea id="ear-admin-json" spellcheck="false">${escapePlannerHtml(payload)}</textarea>
+      </div>`;
+
+    bindEarAdminPanel(point);
+  }
+
+  function bindEarAdminPanel(point) {
+    document.querySelectorAll('[data-admin-point]').forEach(btn => {
+      btn.addEventListener('click', () => selectAdminPoint(btn.dataset.adminPoint));
+    });
+
+    const updatePointField = (key, value) => {
+      point[key] = value;
+      renderEarPoints();
+      renderPlanner();
+      const json = document.getElementById('ear-admin-json');
+      if (json) json.value = JSON.stringify(buildEarCalibrationPayload(), null, 2);
+    };
+
+    document.getElementById('ear-admin-debug')?.addEventListener('change', event => {
+      earAdmin.debug = event.target.checked;
+      document.getElementById('ear-photo')?.classList.toggle('debug', earAdmin.debug);
+      if (!earAdmin.debug) {
+        document.querySelector('.ear-debug-readout')?.remove();
+      }
+    });
+
+    document.getElementById('ear-admin-label')?.addEventListener('input', event => {
+      updatePointField('label', event.target.value);
+    });
+    document.getElementById('ear-admin-category')?.addEventListener('input', event => {
+      updatePointField('category', event.target.value);
+    });
+    document.getElementById('ear-admin-healing')?.addEventListener('input', event => {
+      updatePointField('healing', event.target.value);
+    });
+    document.getElementById('ear-admin-note')?.addEventListener('input', event => {
+      updatePointField('note', event.target.value);
+    });
+    document.getElementById('ear-admin-enabled')?.addEventListener('change', event => {
+      updatePointField('enabled', event.target.checked);
+    });
+    document.getElementById('ear-admin-complexity')?.addEventListener('input', event => {
+      updatePointField('complexity', Math.max(1, Math.min(10, Number(event.target.value) || 4)));
+    });
+    document.getElementById('ear-admin-x')?.addEventListener('input', event => {
+      point.x = roundPercent(event.target.value);
+      syncAllEarButtonPositions();
+      renderPlanner();
+      const json = document.getElementById('ear-admin-json');
+      if (json) json.value = JSON.stringify(buildEarCalibrationPayload(), null, 2);
+    });
+    document.getElementById('ear-admin-y')?.addEventListener('input', event => {
+      point.y = roundPercent(event.target.value);
+      syncAllEarButtonPositions();
+      renderPlanner();
+      const json = document.getElementById('ear-admin-json');
+      if (json) json.value = JSON.stringify(buildEarCalibrationPayload(), null, 2);
+    });
+    document.getElementById('ear-admin-id')?.addEventListener('change', event => {
+      const oldId = point.id;
+      const newId = sanitizePlannerId(event.target.value);
+      if (!newId) {
+        event.target.value = oldId;
+        showToast('El id no puede quedar vacio.');
+        return;
+      }
+      if (newId !== oldId && earPlannerPoints.some(item => item.id === newId)) {
+        event.target.value = oldId;
+        showToast('Ese id ya existe.');
+        return;
+      }
+      point.id = newId;
+      if (state.planner.selected.has(oldId)) {
+        state.planner.selected.delete(oldId);
+        state.planner.selected.add(newId);
+      }
+      earAdmin.selectedId = newId;
+      renderEarPoints();
+      renderPlanner();
+      renderEarAdminPanel();
+    });
+
+    document.getElementById('ear-admin-save')?.addEventListener('click', () => {
+      localStorage.setItem(EAR_CALIBRATION_STORAGE_KEY, JSON.stringify(buildEarCalibrationPayload()));
+      showToast('Calibracion guardada en este dispositivo.');
+    });
+    document.getElementById('ear-admin-export')?.addEventListener('click', () => {
+      downloadText(JSON.stringify(buildEarCalibrationPayload(), null, 2), 'alicyn-ear-calibration.json');
+    });
+    document.getElementById('ear-admin-copy')?.addEventListener('click', () => {
+      copyToClipboard(JSON.stringify(buildEarCalibrationPayload(), null, 2))
+        .then(() => showToast('JSON copiado al portapapeles.'))
+        .catch(() => showToast('No se pudo copiar automaticamente.'));
+    });
+    document.getElementById('ear-admin-import')?.addEventListener('click', () => {
+      document.getElementById('ear-admin-import-file')?.click();
+    });
+    document.getElementById('ear-admin-import-file')?.addEventListener('change', event => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || '{}'));
+          if (!Array.isArray(parsed.points)) throw new Error('Invalid points');
+          earPlannerPoints = parsed.points.map(point => normalizeEarPoint(point)).filter(point => point.id);
+          earAdmin.selectedId = earPlannerPoints[0]?.id || '';
+          renderEarPoints();
+          renderPlanner();
+          renderEarAdminPanel();
+          showToast('JSON importado. Usa Guardar para persistirlo.');
+        } catch (err) {
+          showToast('JSON invalido.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    });
+    document.getElementById('ear-admin-reset')?.addEventListener('click', () => {
+      if (!window.confirm('Resetear coordenadas default del Ear Planner?')) return;
+      localStorage.removeItem(EAR_CALIBRATION_STORAGE_KEY);
+      earPlannerPoints = defaultEarPoints();
+      earAdmin.selectedId = earPlannerPoints[0]?.id || '';
+      renderEarPoints();
+      renderPlanner();
+      renderEarAdminPanel();
+      showToast('Coordenadas default restauradas.');
+    });
+  }
+
+  function selectAdminPoint(id) {
+    if (!earAdmin.authenticated) return;
+    earAdmin.selectedId = id;
+    document.querySelectorAll('.ear-admin-pill').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.adminPoint === id);
+    });
+    renderEarAdminPanel();
+  }
+
+  function startAdminPointDrag(event) {
+    if (!earAdmin.requested || !earAdmin.authenticated) return;
+    const btn = event.currentTarget;
+    const point = getEarPoint(btn.dataset.piercing);
+    if (!point) return;
+    event.preventDefault();
+    event.stopPropagation();
+    selectAdminPoint(point.id);
+    earAdmin.drag = {
+      id: point.id,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY
+    };
+    if (btn.setPointerCapture) btn.setPointerCapture(event.pointerId);
+  }
+
+  function onAdminPointDrag(event) {
+    if (!earAdmin.drag || earAdmin.drag.pointerId !== event.pointerId) return;
+    const point = getEarPoint(earAdmin.drag.id);
+    const percent = pointerToPhotoPercent(event);
+    if (!point || !percent) return;
+    event.preventDefault();
+    point.x = baseXFromVisual(percent.x);
+    point.y = roundPercent(percent.y);
+    syncAllEarButtonPositions();
+    const xInput = document.getElementById('ear-admin-x');
+    const yInput = document.getElementById('ear-admin-y');
+    if (xInput) xInput.value = roundPercent(point.x);
+    if (yInput) yInput.value = roundPercent(point.y);
+    const json = document.getElementById('ear-admin-json');
+    if (json) json.value = JSON.stringify(buildEarCalibrationPayload(), null, 2);
+    showEarDebug({ x: visualXFromBase(point.x), y: point.y }, point.label);
+  }
+
+  function endAdminPointDrag(event) {
+    if (!earAdmin.drag || earAdmin.drag.pointerId !== event.pointerId) return;
+    earAdmin.drag = null;
+    renderPlanner();
+    renderEarAdminPanel();
+  }
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise((resolve, reject) => {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      try {
+        document.execCommand('copy') ? resolve() : reject(new Error('copy failed'));
+      } catch (err) {
+        reject(err);
+      } finally {
+        textarea.remove();
+      }
+    });
+  }
+
+  function exportPlan() {
+    const sel = [...state.planner.selected];
+    if (!sel.length) { showToast('Selecciona al menos un piercing para exportar.'); return; }
+    const piercings = sel.map(id => getPlannerPiercing(id)).filter(Boolean);
+    const p1 = piercings.filter(p => p.dolor <= 3);
+    const p2 = piercings.filter(p => p.dolor === 4 || p.dolor === 5);
+    const p3 = piercings.filter(p => p.dolor >= 6);
+    const load = AlicynData.getHealingLoad(piercings.length);
+    const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+
+    const lines = [
+      'ALICYN BODY MAP - Plan de Composicion de Oreja',
+      '='.repeat(50),
+      dateStr,
+      '',
+      `Piercings en el plan: ${piercings.length}`,
+      `Carga de Cicatrizacion Alicyn: ${load.label}`,
+      '',
+      '-'.repeat(50),
+      'COMPOSICION PLANEADA',
+      '-'.repeat(50),
+      ...piercings.map((p, i) => `${i + 1}. ${p.nombre} - Proceso estimado: ${p.cicatrizacion}`),
+      '',
+      '-'.repeat(50),
+      'FASES SUGERIDAS',
+      '-'.repeat(50),
+      ...(p1.length ? [`Fase 1 (Base): ${p1.map(p => p.nombre).join(', ')}`] : []),
+      ...(p2.length ? [`Fase 2 (Construccion): ${p2.map(p => p.nombre).join(', ')}`] : []),
+      ...(p3.length ? [`Fase 3 (Cierre): ${p3.map(p => p.nombre).join(', ')}`] : []),
+      '',
+      `${load.advice}`,
+      '',
+      AlicynData.ANATOMY_REMINDER,
+      '',
+      AlicynData.ALICYN_DISCLAIMER
+    ];
+    downloadText(lines.join('\n'), 'plan-oreja-alicyn.txt');
+  }
+
+  function sharePlan() {
+    const sel = [...state.planner.selected];
+    if (!sel.length) { showToast('Selecciona al menos un piercing.'); return; }
+    const text = 'Mi plan de oreja Alicyn: ' + sel.map(id => {
+      const p = getPlannerPiercing(id);
+      return p ? p.nombre : id;
+    }).join(', ');
+    if (navigator.share) {
+      navigator.share({ title: 'Mi plan Alicyn', text });
+    } else {
+      copyToClipboard(text)
+        .then(() => showToast('Plan copiado al portapapeles.'))
+        .catch(() => showToast('Tu navegador no permite compartir automaticamente.'));
+    }
+  }
+
   let cvs = null;   // canvas element
   let ctx = null;   // 2d context
   let img = null;   // HTMLImageElement
