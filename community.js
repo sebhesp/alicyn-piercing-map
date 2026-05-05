@@ -197,6 +197,10 @@
   function closeLogin(){ $('#login-modal')?.classList.remove('is-open'); }
 
   function loginAs(provider) {
+    if (provider === 'google' || provider === 'facebook') {
+      toast('Login social próximamente: requiere backend seguro', 'warn');
+      return;
+    }
     const samples = {
       google:   { name: 'Tate Spin',    avatar: 'TS' },
       facebook: { name: 'Tate Spin',    avatar: 'TS' },
@@ -541,9 +545,12 @@
     }
     if (action === 'comment') toast('Comentarios llegan en la siguiente versión', '');
     if (action === 'share') {
-      const url = location.origin + '/#exp-' + id;
-      navigator.clipboard?.writeText(url);
-      toast('Enlace copiado al portapapeles', 'success');
+      const url = location.href.split('#')[0] + '#exp-' + id;
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(url).then(() => toast('Enlace copiado al portapapeles', 'success'));
+      } else {
+        toast('Copia este enlace desde la barra del navegador', 'warn');
+      }
     }
     if (action === 'report') {
       if (!confirm('¿Reportar esta publicación por contenido inapropiado?')) return;

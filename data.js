@@ -15,12 +15,29 @@ const ZONES = [
   { id: 'ear',     label: 'Oreja',     short: 'Oreja' },
   { id: 'nose',    label: 'Nariz',     short: 'Nariz' },
   { id: 'mouth',   label: 'Boca / Labios', short: 'Boca' },
-  { id: 'brow',    label: 'Ceja',      short: 'Ceja' },
+  { id: 'eyebrow', label: 'Ceja',      short: 'Ceja' },
   { id: 'tongue',  label: 'Lengua',    short: 'Lengua' },
   { id: 'navel',   label: 'Ombligo',   short: 'Ombligo' },
   { id: 'nipple',  label: 'Pezón',     short: 'Pezón' },
   { id: 'surface', label: 'Superficie / Body', short: 'Superficie' }
 ];
+
+const ZONE_ALIASES = {
+  brow: 'brow',
+  eyebrow: 'brow',
+  ceja: 'brow',
+  ear: 'ear',
+  nose: 'nose',
+  mouth: 'mouth',
+  tongue: 'tongue',
+  navel: 'navel',
+  nipple: 'nipple',
+  surface: 'surface'
+};
+
+function normalizeZone(zoneId) {
+  return ZONE_ALIASES[zoneId] || zoneId;
+}
 
 /* ---------- FASES DEL PROYECTO ---------- */
 const PROJECT_PHASES = [
@@ -69,6 +86,24 @@ const ANATOMY_STATES = [
     shortLabel: 'Valoración prof.',
     color: '#b48ae0',
     desc: 'Esta opción necesita una evaluación presencial antes de cualquier decisión. No se puede determinar visualmente.'
+  },
+  {
+    id: 'surface_bar',
+    nombre: 'Surface bar',
+    zona: 'surface',
+    descripcion: 'Piercing de superficie que requiere anatomia, trayectoria y joyeria muy especificas para reducir presion y migracion.',
+    dolor: 5,
+    cicatrizacion: '6 a 12 meses',
+    joyeria: 'Surface bar de titanio implant grade. La medida se define presencialmente.',
+    molestias: ['Roce con ropa', 'Presion al dormir', 'Riesgo de migracion'],
+    cuidados: ['Evitar presion directa', 'Suero fisiologico', 'Revisiones tempranas con perforador'],
+    errores: ['Usar curved barbell', 'Colocarlo en zona de movimiento intenso', 'Ignorar signos de rechazo'],
+    alertas: ['Piel adelgazada sobre la joyeria', 'Migracion visible', 'Enrojecimiento persistente'],
+    compatibilidad: [],
+    mantenimiento: 'Alto',
+    inspiracion: 'Referencias sobrias con colocacion estable, sin tension visible en tejido.',
+    recomendacion: 'No debe elegirse solo por estetica. Requiere evaluacion anatomica profesional y expectativas realistas.',
+    disclaimer: ANATOMY_REMINDER
   }
 ];
 
@@ -456,8 +491,12 @@ const Data = {
   HEALING_LOAD,
   ANATOMY_REMINDER,
   ALICYN_DISCLAIMER,
+  normalizeZone,
   byId(id) { return PIERCINGS.find(p => p.id === id); },
-  byZone(zoneId) { return PIERCINGS.filter(p => p.zona === zoneId); },
+  byZone(zoneId) {
+    const normalized = normalizeZone(zoneId);
+    return PIERCINGS.filter(p => p.zona === normalized);
+  },
   getHealingLoad,
   earPiercings() {
     return ['lobulo', 'lobulo_alto', 'helix', 'flat', 'conch', 'tragus', 'daith', 'rook', 'industrial']

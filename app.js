@@ -25,7 +25,8 @@
     },
     drawer: {
       piercingId: null
-    }
+    },
+    inspoFilter: 'all'
   };
 
   // ── NAVEGACIÓN ─────────────────────────────────────────────────────────────
@@ -93,8 +94,11 @@
     document.querySelectorAll('.hit-zone').forEach(el => {
       el.style.cursor = 'pointer';
       el.addEventListener('click', () => {
-        const zoneId = el.dataset.zone;
-        const zone = AlicynData.ZONES.find(z => z.id === zoneId);
+        const zoneId = AlicynData.normalizeZone ? AlicynData.normalizeZone(el.dataset.zone) : el.dataset.zone;
+        const zone = AlicynData.ZONES.find(z => {
+          const id = AlicynData.normalizeZone ? AlicynData.normalizeZone(z.id) : z.id;
+          return id === zoneId;
+        });
         const piercings = AlicynData.byZone(zoneId);
 
         // Highlight zone
@@ -168,7 +172,10 @@
     if (!p) return;
     state.drawer.piercingId = piercingId;
 
-    const zone = AlicynData.ZONES.find(z => z.id === p.zona);
+    const zone = AlicynData.ZONES.find(z => {
+      const id = AlicynData.normalizeZone ? AlicynData.normalizeZone(z.id) : z.id;
+      return id === p.zona;
+    });
     document.getElementById('drawer-zone').textContent = (zone ? zone.label : '').toUpperCase();
     document.getElementById('drawer-title').textContent = p.nombre;
     document.getElementById('drawer-desc').textContent = p.descripcion;
@@ -218,6 +225,8 @@
 
     document.getElementById('drawer').classList.add('is-open');
     document.getElementById('drawer-backdrop').classList.add('is-open');
+    document.getElementById('drawer').setAttribute('aria-hidden', 'false');
+    document.getElementById('drawer-backdrop').setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
   }
 
@@ -242,6 +251,8 @@
   function closeDrawer() {
     document.getElementById('drawer').classList.remove('is-open');
     document.getElementById('drawer-backdrop').classList.remove('is-open');
+    document.getElementById('drawer').setAttribute('aria-hidden', 'true');
+    document.getElementById('drawer-backdrop').setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   }
 
@@ -258,10 +269,95 @@
     });
   }
 
+  // ── INSPIRACIÓN CURADA ─────────────────────────────────────────────────────
+  function initInspo() {
+    const filter = document.getElementById('inspo-filter');
+    if (filter) {
+      filter.addEventListener('change', e => {
+        state.inspoFilter = e.target.value;
+        renderInspo();
+      });
+    }
+    renderInspo();
+  }
+
+  function renderInspo() {
+    const grid = document.getElementById('inspo-grid');
+    if (!grid) return;
+
+    const filter = state.inspoFilter || 'all';
+    const cards = AlicynData.PIERCINGS
+      .filter(p => filter === 'all' || p.zona === (AlicynData.normalizeZone ? AlicynData.normalizeZone(filter) : filter))
+      .map(p => {
+        const zone = AlicynData.ZONES.find(z => {
+          const id = AlicynData.normalizeZone ? AlicynData.normalizeZone(z.id) : z.id;
+          return id === p.zona;
+        });
+        return `
+          <article class="inspo-card" data-zone="${p.zona}">
+            <div class="inspo-thumb" aria-hidden="true">
+              <span>${(zone ? zone.short : p.zona).slice(0, 2).toUpperCase()}</span>
+            </div>
+            <div>
+              <span class="inspo-zone">${zone ? zone.label : p.zona}</span>
+              <h3>${p.nombre}</h3>
+              <p>${p.inspiracion || 'Referencia pendiente de curaduría visual.'}</p>
+              <div class="inspo-meta">
+                <span>Dolor ${p.dolor}/10</span>
+                <span>${p.cicatrizacion}</span>
+              </div>
+              <button class="btn btn-ghost" data-pid="${p.id}">Ver criterio</button>
+            </div>
+          </article>`;
+      });
+
+    if (!cards.length) {
+      grid.innerHTML = `
+        <div class="inspo-empty">
+          <h3>No hay referencias para esta zona todavía.</h3>
+          <p>Se publicarán cuando pasen curaduría anatómica, ética y de joyería segura.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = `
+      <article class="inspo-panel danger-panel">
+        <h3>No todo lo viral es viable</h3>
+        <p>Las referencias se filtran por anatomía, presión, joyería inicial, riesgo de migración y expectativas realistas. La inspiración no debe reemplazar una evaluación presencial.</p>
+      </article>
+      ${cards.join('')}`;
+
+    grid.querySelectorAll('[data-pid]').forEach(btn => {
+      btn.addEventListener('click', () => openDrawer(btn.dataset.pid));
+    });
+  }
+
   // ── PLANEADOR DE OREJA ─────────────────────────────────────────────────────
+  const EAR_POINT_SELECTOR = '.ear-point-btn, .ear-point';
+
+  function plannerPointPhase(id) {
+    const p = AlicynData.byId(id);
+    if (!p) return '';
+    if (p.dolor <= 3) return 'p1';
+    if (p.dolor <= 5) return 'p2';
+    return 'p3';
+  }
+
+  function applyEarSide() {
+    const isRight = state.planner.side === 'right';
+    const earPhoto = document.getElementById('ear-photo');
+    if (earPhoto) earPhoto.classList.toggle('is-right', isRight);
+    document.querySelectorAll(EAR_POINT_SELECTOR).forEach(pt => {
+      if (!pt.dataset.baseX) pt.dataset.baseX = pt.style.getPropertyValue('--x').trim();
+      if (pt.dataset.baseX) {
+        pt.style.setProperty('--x', isRight ? `calc(100% - ${pt.dataset.baseX})` : pt.dataset.baseX);
+      }
+    });
+  }
+
   function initPlanner() {
-    // Puntos del SVG
-    document.querySelectorAll('.ear-point').forEach(pt => {
+    // Puntos sobre la imagen de oreja
+    document.querySelectorAll(EAR_POINT_SELECTOR).forEach(pt => {
       pt.style.cursor = 'pointer';
       pt.addEventListener('click', () => {
         const id = pt.dataset.piercing;
@@ -280,6 +376,7 @@
         document.querySelectorAll('.planner-toggle button').forEach(b => b.classList.remove('is-active'));
         btn.classList.add('is-active');
         state.planner.side = btn.dataset.side;
+        applyEarSide();
       });
     });
 
@@ -295,10 +392,16 @@
     const sel = [...state.planner.selected];
     const count = sel.length;
 
-    // Actualizar puntos del SVG
-    document.querySelectorAll('.ear-point').forEach(pt => {
-      pt.classList.toggle('is-selected', state.planner.selected.has(pt.dataset.piercing));
+    // Actualizar puntos sobre la imagen
+    document.querySelectorAll(EAR_POINT_SELECTOR).forEach(pt => {
+      const selected = state.planner.selected.has(pt.dataset.piercing);
+      pt.classList.toggle('is-selected', selected);
+      if (selected) pt.dataset.phase = plannerPointPhase(pt.dataset.piercing);
+      else delete pt.dataset.phase;
     });
+    const earPhoto = document.getElementById('ear-photo');
+    if (earPhoto) earPhoto.classList.toggle('has-selection', count > 0);
+    applyEarSide();
 
     // Carga de Cicatrización Alicyn
     const fill   = document.getElementById('load-fill');
@@ -419,8 +522,10 @@
     }).join(', ');
     if (navigator.share) {
       navigator.share({ title: 'Mi plan Alicyn', text });
-    } else {
+    } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).then(() => showToast('Plan copiado al portapapeles.'));
+    } else {
+      showToast('Tu navegador no permite compartir automÃ¡ticamente.');
     }
   }
 
@@ -474,6 +579,9 @@
 
     // Modal de resumen
     document.getElementById('summary-close').addEventListener('click', closeSummary);
+    document.getElementById('summary-modal').addEventListener('click', e => {
+      if (e.target.id === 'summary-modal') closeSummary();
+    });
     document.getElementById('btn-summary-copy').addEventListener('click', copySummary);
     document.getElementById('btn-summary-download').addEventListener('click', downloadSummary);
     document.getElementById('btn-summary-print').addEventListener('click', () => window.print());
@@ -938,6 +1046,10 @@
     const waBtnEl = document.getElementById('btn-copy-wa');
     if (waBtnEl) {
       waBtnEl.addEventListener('click', () => {
+        if (!navigator.clipboard?.writeText) {
+          showToast('Tu navegador no permite copiar automÃ¡ticamente.');
+          return;
+        }
         navigator.clipboard.writeText(waText).then(() => {
           waBtnEl.textContent = '✓ Copiado';
           setTimeout(() => { waBtnEl.textContent = 'Copiar texto WhatsApp'; }, 2000);
@@ -946,6 +1058,7 @@
     }
 
     document.getElementById('summary-modal').classList.add('is-open');
+    document.getElementById('summary-modal').setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
   }
 
@@ -964,6 +1077,7 @@
 
   function closeSummary() {
     document.getElementById('summary-modal').classList.remove('is-open');
+    document.getElementById('summary-modal').setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   }
 
@@ -1031,6 +1145,10 @@
   }
 
   function copySummary() {
+    if (!navigator.clipboard?.writeText) {
+      showToast('Tu navegador no permite copiar automÃ¡ticamente.');
+      return;
+    }
     navigator.clipboard.writeText(buildSummaryText()).then(() => {
       const btn = document.getElementById('btn-summary-copy');
       const orig = btn.textContent;
@@ -1054,6 +1172,14 @@
     btn.addEventListener('click', () => {
       document.querySelector('.app-footer').style.display = 'none';
       showToast('Modo consulta activo. Recarga la página para salir.');
+    });
+  }
+
+  function initGlobalKeys() {
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      closeDrawer();
+      closeSummary();
     });
   }
 
@@ -1104,9 +1230,11 @@
     initMapEntrance();
     initBodyMap();
     initDrawer();
+    initInspo();
     initPlanner();
     initAnatomy();
     initPiercer();
+    initGlobalKeys();
     navigate('home');
   }
 
