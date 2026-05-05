@@ -1,0 +1,762 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Alicyn Body Map · Planea tu próximo piercing con criterio profesional</title>
+<meta name="description" content="Plataforma interactiva para piercing shops y clientes. Explora zonas, tiempos de cicatrización, cuidados, errores comunes e inspiración. Incluye evaluación anatómica asistida." />
+<meta name="theme-color" content="#0a0d0c" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="styles-v2.css" />
+</head>
+<body>
+
+<!-- ============================== HEADER ============================== -->
+<header class="app-header">
+  <div class="container">
+    <div class="brand" data-nav="home" role="button" tabindex="0">
+      <div class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z" fill="#06120e" stroke="none"/>
+          <path d="M12 8.5v7M9 12h6"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <strong>Alicyn Body Map</strong>
+        <small>Atlas de piercing · MX</small>
+      </div>
+    </div>
+    <nav class="nav-tabs" aria-label="Vistas principales">
+      <button data-nav="home"     class="is-active">Mapa</button>
+      <button data-nav="planner">Oreja</button>
+      <button data-nav="anatomy">Evaluación</button>
+      <button data-nav="inspo">Inspo</button>
+      <button data-nav="community">Comunidad</button>
+      <button data-nav="piercer">Piercer</button>
+    </nav>
+    <div class="header-user" id="header-user">
+      <div class="points-pill" id="header-points" title="Puntos Alicyn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <span id="header-points-value">0</span>
+      </div>
+      <button class="btn btn-primary" id="btn-login">Iniciar sesión</button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============================== VIEW: HOME ============================== -->
+<section class="view is-active" id="view-home">
+
+  <!-- BODY MAP FIRST -->
+  <div class="map-first">
+    <div class="container">
+      <div class="map-disclaimer" id="map-disclaimer" role="status" aria-live="polite">
+        <div>
+          <strong>Antes de explorar</strong>
+          <p>Este mapa educa y orienta. La viabilidad real depende de anatomía, historial, joyería, técnica y valoración profesional presencial.</p>
+        </div>
+        <button class="btn btn-icon btn-ghost" id="btn-close-map-disclaimer" aria-label="Cerrar aviso">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <div class="map-mode-gate" aria-label="Elige cómo quieres entrar al mapa">
+        <button class="mode-card is-active" data-persona="client">
+          <span>Explorador Alicyn</span>
+          <strong>Modo Cliente</strong>
+          <small>Información clara para decidir con criterio.</small>
+        </button>
+        <button class="mode-card" data-persona="piercer" data-nav="piercer">
+          <span>Guía profesional</span>
+          <strong>Modo Piercer</strong>
+          <small>Consulta, evaluación y resumen para mesa.</small>
+        </button>
+      </div>
+
+      <div class="map-shell">
+        <div class="map-copy">
+          <span class="eyebrow">Alicyn Body Map</span>
+          <h1>El mapa es la entrada a todo.</h1>
+          <p>Elige una zona del cuerpo para abrir piercings, cuidados, planeación, reseñas, comentarios e inspiración filtrada con criterio anatómico.</p>
+        </div>
+
+        <div class="bodymap-wrap">
+        <div class="bodymap-photo-card">
+          <div class="bodymap-photo" id="body-photo" aria-label="Mapa del cuerpo">
+            <img src="assets/body-map.png" alt="Cuerpo humano estilizado · Alicyn Body Map"
+                 onerror="this.parentElement.classList.add('img-missing')" />
+            <!-- Hit zones posicionados sobre los puntos verdes de la ilustración (porcentajes) -->
+            <button class="hit-zone" data-zone="brow"    style="--x:48%;  --y:10.2%" aria-label="Ceja izquierda" title="Ceja"></button>
+            <button class="hit-zone" data-zone="brow"    style="--x:52%;  --y:10.2%" aria-label="Ceja derecha"  title="Ceja"></button>
+            <button class="hit-zone" data-zone="ear"     style="--x:36.5%;--y:13.2%" aria-label="Oreja izquierda" title="Oreja"></button>
+            <button class="hit-zone" data-zone="ear"     style="--x:63.5%;--y:13.2%" aria-label="Oreja derecha"  title="Oreja"></button>
+            <button class="hit-zone" data-zone="nose"    style="--x:50%;  --y:13.4%" aria-label="Nariz" title="Nariz"></button>
+            <button class="hit-zone" data-zone="mouth"   style="--x:50%;  --y:15.6%" aria-label="Boca / Labios" title="Boca"></button>
+            <button class="hit-zone" data-zone="nipple"  style="--x:42%;  --y:28.5%" aria-label="Pezón izquierdo" title="Pezón"></button>
+            <button class="hit-zone" data-zone="nipple"  style="--x:58%;  --y:28.5%" aria-label="Pezón derecho"  title="Pezón"></button>
+            <button class="hit-zone" data-zone="navel"   style="--x:50%;  --y:40.5%" aria-label="Ombligo" title="Ombligo"></button>
+            <button class="hit-zone" data-zone="surface" style="--x:50%;  --y:46%; --w:18%; --h:6%" aria-label="Superficie / Body" title="Superficie"></button>
+
+            <!-- Fallback si la imagen aún no existe -->
+            <div class="img-fallback">
+              <p><strong>Falta la imagen del cuerpo.</strong></p>
+              <p>Guarda tu ilustración como <code>assets/body-map.png</code> dentro de la carpeta del proyecto.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="zone-info" id="zone-info">
+          <div class="empty">
+            <div>
+              <p style="font-size:14px;color:var(--text-soft);margin:0 0 6px">Toca una zona del mapa</p>
+              <p style="font-size:12px;color:var(--text-mute);margin:0">Desde cada zona puedes llegar al planner, reseñas, comentarios e inspo curada.</p>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== VIEW: INSPO ============================== -->
+<section class="view" id="view-inspo">
+  <div class="container section" style="border-top:0;padding-top:48px">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Inspiración curada</span>
+        <h2>Fotos bonitas, sí. Anatomía honesta, primero.</h2>
+        <p>Esta pestaña está pensada para alimentar una galería propia con referencias de Pinterest y portafolios, filtradas por viabilidad, ética, joyería inicial correcta y salud del tejido.</p>
+      </div>
+    </div>
+
+    <div class="inspo-grid">
+      <article class="inspo-panel">
+        <h3>Cola de curaduría</h3>
+        <p>Antes de publicar una foto como inspiración, se revisa si muestra un ángulo realista, joyería adecuada, perforación viable y resultado responsable.</p>
+        <div class="inspo-checks">
+          <span>Ángulo claro</span>
+          <span>Anatomía compatible</span>
+          <span>Joyería segura</span>
+          <span>Cicatrización plausible</span>
+        </div>
+      </article>
+      <article class="inspo-panel danger-panel">
+        <h3>No todo lo viral es buena opción</h3>
+        <p>Algunos piercings nunca serán la mejor elección anatómica o médica para muchas personas. Aquí se explicará por qué: presión, migración, rechazo, mala irrigación, mala colocación o expectativas irreales.</p>
+        <button class="btn btn-danger" data-nav="anatomy">Evaluar antes de copiar</button>
+      </article>
+      <article class="inspo-panel">
+        <h3>Servidor de fotos</h3>
+        <p>Próximo paso: guardar referencias aprobadas por zona, fuente, permiso, etiquetas anatómicas y notas profesionales para que la comunidad aprenda sin normalizar malas prácticas.</p>
+        <button class="btn btn-primary" data-nav="community">Conectar con comunidad</button>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== VIEW: PLANNER ============================== -->
+<section class="view" id="view-planner">
+  <div class="container section" style="border-top:0;padding-top:48px">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Composición de oreja</span>
+        <h2>Planea tu proyecto por fases</h2>
+        <p>Selecciona los piercings que te interesan. El sistema calcula la <strong>Carga de Cicatrización Alicyn</strong> y sugiere un orden por fases. Cada anatomía define el ritmo real.</p>
+      </div>
+      <div class="planner-toggle" role="tablist" aria-label="Lado de la oreja">
+        <button data-side="left"  class="is-active">Izquierda</button>
+        <button data-side="right">Derecha</button>
+      </div>
+    </div>
+
+    <div class="planner-grid">
+      <div class="ear-canvas">
+        <div class="ear-photo" id="ear-photo" aria-label="Planeador de oreja">
+          <img src="assets/ear.png" alt="Oreja anatómica · Alicyn Body Map"
+               onerror="this.parentElement.classList.add('img-missing')" />
+          <!-- Puntos posicionados sobre la anatomía de la oreja (porcentajes) -->
+          <button class="ear-point-btn" data-piercing="helix"        style="--x:34%;--y:14%"><span>helix</span></button>
+          <button class="ear-point-btn" data-piercing="industrial"   style="--x:42%;--y:11%"><span>industrial</span></button>
+          <button class="ear-point-btn" data-piercing="flat"         style="--x:48%;--y:19%"><span>flat</span></button>
+          <button class="ear-point-btn" data-piercing="rook"         style="--x:46%;--y:32%"><span>rook</span></button>
+          <button class="ear-point-btn" data-piercing="daith"        style="--x:51%;--y:45%"><span>daith</span></button>
+          <button class="ear-point-btn" data-piercing="conch"        style="--x:57%;--y:52%"><span>conch</span></button>
+          <button class="ear-point-btn" data-piercing="tragus"       style="--x:63%;--y:50%"><span>tragus</span></button>
+          <button class="ear-point-btn" data-piercing="lobulo_alto"  style="--x:53%;--y:73%"><span>lób. alto</span></button>
+          <button class="ear-point-btn" data-piercing="lobulo"       style="--x:55%;--y:82%"><span>lóbulo</span></button>
+
+          <!-- Fallback si la imagen aún no existe -->
+          <div class="img-fallback">
+            <p><strong>Falta la imagen de la oreja.</strong></p>
+            <p>Guarda tu ilustración como <code>assets/ear.png</code> dentro de la carpeta del proyecto.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="planner-side" id="planner-side">
+        <h3 style="margin:0 0 6px;font-size:18px">Tu proyecto</h3>
+        <p class="muted" style="margin:0 0 8px;font-size:13px">Selecciona piercings tocando los puntos de la oreja.</p>
+
+        <div class="load-meter">
+          <div class="load-meter-bar"><div class="load-meter-fill" id="load-fill" style="width:0%"></div></div>
+          <div class="load-meter-label">
+            <span>Carga Alicyn: <strong id="load-label">—</strong></span>
+            <span id="load-count">0 piercings</span>
+          </div>
+        </div>
+
+        <div id="phases-output">
+          <p class="muted" style="margin:0">Aún no has seleccionado piercings.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" id="btn-export-plan">Exportar plan</button>
+          <button class="btn" id="btn-share-plan">Compartir con mi piercer</button>
+          <button class="btn btn-ghost" id="btn-clear-plan">Limpiar</button>
+        </div>
+
+        <div class="disclaimer-box" style="margin-top:18px">
+          Esta composición es una guía visual. La viabilidad de cada piercing depende de tu anatomía, historial y el criterio de tu perforador. Nada aquí determina un resultado.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== VIEW: ANATOMY ============================== -->
+<section class="view" id="view-anatomy">
+  <div class="container section" style="border-top:0;padding-top:48px">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Evaluación anatómica asistida</span>
+        <h2>Registra, observa y genera un resumen profesional</h2>
+        <p>Sube una foto de la zona a evaluar, marca puntos sobre la imagen y asigna estado anatómico, joyería sugerida y fase. En menos de tres minutos tienes un resumen listo para compartir por WhatsApp.</p>
+      </div>
+    </div>
+
+    <!-- TOOLBAR -->
+    <div class="anatomy-toolbar">
+      <input type="file" id="anatomy-file" accept="image/*" hidden />
+      <button class="btn" id="btn-upload"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Subir foto</button>
+
+      <div class="tool-group" id="tool-group" role="toolbar" aria-label="Herramientas de marcado">
+        <button data-tool="add"    class="is-active" title="Añadir punto">＋ Añadir</button>
+        <button data-tool="move"   title="Mover puntos">↔ Mover</button>
+        <button data-tool="delete" title="Eliminar al tocar">– Eliminar</button>
+      </div>
+
+      <div class="spacer"></div>
+      <button class="btn" id="btn-summary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Generar resumen</button>
+      <button class="btn btn-danger btn-icon" id="btn-clear-image" title="Limpiar todo"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg></button>
+    </div>
+
+    <div class="anatomy-grid">
+      <!-- STAGE -->
+      <div>
+        <div class="anatomy-stage" id="anatomy-stage">
+          <div class="empty-state">
+            <div class="ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <p style="margin:0 0 4px;color:var(--text-soft);font-size:14px">Sube una foto de la zona a evaluar</p>
+            <p style="margin:0;font-size:12px">La imagen permanece en este dispositivo. No se envía a ningún servidor.</p>
+          </div>
+        </div>
+        <div class="privacy-banner">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span>Privacidad garantizada: la imagen solo existe en este dispositivo durante la sesión. No se almacena ni se transmite a ningún servidor.</span>
+        </div>
+      </div>
+
+      <!-- POINT EDITOR -->
+      <div class="point-editor" id="point-editor">
+        <h3>Observación del punto</h3>
+        <p class="muted" style="font-size:13px;margin-top:-6px">Toca un punto en la imagen para registrar tu observación.</p>
+
+        <div id="ed-client-name-wrap" style="margin-bottom:14px">
+          <label style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute);margin-bottom:6px" for="ed-client-name">Nombre del cliente <span style="font-weight:400;opacity:.6">(opcional)</span></label>
+          <input id="ed-client-name" type="text" placeholder="Para personalizar el resumen..." style="width:100%;background:var(--bg-3);border:1px solid var(--line);border-radius:10px;padding:10px 14px;color:var(--text);font:inherit;font-size:14px;outline:none;transition:border-color .2s" />
+        </div>
+
+        <div id="editor-form" class="hidden">
+          <div class="field">
+            <label for="ed-name">Opción considerada</label>
+            <input id="ed-name" type="text" placeholder="Ej. Helix exterior, Conch inner, Tragus..." />
+          </div>
+
+          <div class="field">
+            <label>Observación anatómica</label>
+            <div class="state-chips" id="ed-states"></div>
+          </div>
+
+          <div class="field">
+            <label for="ed-phase">Fase del proyecto</label>
+            <select id="ed-phase">
+              <option value="">— Sin asignar —</option>
+              <option value="p1">Fase 1 · Base inicial</option>
+              <option value="p2">Fase 2 · Construcción intermedia</option>
+              <option value="p3">Fase 3 · Cierre del proyecto</option>
+              <option value="pf">Fase futura · Revisar más adelante</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="ed-jewelry">Joyería sugerida</label>
+            <input id="ed-jewelry" type="text" placeholder="Ej. Labret titanio implant grade 1.2 mm" />
+          </div>
+
+          <div class="field">
+            <label for="ed-note">Nota profesional</label>
+            <textarea id="ed-note" placeholder="Ej. Pliegue marcado, espacio justo para labret 6mm, confirmar presencialmente..."></textarea>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-danger" id="btn-delete-point">Eliminar punto</button>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <h4 style="margin:0 0 8px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)">Puntos registrados</h4>
+        <div class="points-list" id="points-list">
+          <p class="muted" style="font-size:13px;margin:0">Aún no has marcado puntos.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer-box" style="margin-top:24px">
+      <strong style="color:var(--text)">Principio central Alicyn:</strong> Cada anatomía es única. Esta herramienta visualiza posibilidades y registra observaciones. No determina viabilidad, no diagnostica ni garantiza resultados. El criterio final es siempre del perforador profesional en la valoración presencial.
+    </div>
+  </div>
+</section>
+
+<!-- ============================== VIEW: PIERCER ============================== -->
+<section class="view" id="view-piercer">
+
+  <!-- PIERCER HERO -->
+  <div class="piercer-hero">
+    <div class="container">
+      <span class="eyebrow" style="color:var(--accent)">Para perforadores profesionales</span>
+      <h2 class="piercer-hero-title">La consulta cambia cuando el cliente entiende antes de preguntar.</h2>
+      <p class="piercer-hero-sub">Alicyn Body Map es la herramienta que usas en mesa — no después. Evalúa anatomía, construye el plan y entrega un resumen firmado con tu criterio. En minutos, desde cualquier dispositivo.</p>
+      <div class="piercer-hero-ctas">
+        <button class="btn btn-primary btn-lg" data-nav="anatomy">Iniciar evaluación</button>
+        <button class="btn btn-lg" data-nav="home">Ver mapa de zonas</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VALUE PILLARS -->
+  <div class="container section" style="border-top:0">
+    <div class="piercer-pillars">
+
+      <div class="piercer-pillar">
+        <div class="pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h4>Consultas más claras</h4>
+        <p>Mostrarle al cliente su foto con los puntos marcados resuelve en 30 segundos lo que cuesta 10 minutos explicar con palabras.</p>
+      </div>
+
+      <div class="piercer-pillar">
+        <div class="pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h4>Menos dudas postprocedimiento</h4>
+        <p>El resumen exportable lleva cuidados, tiempos y observaciones. El cliente sale con todo escrito — no depende de su memoria.</p>
+      </div>
+
+      <div class="piercer-pillar">
+        <div class="pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <h4>Resúmenes que educan</h4>
+        <p>Cada evaluación genera un texto profesional con la "Carga de Cicatrización Alicyn" — un lenguaje que el cliente entiende y respeta.</p>
+      </div>
+
+      <div class="piercer-pillar">
+        <div class="pillar-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        </div>
+        <h4>Funciona en mesa, sin internet</h4>
+        <p>Corre desde el navegador del estudio — sin apps, sin login, sin datos al servidor. Tu evaluación queda en tu dispositivo.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- WORKFLOW -->
+  <div class="piercer-workflow-wrap">
+    <div class="container">
+      <h3 class="piercer-section-title">Flujo de consulta en 3 pasos</h3>
+      <div class="piercer-workflow">
+
+        <div class="workflow-step">
+          <div class="workflow-num">01</div>
+          <div class="workflow-content">
+            <h4>Explora zonas con el cliente</h4>
+            <p>Abre el mapa de cuerpo, selecciona la zona de interés y revisa tiempos de cicatrización, joyería compatible y errores comunes. El cliente ve lo mismo que tú.</p>
+            <button class="btn btn-sm" data-nav="home">Abrir mapa →</button>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-num">02</div>
+          <div class="workflow-content">
+            <h4>Construye el proyecto de oreja</h4>
+            <p>Usa el Planeador de Oreja para armar fases con tiempos reales. Ideal para clientes que quieren más de un piercing y necesitan entender el orden correcto.</p>
+            <button class="btn btn-sm" data-nav="planner">Ir al planeador →</button>
+          </div>
+        </div>
+
+        <div class="workflow-step">
+          <div class="workflow-num">03</div>
+          <div class="workflow-content">
+            <h4>Evalúa y genera el resumen</h4>
+            <p>Sube una foto de la zona, marca puntos con observaciones anatómicas y exporta el resumen. Listo para WhatsApp, impresión o correo.</p>
+            <button class="btn btn-sm btn-primary" data-nav="anatomy">Iniciar evaluación →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES / ROADMAP -->
+  <div class="container section">
+    <div class="piercer-features-grid">
+
+      <div class="piercer-features-col">
+        <h3 class="piercer-section-title" style="margin-bottom:20px">Disponible hoy · V0.1</h3>
+        <ul class="feature-list">
+          <li class="feat-available">Mapa corporal interactivo por zonas</li>
+          <li class="feat-available">Planeador de oreja por fases</li>
+          <li class="feat-available">Canvas de evaluación anatómica con foto</li>
+          <li class="feat-available">5 estados de observación anatómica</li>
+          <li class="feat-available">Carga de Cicatrización Alicyn (Baja → Muy alta)</li>
+          <li class="feat-available">Resumen exportable: texto, portapapeles, .txt</li>
+          <li class="feat-available">WhatsApp-ready con nombre del cliente</li>
+          <li class="feat-available">Sin login · Sin servidor · Sin datos externos</li>
+        </ul>
+      </div>
+
+      <div class="piercer-features-col">
+        <h3 class="piercer-section-title" style="margin-bottom:20px">En camino · V1.1 → V3</h3>
+        <ul class="feature-list">
+          <li class="feat-roadmap">Fichas de cliente guardadas localmente</li>
+          <li class="feat-roadmap">Seguimiento postprocedimiento por semanas</li>
+          <li class="feat-roadmap">Galería de inspiración filtrada por anatomía</li>
+          <li class="feat-roadmap">Modo multilingüe (EN / PT)</li>
+          <li class="feat-roadmap">PDF profesional con logo del estudio</li>
+          <li class="feat-roadmap">Agenda de sesiones por cliente</li>
+          <li class="feat-roadmap">Panel de estudio multi-perforador</li>
+          <li class="feat-roadmap">Integración con redes y booking</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="piercer-philosophy">
+      <blockquote>
+        <p>"Alicyn Body Map acompaña — nunca reemplaza. Tu criterio presencial es el que determina. Esta herramienta hace que el cliente llegue más educado y la conversación sea más honesta."</p>
+        <cite>Principio de diseño · Alicyn</cite>
+      </blockquote>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- ============================== VIEW: COMMUNITY ============================== -->
+<section class="view" id="view-community">
+  <div class="container community-hero">
+    <span class="eyebrow">Comunidad Alicyn</span>
+    <h2>Tu experiencia ayuda a quien viene después.</h2>
+    <p>Comparte cómo viviste tu piercing — qué dolor sentiste, qué cuidados te funcionaron, cómo cicatrizó. Cada experiencia que subes le da a la próxima persona información real para decidir mejor. Y a ti te suma puntos, badges y tu historia entra al atlas vivo de Alicyn.</p>
+    <div class="community-stats" id="community-stats">
+      <div class="stat-card"><span class="stat-value" id="stat-experiences">—</span><div class="stat-label">Experiencias compartidas</div><div class="stat-trend">creciendo cada día</div></div>
+      <div class="stat-card"><span class="stat-value" id="stat-piercings">—</span><div class="stat-label">Piercings documentados</div><div class="stat-trend">en 18 tipos</div></div>
+      <div class="stat-card"><span class="stat-value" id="stat-pain">—</span><div class="stat-label">Dolor promedio reportado</div><div class="stat-trend">de 1 a 10</div></div>
+      <div class="stat-card"><span class="stat-value" id="stat-members">—</span><div class="stat-label">Miembros activos</div><div class="stat-trend">comunidad MX</div></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="community-grid">
+      <div class="community-feed">
+        <div class="feed-toolbar">
+          <button class="btn btn-primary" id="btn-add-experience">＋ Compartir experiencia</button>
+          <div class="spacer"></div>
+          <select id="feed-filter" aria-label="Filtrar por piercing">
+            <option value="all">Todos los piercings</option>
+            <option value="lobulo">Lóbulo</option>
+            <option value="lobulo_alto">Lóbulo alto</option>
+            <option value="helix">Helix</option>
+            <option value="flat">Flat</option>
+            <option value="conch">Conch</option>
+            <option value="tragus">Tragus</option>
+            <option value="daith">Daith</option>
+            <option value="rook">Rook</option>
+            <option value="industrial">Industrial</option>
+            <option value="nostril">Nostril</option>
+            <option value="septum">Septum</option>
+            <option value="bridge">Bridge</option>
+            <option value="labret">Labret</option>
+            <option value="medusa">Medusa</option>
+            <option value="lengua">Lengua</option>
+            <option value="ceja">Ceja</option>
+            <option value="ombligo">Ombligo</option>
+            <option value="pezon">Pezón</option>
+          </select>
+          <select id="feed-sort" aria-label="Ordenar">
+            <option value="recent">Más recientes</option>
+            <option value="loved">Más útiles</option>
+            <option value="painful">Mayor dolor</option>
+            <option value="painless">Menor dolor</option>
+          </select>
+        </div>
+        <div id="experience-list">
+          <p class="muted" style="padding:32px;text-align:center">Cargando experiencias…</p>
+        </div>
+      </div>
+
+      <aside class="community-side">
+        <div class="side-card profile-card" id="profile-card">
+          <h4>Tu perfil</h4>
+          <div class="profile-head">
+            <div class="avatar" id="profile-avatar">?</div>
+            <div>
+              <h3 id="profile-name">Invitado</h3>
+              <small id="profile-level">Inicia sesión para ganar puntos</small>
+            </div>
+          </div>
+          <div class="xp-bar"><div class="xp-bar-fill" id="xp-fill" style="width:0%"></div></div>
+          <div class="xp-bar-meta"><span id="xp-current">0 XP</span><span id="xp-next">100 XP siguiente nivel</span></div>
+          <div class="badge-grid" id="badge-grid"></div>
+        </div>
+
+        <div class="side-card">
+          <h4>Top contributors</h4>
+          <div class="leaderboard" id="leaderboard"></div>
+        </div>
+
+        <div class="side-card">
+          <h4>Cómo subir de nivel</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text-soft)">
+            <div style="display:flex;justify-content:space-between"><span>Compartir experiencia</span><strong style="color:var(--accent)">+50 XP</strong></div>
+            <div style="display:flex;justify-content:space-between"><span>Subir foto cicatrizada</span><strong style="color:var(--accent)">+30 XP</strong></div>
+            <div style="display:flex;justify-content:space-between"><span>Que te marquen "útil"</span><strong style="color:var(--accent)">+10 XP</strong></div>
+            <div style="display:flex;justify-content:space-between"><span>Reportar dolor real</span><strong style="color:var(--accent)">+15 XP</strong></div>
+          </div>
+        </div>
+        <div class="side-card data-lab-card">
+          <h4>Aprendizaje continuo</h4>
+          <div class="data-lab-metrics">
+            <div><strong id="data-feedback-count">0</strong><span>feedback</span></div>
+            <div><strong id="data-error-count">0</strong><span>errores</span></div>
+          </div>
+          <p>Todo comentario, reseña y error se convierte en datos accionables para mejorar el mapa, curar inspo y entrenar recomendaciones futuras.</p>
+          <div class="data-lab-actions">
+            <button class="btn btn-primary" id="btn-feedback-idea">Agregar feedback</button>
+            <button class="btn" id="btn-feedback-error">Reportar error</button>
+            <button class="btn btn-ghost" id="btn-export-dataset">Exportar dataset</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="disclaimer-box" style="margin-top:32px">
+      Las experiencias son anecdóticas — reflejan vivencias personales, no criterio profesional. Las fotos están protegidas con desenfoque hasta que decidas verlas. Reporta cualquier publicación que viole nuestras normas.
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================== LOGIN MODAL ============================== -->
+<div class="login-modal" id="login-modal" role="dialog" aria-modal="true" aria-label="Iniciar sesión">
+  <div class="login-card">
+    <div class="login-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z" fill="#06120e" stroke="none"/>
+      </svg>
+    </div>
+    <h3>Únete a Alicyn</h3>
+    <p class="muted">Ayuda a quien viene después y suma XP por cada experiencia que compartes.</p>
+
+    <button class="oauth-btn google" data-oauth="google">
+      <svg viewBox="0 0 48 48" width="18" height="18"><path fill="#FFC107" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-2.1 14-5.4l-6.5-5.5c-2 1.4-4.6 2.4-7.5 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.4 39.6 16.1 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.6l6.5 5.5c4.5-4.2 7.1-10.4 7.1-17.6 0-1.3-.1-2.4-.4-3.5z"/></svg>
+      Continuar con Google
+    </button>
+    <button class="oauth-btn facebook" data-oauth="facebook">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M24 12.07C24 5.41 18.63 0 12 0S0 5.41 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.23 2.69.23v2.97h-1.51c-1.49 0-1.96.93-1.96 1.89v2.27h3.33l-.53 3.49h-2.79V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+      Continuar con Facebook
+    </button>
+
+    <div class="login-divider">o</div>
+    <button class="oauth-btn" data-oauth="guest">Continuar como invitado</button>
+
+    <p class="login-legal">Al continuar aceptas los <a href="#">términos</a> y la <a href="#">política de privacidad</a>. Tu información se mantiene segura. Las fotos se moderan antes de publicarse.</p>
+  </div>
+</div>
+
+<!-- ============================== ADD EXPERIENCE MODAL ============================== -->
+<div class="add-exp-modal" id="add-exp-modal" role="dialog" aria-modal="true" aria-label="Compartir experiencia">
+  <div class="add-exp-card">
+    <div class="step">Paso 1 de 3</div>
+    <h3>Comparte tu experiencia</h3>
+    <p class="muted" style="margin:4px 0 18px;font-size:13px">Tu testimonio ayuda a otra persona a tomar una decisión informada.</p>
+
+    <div class="field">
+      <label for="exp-piercing">¿Qué piercing te hiciste?</label>
+      <select id="exp-piercing">
+        <option value="">— Selecciona —</option>
+        <option value="lobulo">Lóbulo</option>
+        <option value="lobulo_alto">Lóbulo alto</option>
+        <option value="helix">Helix</option>
+        <option value="flat">Flat</option>
+        <option value="conch">Conch</option>
+        <option value="tragus">Tragus</option>
+        <option value="daith">Daith</option>
+        <option value="rook">Rook</option>
+        <option value="industrial">Industrial</option>
+        <option value="nostril">Nostril</option>
+        <option value="septum">Septum</option>
+        <option value="bridge">Bridge</option>
+        <option value="labret">Labret</option>
+        <option value="medusa">Medusa</option>
+        <option value="lengua">Lengua</option>
+        <option value="ceja">Ceja</option>
+        <option value="ombligo">Ombligo</option>
+        <option value="pezon">Pezón</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Dolor que sentiste (1 = casi nada · 10 = máximo)</label>
+      <div class="pain-slider"><input type="range" id="exp-pain" min="1" max="10" value="5" /></div>
+      <div class="pain-readout" id="exp-pain-readout"><span>Tu dolor:</span><strong>5</strong></div>
+    </div>
+
+    <div class="field">
+      <label for="exp-note">Cuenta tu experiencia (opcional)</label>
+      <textarea id="exp-note" placeholder="¿Cómo fue el procedimiento? ¿Qué tal la cicatrización? ¿Qué hubieras hecho diferente?"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Foto del piercing (opcional · será moderada antes de publicarse)</label>
+      <div class="photo-drop" id="exp-photo-drop">
+        <input type="file" id="exp-photo-input" accept="image/*" hidden />
+        <p>Arrastra una foto o haz clic para subirla</p>
+        <p class="small">JPG o PNG · máx. 5 MB · se publica con desenfoque protector</p>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="btn-exp-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="btn-exp-publish">Publicar y ganar +50 XP</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== TOAST STACK & POINTS ============================== -->
+<div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
+<!-- ============================== DETAIL DRAWER ============================== -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-label="Detalle del piercing">
+  <header class="drawer-head">
+    <div>
+      <small class="muted" id="drawer-zone" style="font-size:12px;letter-spacing:.12em;text-transform:uppercase"></small>
+      <h3 id="drawer-title">—</h3>
+      <p class="muted" id="drawer-desc" style="margin:0;font-size:14px"></p>
+    </div>
+    <button class="btn btn-icon btn-ghost" id="drawer-close" aria-label="Cerrar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </header>
+  <div class="drawer-body" id="drawer-body"></div>
+  <footer class="drawer-foot">
+    <button class="btn btn-primary" id="btn-save-plan">Guardar en mi plan</button>
+    <button class="btn" data-nav="anatomy">Consultar con mi piercer</button>
+    <button class="btn btn-ghost" data-nav="inspo">Ver inspo curada</button>
+  </footer>
+</aside>
+
+<!-- ============================== SUMMARY MODAL ============================== -->
+<div class="summary-modal" id="summary-modal" role="dialog" aria-modal="true" aria-label="Resumen de la evaluación">
+  <div class="summary-card">
+    <div class="summary-card-head">
+      <div>
+        <h3>Resumen de evaluación</h3>
+        <p>Generado para entrega al cliente · Alicyn Body Map</p>
+      </div>
+      <button class="btn btn-icon btn-ghost" id="summary-close" aria-label="Cerrar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="summary-card-body" id="summary-body"></div>
+    <div class="summary-card-foot">
+      <button class="btn btn-primary" id="btn-summary-copy">Copiar al portapapeles</button>
+      <button class="btn" id="btn-summary-download">Descargar .txt</button>
+      <button class="btn btn-ghost" id="btn-summary-print">Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== BOTTOM NAV (móvil) ============================== -->
+<nav class="bottom-nav" id="bottom-nav" aria-label="Navegación principal">
+  <div class="bottom-nav-inner">
+    <button class="bottom-nav-btn is-active" data-nav="home" aria-label="Mapa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+      <span class="bn-label">Mapa</span>
+    </button>
+    <button class="bottom-nav-btn" data-nav="planner" aria-label="Planeador">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+        <ellipse cx="12" cy="10" rx="7" ry="9"/><path d="M8 10 q4-4 8 0"/><line x1="12" y1="19" x2="12" y2="22"/>
+      </svg>
+      <span class="bn-label">Oreja</span>
+    </button>
+    <button class="bottom-nav-btn" data-nav="anatomy" aria-label="Evaluación">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+        <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 15l-5-5L5 21"/>
+      </svg>
+      <span class="bn-label">Evaluar</span>
+    </button>
+    <button class="bottom-nav-btn" data-nav="community" aria-label="Comunidad">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span class="bn-label">Reseñas</span>
+    </button>
+    <button class="bottom-nav-btn" data-nav="piercer" aria-label="Modo Piercer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+      </svg>
+      <span class="bn-label">Piercer</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ============================== FOOTER ============================== -->
+<footer class="app-footer">
+  <div class="container">
+    <p id="footer-disclaimer">La información de esta herramienta es educativa y no sustituye la evaluación de un perforador profesional ni la atención médica. Los tiempos de cicatrización pueden variar según anatomía, técnica, joyería, cuidados y estilo de vida.</p>
+    <p>© Alicyn · MX</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+<script src="community.js"></script>
+</body>
+</html>
