@@ -7557,5 +7557,486 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
 </style>
 
+
+<!-- ============================================================================
+     v0.4 · Hero interactivo · figura como punto de entrada
+     Traducción de las referencias visuales:
+       Ref 1 (categorías) → panel lateral con tipografía editorial
+       Ref 2 (figura con nodos) → bodymap como entrada principal
+     Toda la lógica vive aquí. Idempotente.
+     ============================================================================ -->
+<style id="alicyn-hero-v32">
+  /* ── Body card · feel arquitectónico (azul Alicyn de fondo) ───────────── */
+  #view-home .bodymap-photo-card {
+    background:
+      radial-gradient(900px 600px at 50% 20%, rgba(255,255,255,.45), transparent 60%),
+      linear-gradient(180deg, var(--alicyn-blue-soft, #D8EEF0) 0%, var(--alicyn-blue, #8FBFC3) 100%);
+    border: 1px solid rgba(10,13,12,.08);
+    overflow: hidden;
+    position: relative;
+    isolation: isolate;
+    min-height: 580px;
+  }
+  /* Blueprint grid sutil */
+  #view-home .bodymap-photo-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(10,13,12,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10,13,12,.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* Sparkle decorativo abajo-derecha */
+  #view-home .bodymap-photo-card::after {
+    content: '';
+    position: absolute;
+    right: 22px; bottom: 22px;
+    width: 22px; height: 22px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230a0d0c' opacity='.45'%3E%3Cpath d='M12 0l1.6 9 8.8 2.6-8.8 2.6L12 24l-2-9.8L1 12l9-2.4z'/%3E%3C/svg%3E") center/contain no-repeat;
+    pointer-events: none;
+    z-index: 1;
+  }
+  #view-home .bodymap-photo {
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 16px 36px rgba(10,13,12,.18));
+  }
+  /* La figura más grande para protagonizar */
+  #view-home .bodymap-photo {
+    max-width: 360px;
+    aspect-ratio: 2/3;
+  }
+  /* Imagen del cuerpo: tonalidad ligeramente desaturada para integrarse al azul */
+  #view-home .bodymap-photo img {
+    filter: brightness(1.05) contrast(.95) drop-shadow(0 20px 40px rgba(10,13,12,.25));
+    mix-blend-mode: luminosity;
+    opacity: .92;
+  }
+
+  /* ── Nodes "premium" sobre la figura ─────────────────────────────────── */
+  #view-home .hit-zone {
+    width: 36px !important;
+    height: 36px !important;
+    z-index: 4;
+  }
+  #view-home .hit-zone::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.92);
+    border: 1.5px solid rgba(10,13,12,.18);
+    opacity: 1;
+    transform: scale(1);
+    box-shadow:
+      0 2px 8px rgba(10,13,12,.18),
+      inset 0 0 0 0 var(--alicyn-blue);
+    transition: transform .25s ease, box-shadow .25s ease, background .25s ease, inset .25s ease;
+  }
+  /* Halo expansivo */
+  #view-home .hit-zone::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--alicyn-blue);
+    opacity: 0;
+    transform: scale(.8);
+    background: transparent;
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  #view-home .hit-zone:hover::before {
+    transform: scale(1.18);
+    background: var(--alicyn-blue-soft);
+    box-shadow:
+      0 4px 18px rgba(143,191,195,.55),
+      inset 0 0 0 4px var(--alicyn-blue);
+  }
+  #view-home .hit-zone:hover::after {
+    opacity: 1;
+    transform: scale(1.4);
+  }
+  #view-home .hit-zone.is-active::before {
+    transform: scale(1.25);
+    background: var(--alicyn-blue);
+    border-color: var(--graphite);
+    box-shadow:
+      0 6px 22px rgba(10,13,12,.32),
+      inset 0 0 0 4px var(--graphite);
+  }
+  #view-home .hit-zone.is-active::after {
+    opacity: 1;
+    transform: scale(1.6);
+    border-color: var(--graphite);
+  }
+  /* Tooltip nuevo desde el title (CSS only) */
+  #view-home .hit-zone[title]:hover .hz-tip,
+  #view-home .hit-zone[title]:focus-visible .hz-tip {
+    opacity: 1;
+    transform: translate(-50%, calc(-100% - 4px));
+  }
+
+  /* ── Body container con zoom suave al activar ─────────────────────────── */
+  #view-home .bodymap-photo {
+    transition: transform .55s cubic-bezier(.2,.7,.2,1);
+    transform-origin: 50% 30%;
+  }
+  #view-home .bodymap-photo.is-zoomed {
+    transform: scale(1.08);
+  }
+
+  /* ── Side panel (estilo referencia 1: categorías editoriales) ────────── */
+  .alicyn-zone-panel {
+    position: fixed;
+    top: 50%;
+    right: 24px;
+    transform: translateY(-50%) translateX(20px);
+    width: min(420px, 92vw);
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    background: rgba(255,255,255,.96);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(10,13,12,.08);
+    border-radius: 22px;
+    box-shadow: 0 24px 80px rgba(10,13,12,.18);
+    padding: 26px;
+    color: var(--graphite, #0a0d0c);
+    z-index: 80;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s cubic-bezier(.2,.7,.2,1), transform .35s cubic-bezier(.2,.7,.2,1);
+  }
+  .alicyn-zone-panel.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(-50%) translateX(0);
+  }
+  .alicyn-zone-panel-head {
+    display: flex; align-items: center; gap: 14px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(10,13,12,.08);
+    margin-bottom: 16px;
+  }
+  .alicyn-zone-panel-icon {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--alicyn-blue-soft);
+    border: 1px solid rgba(10,13,12,.08);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(10,13,12,.06);
+  }
+  .alicyn-zone-panel-icon svg {
+    width: 30px; height: 30px;
+    stroke: var(--graphite);
+    fill: none;
+    stroke-width: 1.4;
+  }
+  .alicyn-zone-panel-title { flex: 1; min-width: 0; }
+  .alicyn-zone-panel-title .step {
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--alicyn-blue-dark); font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .alicyn-zone-panel-title h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--graphite);
+    line-height: 1.05;
+  }
+  .alicyn-zone-panel-title p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: rgba(10,13,12,.6);
+  }
+  .alicyn-zone-panel-count {
+    background: var(--graphite);
+    color: var(--text-light);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .alicyn-zone-panel-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(10,13,12,.12);
+    background: white;
+    color: var(--graphite);
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: all .2s ease;
+  }
+  .alicyn-zone-panel-close:hover {
+    background: var(--graphite);
+    color: white;
+    transform: scale(1.05);
+  }
+  .alicyn-zone-panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .alicyn-zone-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,.6);
+    border: 1px solid rgba(10,13,12,.06);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all .2s ease;
+    text-align: left;
+    width: 100%;
+    color: var(--graphite);
+    font: inherit;
+  }
+  .alicyn-zone-row:hover {
+    background: var(--alicyn-blue-soft);
+    border-color: var(--alicyn-blue);
+    transform: translateX(2px);
+  }
+  .alicyn-zone-row .row-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--graphite);
+    color: var(--text-light);
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .alicyn-zone-row .row-info { flex: 1; min-width: 0; }
+  .alicyn-zone-row .row-info b { display: block; font-size: 14px; font-weight: 600; }
+  .alicyn-zone-row .row-info small { color: rgba(10,13,12,.55); font-size: 11px; }
+  .alicyn-zone-row .row-pain {
+    color: var(--alicyn-blue-dark);
+    font-weight: 700;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .alicyn-zone-panel-foot {
+    padding-top: 16px;
+    margin-top: 16px;
+    border-top: 1px solid rgba(10,13,12,.08);
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .alicyn-zone-panel-foot .btn {
+    background: var(--graphite);
+    color: var(--text-light);
+    flex: 1;
+    justify-content: center;
+    border: 0;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .alicyn-zone-panel-foot .btn:hover { background: var(--gray-ui, #2F3433); }
+  .alicyn-zone-panel-foot .btn.btn-soft {
+    background: white;
+    color: var(--graphite);
+    border: 1px solid rgba(10,13,12,.12);
+  }
+  .alicyn-zone-panel-foot .btn.btn-soft:hover { background: var(--alicyn-blue-soft); }
+
+  /* Backdrop sutil cuando el panel está abierto */
+  .alicyn-zone-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(10,13,12,.04);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+    z-index: 75;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+  }
+  .alicyn-zone-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Mobile: panel ocupa más */
+  @media (max-width: 720px) {
+    .alicyn-zone-panel {
+      top: auto; bottom: 12px; right: 12px; left: 12px;
+      width: auto; max-width: none;
+      transform: translateY(20px);
+      max-height: 70vh;
+    }
+    .alicyn-zone-panel.is-open {
+      transform: translateY(0);
+    }
+    #view-home .bodymap-photo { max-width: 280px; }
+  }
+</style>
+
+<script id="alicyn-hero-v32-script">
+(function () {
+  'use strict';
+
+  const ZONE_META = {
+    eyebrow: { step: 'Categoría · 01', label: 'Head Sites', desc: 'Ceja, bridge y zonas faciales superiores.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M5 12c0-4 3-7 7-7s7 3 7 7v4c0 1.1-.9 2-2 2h-2"/><path d="M9 14v3c0 1.66-1.34 3-3 3"/><circle cx="12" cy="11" r="1.4" fill="currentColor"/></svg>' },
+    ear:     { step: 'Categoría · 02', label: 'Ear Curation', desc: 'Helix, tragus, lóbulo y resto del cartílago.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M6 8.5C6 5.5 8.5 3 11.5 3S17 5.5 17 8.5c0 2-1.1 3.7-2.7 4.6-.9.5-1.4 1.3-1.4 2.3V17a3 3 0 0 1-6 0"/><path d="M11.5 8.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z" fill="currentColor"/></svg>' },
+    nose:    { step: 'Categoría · 03', label: 'Nose Styles', desc: 'Nostril, septum, bridge nasal.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M12 4c-2 4-4 7-4 11a4 4 0 0 0 8 0c0-4-2-7-4-11z"/><path d="M9.5 14.5c.5.4 1.5.5 2.5.5s2-.1 2.5-.5"/></svg>' },
+    mouth:   { step: 'Categoría · 04', label: 'Oral Accents', desc: 'Labret, medusa y zonas labiales.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M3 12c2-3 5-4 9-4s7 1 9 4c-2 3-5 4-9 4s-7-1-9-4z"/><path d="M12 8v8"/></svg>' },
+    tongue:  { step: 'Categoría · 05', label: 'Tongue · Oral', desc: 'Lengua, requiere cuidado oral riguroso.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M8 6c0-1 1-2 2-2h4c1 0 2 1 2 2v6c0 4-2 8-4 8s-4-4-4-8z"/><path d="M12 4v6"/></svg>' },
+    nipple:  { step: 'Categoría · 06', label: 'Chest & Neck', desc: 'Pezón, surface bars del torso.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M3 14c2-3 6-5 9-5s7 2 9 5"/><circle cx="9" cy="14" r="1.6" fill="currentColor"/><circle cx="15" cy="14" r="1.6" fill="currentColor"/></svg>' },
+    navel:   { step: 'Categoría · 07', label: 'Navel Placements', desc: 'Ombligo. Anatomía decisiva, alta presión.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z" opacity="0"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><path d="M12 8v3M12 13v3M8 12h3M13 12h3"/></svg>' },
+    surface: { step: 'Categoría · 08', label: 'Surface & Other', desc: 'Surface bars, dermals, zonas no cartilaginosas.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M4 12h16"/><circle cx="8" cy="12" r="2" fill="currentColor"/><circle cx="16" cy="12" r="2" fill="currentColor"/></svg>' }
+  };
+
+  let panel, backdrop, currentZone = null;
+
+  function ensurePanel() {
+    if (panel) return panel;
+    backdrop = document.createElement('div');
+    backdrop.className = 'alicyn-zone-backdrop';
+    backdrop.addEventListener('click', closePanel);
+
+    panel = document.createElement('aside');
+    panel.className = 'alicyn-zone-panel';
+    panel.setAttribute('role', 'dialog');
+    panel.setAttribute('aria-modal', 'true');
+    panel.setAttribute('aria-label', 'Detalles de zona');
+    document.body.appendChild(backdrop);
+    document.body.appendChild(panel);
+    return panel;
+  }
+
+  function piercingsInZone(zoneId) {
+    const list = (window.AlicynData && window.AlicynData.PIERCINGS) || [];
+    const norm = (window.AlicynData && window.AlicynData.normalizeZone) || (z => z);
+    const target = norm(zoneId);
+    return list.filter(p => norm(p.zona) === target);
+  }
+
+  function openPanel(zoneId) {
+    if (currentZone === zoneId) return;
+    currentZone = zoneId;
+    const meta = ZONE_META[zoneId] || { step: 'Categoría', label: zoneId, desc: '', icon: '' };
+    const piercings = piercingsInZone(zoneId);
+    const p = ensurePanel();
+
+    // mark active zones
+    document.querySelectorAll('#view-home .hit-zone').forEach(b => {
+      b.classList.toggle('is-active', b.dataset.zone === zoneId);
+    });
+    // soft zoom on body
+    const photo = document.querySelector('#view-home .bodymap-photo');
+    if (photo) photo.classList.add('is-zoomed');
+
+    p.innerHTML = `
+      <button class="alicyn-zone-panel-close" aria-label="Cerrar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+      <div class="alicyn-zone-panel-head">
+        <div class="alicyn-zone-panel-icon">${meta.icon}</div>
+        <div class="alicyn-zone-panel-title">
+          <div class="step">${meta.step}</div>
+          <h3>${meta.label}</h3>
+          <p>${meta.desc}</p>
+        </div>
+        <div class="alicyn-zone-panel-count">${piercings.length}</div>
+      </div>
+      <div class="alicyn-zone-panel-list">
+        ${piercings.length
+          ? piercings.map((p, i) => `
+            <button class="alicyn-zone-row" data-pid="${p.id}">
+              <span class="row-num">${String(i+1).padStart(2,'0')}</span>
+              <span class="row-info">
+                <b>${p.nombre}</b>
+                <small>${p.cicatrizacion || '—'}</small>
+              </span>
+              <span class="row-pain">${p.dolor || '—'}/10</span>
+            </button>`).join('')
+          : '<p style="color:rgba(10,13,12,.55);font-size:13px;text-align:center;padding:20px">Sin piercings registrados para esta zona.</p>'}
+      </div>
+      <div class="alicyn-zone-panel-foot">
+        <button class="btn" data-act="planner">Diseñar →</button>
+        <button class="btn btn-soft" data-act="inspo">Ver inspo</button>
+      </div>
+    `;
+
+    // Wire close
+    p.querySelector('.alicyn-zone-panel-close').addEventListener('click', closePanel);
+    // Wire piercing rows → drawer
+    p.querySelectorAll('[data-pid]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (typeof window.openDrawer === 'function') {
+          window.openDrawer(btn.dataset.pid);
+        } else {
+          // fallback: dispatch a click on existing markup if present
+          const target = document.querySelector(`[data-pid="${btn.dataset.pid}"]:not(.alicyn-zone-row)`);
+          if (target) target.click();
+        }
+      });
+    });
+    // Wire footer actions
+    p.querySelectorAll('[data-act]').forEach(b => {
+      b.addEventListener('click', () => {
+        const dest = b.dataset.act === 'planner' ? 'planner' : 'inspo';
+        const navBtn = document.querySelector(`[data-nav="${dest}"]`);
+        closePanel();
+        if (navBtn) setTimeout(() => navBtn.click(), 250);
+      });
+    });
+
+    backdrop.classList.add('is-open');
+    panel.classList.add('is-open');
+  }
+
+  function closePanel() {
+    currentZone = null;
+    if (panel) panel.classList.remove('is-open');
+    if (backdrop) backdrop.classList.remove('is-open');
+    document.querySelectorAll('#view-home .hit-zone.is-active').forEach(b => b.classList.remove('is-active'));
+    const photo = document.querySelector('#view-home .bodymap-photo');
+    if (photo) photo.classList.remove('is-zoomed');
+  }
+
+  function init() {
+    // Hook all hit-zones in the home view
+    const home = document.getElementById('view-home');
+    if (!home) return;
+    home.addEventListener('click', e => {
+      const btn = e.target.closest('.hit-zone[data-zone]');
+      if (!btn) return;
+      e.stopPropagation();
+      openPanel(btn.dataset.zone);
+    }, true);
+    // ESC to close
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && currentZone) closePanel();
+    });
+    console.log('%c[Alicyn Hero v0.4]', 'color:#8FBFC3;font-weight:bold',
+      'figura interactiva activada · click en cualquier nodo para abrir panel');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 </body>
 </html>
