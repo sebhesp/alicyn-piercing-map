@@ -2394,20 +2394,11 @@ html, body { overflow-x: hidden; }
 <!-- ============================== HEADER ============================== -->
 <header class="app-header">
   <div class="container">
-    <div class="brand" data-nav="home" role="button" tabindex="0">
-      <div class="brand-mark" aria-hidden="true">
-        <img src="assets/logo-alicyn.png" alt="Alicyn"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
-        <svg viewBox="0 0 24 24" fill="none" stroke="#0a0d0c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="display:none">
-          <path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z" fill="#0a0d0c" stroke="none"/>
-          <path d="M12 8.5v7M9 12h6"/>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <strong>Alicyn Body Map</strong>
-        <small>Atlas de piercing · MX</small>
-      </div>
-    </div>
+    <a class="brand" data-nav="home" role="button" tabindex="0" aria-label="Inicio · Piercing Playground">
+      <img class="brand-logo" src="assets/logo-alicyn.png" alt="Alicyn"
+           onerror="this.style.display='none'" />
+      <span class="brand-name">PIERCING PLAYGROUND</span>
+    </a>
     <nav class="nav-tabs" aria-label="Vistas principales">
       <button data-nav="home" class="is-active" aria-label="Mapa">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l5-2 6 2 5-2v12l-5 2-6-2-5 2V7z"/><path d="M9 5v12M15 7v12"/></svg>
@@ -7510,6 +7501,60 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     border-color: rgba(143,191,195,.5) !important;
     color: var(--alicyn-blue-dark) !important;
   }
+
+  /* ── Header v3.1 · Logo + PIERCING PLAYGROUND ──────────────────────────── */
+  .app-header .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity .2s ease;
+  }
+  .app-header .brand:hover { opacity: .82; }
+  .app-header .brand:focus-visible {
+    outline: 2px solid var(--alicyn-blue);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+  .app-header .brand-logo {
+    height: 36px;
+    width: auto;
+    max-width: 64px;
+    object-fit: contain;
+    display: block;
+    flex-shrink: 0;
+    /* No filtros, no sombras: el logo se preserva tal cual */
+  }
+  .app-header .brand-name {
+    font-family: var(--font-display, 'Inter', system-ui, sans-serif);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--text, #eef3f1);
+    line-height: 1;
+    white-space: nowrap;
+  }
+  /* Tablet */
+  @media (max-width: 900px) {
+    .app-header .brand { gap: 10px; }
+    .app-header .brand-logo { height: 32px; max-width: 56px; }
+    .app-header .brand-name { font-size: 12px; letter-spacing: 0.09em; }
+  }
+  /* Mobile pequeño */
+  @media (max-width: 420px) {
+    .app-header .brand { gap: 8px; }
+    .app-header .brand-logo { height: 28px; max-width: 48px; }
+    .app-header .brand-name { font-size: 11px; letter-spacing: 0.08em; }
+  }
+  /* Limpiar reglas legacy del brand-mark / brand-text que ya no aplican */
+  .app-header .brand-mark,
+  .app-header .brand-text { display: none !important; }
+
 </style>
 
 </body>
