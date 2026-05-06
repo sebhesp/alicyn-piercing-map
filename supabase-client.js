@@ -6,8 +6,8 @@
 (function () {
   'use strict';
 
-  const SUPABASE_URL = https://pejggyicajjfcvrtjraf.supabase.co/rest/v1/;
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlamdneWljYWpqZmN2cnRqcmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDUyMTUsImV4cCI6MjA5MzYyMTIxNX0.DHMhj3jYTt7YsfXx0EvPdCnrsTKRGqhiYREtiVrdstg;
+  const SUPABASE_URL = "PEGAR_PROJECT_URL_AQUI";
+  const SUPABASE_ANON_KEY = "PEGAR_ANON_PUBLIC_KEY_AQUI";
 
   const FAVORITES_KEY = 'alicyn.inspoFavorites.v1';
   const DESIGN_PROJECTS_KEY = 'alicyn.designProjects.v1';
@@ -16,8 +16,8 @@
   const configured = Boolean(
     SUPABASE_URL &&
     SUPABASE_ANON_KEY &&
-    SUPABASE_URL !== https://pejggyicajjfcvrtjraf.supabase.co/rest/v1/ &&
-    SUPABASE_ANON_KEY !== eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlamdneWljYWpqZmN2cnRqcmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDUyMTUsImV4cCI6MjA5MzYyMTIxNX0.DHMhj3jYTt7YsfXx0EvPdCnrsTKRGqhiYREtiVrdstg &&
+    SUPABASE_URL !== 'PEGAR_PROJECT_URL_AQUI' &&
+    SUPABASE_ANON_KEY !== 'PEGAR_ANON_PUBLIC_KEY_AQUI' &&
     /^https?:\/\//.test(SUPABASE_URL)
   );
 
@@ -160,6 +160,31 @@
     }
     console.warn('[Alicyn Supabase]', label, lastError);
     return { ok: false, error: lastError };
+  }
+
+  function loadSupabaseScript() {
+    if (window.supabase?.createClient) return Promise.resolve(true);
+    if (!state.configured) return Promise.resolve(false);
+    const existing = document.querySelector('script[data-alicyn-supabase-cdn]');
+    if (existing) {
+      return new Promise(resolve => {
+        existing.addEventListener('load', () => resolve(true), { once: true });
+        existing.addEventListener('error', () => resolve(false), { once: true });
+      });
+    }
+    return new Promise(resolve => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+      script.async = true;
+      script.defer = true;
+      script.dataset.alicynSupabaseCdn = '1';
+      script.onload = () => resolve(true);
+      script.onerror = () => {
+        console.warn('[Alicyn Supabase] CDN could not be loaded');
+        resolve(false);
+      };
+      document.head.appendChild(script);
+    });
   }
 
   async function syncProfile() {
@@ -343,7 +368,13 @@
   }
 
   async function init() {
-    if (!state.configured || !window.supabase?.createClient) {
+    if (!state.configured) {
+      window.alicynSupabase = null;
+      updateAuth(null);
+      return state;
+    }
+    const sdkReady = await loadSupabaseScript();
+    if (!sdkReady || !window.supabase?.createClient) {
       window.alicynSupabase = null;
       updateAuth(null);
       return state;

@@ -6,17 +6,24 @@
 <title>Alicyn Body Map · Planea tu próximo piercing con criterio profesional</title>
 <meta name="description" content="Plataforma interactiva para piercing shops y clientes. Explora zonas, tiempos de cicatrización, cuidados, errores comunes e inspiración. Incluye evaluación anatómica asistida." />
 <meta name="theme-color" content="#0a0d0c" />
+<link rel="preload" href="assets/logo-alicyn.svg" as="image" type="image/svg+xml" />
+<link rel="preload" href="body-map.png" as="image" type="image/png" />
 <script>
   (function () {
     try {
+      var langSaved = !!localStorage.getItem('alicyn_lang');
       var introSeen = sessionStorage.getItem('alicyn.intro.v1') === '1';
       var personaSeen = sessionStorage.getItem('alicyn.mapPersona.v1') === '1';
+      if (!langSaved) {
+        document.documentElement.classList.add('alicyn-lang-pending');
+      }
       if (!introSeen) {
         document.documentElement.classList.add('alicyn-intro-pending');
       } else if (!personaSeen) {
         document.documentElement.classList.add('alicyn-profile-pending');
       }
     } catch (err) {
+      document.documentElement.classList.add('alicyn-lang-pending');
       document.documentElement.classList.add('alicyn-intro-pending');
     }
   })();
@@ -76,6 +83,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ---------- LAYOUT BASICS ---------- */
@@ -1860,6 +1868,34 @@ body {
 .header-user {
   display: flex; align-items: center; gap: 10px;
 }
+.language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255,255,255,.025);
+}
+.language-switcher button {
+  min-width: 42px;
+  min-height: 36px;
+  padding: 0 10px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-mute);
+  font-size: 11px;
+  letter-spacing: .12em;
+}
+.language-switcher button.is-active {
+  background: rgba(143,191,195,.12);
+  color: #8FBFC3;
+  border-color: rgba(143,191,195,.32);
+}
+.language-switcher button:focus-visible {
+  outline: 2px solid #8FBFC3;
+  outline-offset: 2px;
+}
 .header-user .points-pill {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 5px 11px; border-radius: 999px;
@@ -1870,6 +1906,15 @@ body {
 @media (max-width: 900px) {
   .header-user .points-pill { display: none; }
   .header-user .btn { padding: 8px 12px; font-size: 13px; }
+}
+@media (max-width: 560px) {
+  .language-switcher button {
+    min-width: 38px;
+    min-height: 34px;
+    padding: 0 8px;
+  }
+  .header-user { gap: 6px; }
+  #btn-login { display: none; }
 }
 
 /* ---------- MAP-FIRST HOME ---------- */
@@ -2390,10 +2435,16 @@ html, body { overflow-x: hidden; }
 /* ---------- ALICYN INTRO ---------- */
 html.alicyn-intro-pending,
 html.alicyn-intro-pending body,
+html.alicyn-lang-pending,
+html.alicyn-lang-pending body,
 html.alicyn-profile-pending,
 html.alicyn-profile-pending body {
   overflow: hidden;
 }
+html.alicyn-lang-pending .app-header,
+html.alicyn-lang-pending main,
+html.alicyn-lang-pending .bottom-nav,
+html.alicyn-lang-pending .app-footer,
 html.alicyn-intro-pending .app-header,
 html.alicyn-intro-pending main,
 html.alicyn-intro-pending .bottom-nav,
@@ -2404,6 +2455,81 @@ html.alicyn-profile-pending .bottom-nav,
 html.alicyn-profile-pending .app-footer {
   opacity: 0;
   pointer-events: none;
+}
+.alicyn-language-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  place-items: center;
+  padding: max(22px, env(safe-area-inset-top)) 18px max(22px, env(safe-area-inset-bottom));
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(255,255,255,.20), transparent 44%),
+    #8FBFC3;
+  color: #0a0d0c;
+}
+html.alicyn-lang-pending .alicyn-language-gate {
+  display: grid;
+}
+.alicyn-language-panel {
+  width: min(100%, 520px);
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+}
+.alicyn-language-panel img {
+  width: clamp(78px, 18vw, 118px);
+  height: auto;
+  display: block;
+}
+.alicyn-language-panel h1 {
+  margin: 8px 0 0;
+  font-size: clamp(30px, 8vw, 58px);
+  line-height: .95;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.alicyn-language-panel p {
+  max-width: 420px;
+  margin: 0;
+  color: rgba(10,13,12,.72);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.alicyn-language-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.alicyn-language-options button,
+.language-switcher button {
+  min-height: 44px;
+  border: 1px solid rgba(10,13,12,.18);
+  border-radius: 999px;
+  background: rgba(10,13,12,.08);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease);
+}
+.alicyn-language-options button {
+  min-width: 138px;
+  padding: 0 20px;
+}
+.alicyn-language-options button:hover,
+.alicyn-language-options button:focus-visible {
+  background: #0a0d0c;
+  color: #eef3f1;
+  border-color: #0a0d0c;
+  outline: none;
+  transform: translateY(-1px);
 }
 .alicyn-intro {
   position: fixed;
@@ -2770,37 +2896,208 @@ html.alicyn-profile-pending .map-profile-overlay {
 </head>
 <body>
 
+<div class="alicyn-language-gate" id="alicyn-language-gate" role="dialog" aria-modal="true" aria-label="Choose language">
+  <div class="alicyn-language-panel">
+    <img src="assets/logo-alicyn.svg" alt="Alicyn" decoding="async" />
+    <h1 data-i18n="language.title">Elige idioma</h1>
+    <p data-i18n="language.copy">Selecciona el idioma de la experiencia antes de entrar a Piercing Playground.</p>
+    <div class="alicyn-language-options" aria-label="Language options">
+      <button type="button" data-lang-choice="es">ES</button>
+      <button type="button" data-lang-choice="en">EN</button>
+    </div>
+  </div>
+</div>
+
 <div class="alicyn-intro" id="alicyn-intro" role="dialog" aria-modal="true" aria-label="Alicyn Piercing Playground">
   <div class="alicyn-intro-stage">
     <div class="intro-lockup">
       <div class="alicyn-intro-drop-wrap" aria-hidden="true">
         <span class="alicyn-intro-ripple"></span>
-        <img class="alicyn-intro-drop" src="assets/logo-alicyn-drop.svg" alt="" />
+        <img class="alicyn-intro-drop" src="assets/logo-alicyn-drop.svg" alt="" decoding="async" />
       </div>
-      <div class="alicyn-intro-word" id="alicyn-intro-word" aria-label="PIERCING PLAYGROUND">PIERCING PLAYGROUND</div>
-      <button class="alicyn-intro-start" id="alicyn-intro-start" type="button">START</button>
+      <div class="alicyn-intro-word" id="alicyn-intro-word" aria-label="PIERCING PLAYGROUND" data-i18n="intro.title">PIERCING PLAYGROUND</div>
+      <button class="alicyn-intro-start" id="alicyn-intro-start" type="button" data-i18n="intro.start">START</button>
     </div>
   </div>
 </div>
 <div class="map-profile-overlay" id="map-profile-overlay" role="dialog" aria-modal="true" aria-label="Elegir perfil para entrar al mapa" aria-hidden="true">
   <div class="map-profile-stage">
-    <span class="map-profile-kicker">Alicyn Body Map</span>
-    <h2>Elige cómo quieres entrar.</h2>
-    <p>El mapa ajusta el lenguaje de la experiencia según el perfil. La herramienta sigue siendo educativa y local en esta versión.</p>
+    <span class="map-profile-kicker" data-i18n="profile.kicker">Alicyn Body Map</span>
+    <h2 data-i18n="profile.title">Elige cómo quieres entrar.</h2>
+    <p data-i18n="profile.copy">El mapa ajusta el lenguaje de la experiencia según el perfil. La herramienta sigue siendo educativa y local en esta versión.</p>
     <div class="map-profile-options" aria-label="Modos de entrada">
       <button class="map-profile-choice" type="button" data-map-persona="client">
-        <span>Explorador Alicyn</span>
-        <strong>Modo Cliente</strong>
-        <small>Información clara para explorar zonas, inspiración y decisiones con mejor criterio.</small>
+        <span data-i18n="profile.client.kicker">Explorador Alicyn</span>
+        <strong data-i18n="profile.client.title">Modo Cliente</strong>
+        <small data-i18n="profile.client.copy">Información clara para explorar zonas, inspiración y decisiones con mejor criterio.</small>
       </button>
       <button class="map-profile-choice" type="button" data-map-persona="professional">
-        <span>Mesa profesional</span>
-        <strong>Perfil Profesional</strong>
-        <small>Entrada enfocada en evaluación, diseño, conversación con clientes y flujo de trabajo.</small>
+        <span data-i18n="profile.pro.kicker">Mesa profesional</span>
+        <strong data-i18n="profile.pro.title">Perfil Profesional</strong>
+        <small data-i18n="profile.pro.copy">Entrada enfocada en evaluación, diseño, conversación con clientes y flujo de trabajo.</small>
       </button>
     </div>
   </div>
 </div>
+<script>
+const i18n = {
+  es: {
+    'meta.title': 'Alicyn Body Map · Planea tu próximo piercing con criterio profesional',
+    'meta.description': 'Plataforma interactiva para piercing shops y clientes. Explora zonas, tiempos de cicatrización, cuidados, errores comunes e inspiración. Incluye evaluación anatómica asistida.',
+    'language.title': 'Elige idioma',
+    'language.copy': 'Selecciona el idioma de la experiencia antes de entrar a Piercing Playground.',
+    'intro.title': 'PIERCING PLAYGROUND',
+    'intro.start': 'START',
+    'profile.kicker': 'Alicyn Body Map',
+    'profile.title': 'Elige cómo quieres entrar.',
+    'profile.copy': 'El mapa ajusta el lenguaje de la experiencia según el perfil. La herramienta sigue siendo educativa y local en esta versión.',
+    'profile.client.kicker': 'Explorador Alicyn',
+    'profile.client.title': 'Modo Cliente',
+    'profile.client.copy': 'Información clara para explorar zonas, inspiración y decisiones con mejor criterio.',
+    'profile.pro.kicker': 'Mesa profesional',
+    'profile.pro.title': 'Perfil Profesional',
+    'profile.pro.copy': 'Entrada enfocada en evaluación, diseño, conversación con clientes y flujo de trabajo.',
+    'brand.aria': 'Inicio · Piercing Playground',
+    'nav.map': 'Mapa',
+    'nav.design': 'Diseñar',
+    'nav.inspo': 'Inspo',
+    'nav.community': 'Comunidad',
+    'nav.profile': 'Perfil',
+    'auth.login': 'Iniciar sesión',
+    'auth.google': 'Continuar con Google',
+    'map.disclaimer.title': 'Mapa interactivo',
+    'map.disclaimer.copy': 'Elige una zona del cuerpo para abrir piercings, cuidados, planeación, reseñas, comentarios e inspiración filtrada con criterio anatómico.',
+    'map.disclaimer.action': 'Entendido',
+    'map.empty.title': 'Toca una zona del mapa',
+    'map.empty.copy': 'Desde cada zona puedes llegar al planner, reseñas, comentarios e inspo curada.',
+    'inspo.eyebrow': 'Inspiración curada',
+    'inspo.title': 'Fotos bonitas, sí. Anatomía honesta, primero.',
+    'inspo.copy': 'Esta pestaña está pensada para alimentar una galería propia con referencias de Pinterest y portafolios, filtradas por viabilidad, ética, joyería inicial correcta y salud del tejido.',
+    'profile.login': 'Continuar con Google',
+    'profile.logout': 'Cerrar sesión'
+  },
+  en: {
+    'meta.title': 'Alicyn Body Map · Plan your next piercing with professional criteria',
+    'meta.description': 'Interactive platform for piercing shops and clients. Explore zones, healing times, care, common mistakes and inspiration. Includes assisted anatomy evaluation.',
+    'language.title': 'Choose language',
+    'language.copy': 'Select the experience language before entering Piercing Playground.',
+    'intro.title': 'PIERCING PLAYGROUND',
+    'intro.start': 'START',
+    'profile.kicker': 'Alicyn Body Map',
+    'profile.title': 'Choose how you want to enter.',
+    'profile.copy': 'The map adjusts the experience language to your profile. This version remains educational and local.',
+    'profile.client.kicker': 'Alicyn Explorer',
+    'profile.client.title': 'Client Mode',
+    'profile.client.copy': 'Clear information to explore zones, inspiration and better-informed decisions.',
+    'profile.pro.kicker': 'Professional Desk',
+    'profile.pro.title': 'Professional Profile',
+    'profile.pro.copy': 'An entry point focused on evaluation, design, client conversations and workflow.',
+    'brand.aria': 'Home · Piercing Playground',
+    'nav.map': 'Map',
+    'nav.design': 'Design',
+    'nav.inspo': 'Inspo',
+    'nav.community': 'Community',
+    'nav.profile': 'Profile',
+    'auth.login': 'Sign in',
+    'auth.google': 'Continue with Google',
+    'map.disclaimer.title': 'Interactive map',
+    'map.disclaimer.copy': 'Choose a body zone to open piercings, care, planning, reviews, comments and anatomically curated inspiration.',
+    'map.disclaimer.action': 'Got it',
+    'map.empty.title': 'Tap a map zone',
+    'map.empty.copy': 'From each zone you can reach the planner, reviews, comments and curated inspo.',
+    'inspo.eyebrow': 'Curated inspiration',
+    'inspo.title': 'Beautiful photos, yes. Honest anatomy first.',
+    'inspo.copy': 'This tab is designed to feed a private gallery with Pinterest and portfolio references, filtered by viability, ethics, correct initial jewelry and tissue health.',
+    'profile.login': 'Continue with Google',
+    'profile.logout': 'Sign out'
+  }
+};
+
+(function () {
+  'use strict';
+  const LANG_KEY = 'alicyn_lang';
+  const VALID = new Set(['es', 'en']);
+
+  function savedLanguage() {
+    try {
+      const saved = localStorage.getItem(LANG_KEY);
+      return VALID.has(saved) ? saved : null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function getLanguage() {
+    const saved = savedLanguage();
+    if (saved) return saved;
+    const nav = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    return nav.startsWith('en') ? 'en' : 'es';
+  }
+
+  function t(key) {
+    const lang = getLanguage();
+    return i18n[lang]?.[key] || i18n.es[key] || key;
+  }
+
+  function applyTranslations(root = document) {
+    const lang = getLanguage();
+    document.documentElement.lang = lang;
+    document.title = t('meta.title');
+    const description = document.querySelector('meta[name="description"]');
+    if (description) description.setAttribute('content', t('meta.description'));
+
+    root.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.dataset.i18n);
+    });
+    root.querySelectorAll('[data-i18n-attr]').forEach(el => {
+      el.dataset.i18nAttr.split(';').forEach(pair => {
+        const [attr, key] = pair.split(':').map(part => part && part.trim());
+        if (attr && key) el.setAttribute(attr, t(key));
+      });
+    });
+    document.querySelectorAll('[data-set-lang]').forEach(btn => {
+      const active = btn.dataset.setLang === lang;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', String(active));
+    });
+  }
+
+  function setLanguage(lang) {
+    if (!VALID.has(lang)) return getLanguage();
+    try { localStorage.setItem(LANG_KEY, lang); } catch (err) {}
+    document.documentElement.classList.remove('alicyn-lang-pending');
+    applyTranslations();
+    window.dispatchEvent(new CustomEvent('alicyn:language-changed', { detail: { lang } }));
+    return lang;
+  }
+
+  function bindLanguageControls(root = document) {
+    root.querySelectorAll('[data-lang-choice], [data-set-lang]').forEach(btn => {
+      if (btn.dataset.i18nBound) return;
+      btn.dataset.i18nBound = '1';
+      btn.addEventListener('click', () => {
+        const lang = btn.dataset.langChoice || btn.dataset.setLang;
+        setLanguage(lang);
+        window.setTimeout(() => document.getElementById('alicyn-intro-start')?.focus({ preventScroll: true }), 80);
+      });
+    });
+  }
+
+  window.AlicynI18n = { i18n, getLanguage, setLanguage, t, applyTranslations, bindLanguageControls };
+  window.alicynI18n = i18n;
+  window.getLanguage = getLanguage;
+  window.setLanguage = setLanguage;
+  window.t = t;
+  window.applyTranslations = applyTranslations;
+
+  bindLanguageControls();
+  applyTranslations();
+  document.addEventListener('DOMContentLoaded', () => {
+    bindLanguageControls();
+    applyTranslations();
+  });
+})();
+</script>
 <script>
   (function () {
     const KEY = 'alicyn.intro.v1';
@@ -2821,7 +3118,8 @@ html.alicyn-profile-pending .map-profile-overlay {
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduceMotion) overlay.classList.add('is-reduced');
 
-    if (word) {
+    function renderIntroWord() {
+      if (!word) return;
       const text = word.textContent.trim();
       let cursor = 0;
       word.innerHTML = text.split(/\s+/).map((part) => {
@@ -2834,6 +3132,13 @@ html.alicyn-profile-pending .map-profile-overlay {
         return `<span class="word-unit">${chars}</span>`;
       }).join('');
     }
+    renderIntroWord();
+    window.addEventListener('alicyn:language-changed', () => {
+      if (word) {
+        word.textContent = window.AlicynI18n?.t('intro.title') || 'PIERCING PLAYGROUND';
+        renderIntroWord();
+      }
+    });
 
     function finishIntro() {
       try { sessionStorage.setItem(KEY, '1'); } catch (err) {}
@@ -2921,39 +3226,43 @@ html.alicyn-profile-pending .map-profile-overlay {
 <!-- ============================== HEADER ============================== -->
 <header class="app-header">
   <div class="container">
-    <a class="brand" data-nav="home" role="button" tabindex="0" aria-label="Inicio · Piercing Playground">
-      <img class="brand-logo" src="assets/logo-alicyn.png" alt="Alicyn"
+    <a class="brand" data-nav="home" role="button" tabindex="0" aria-label="Inicio · Piercing Playground" data-i18n-attr="aria-label:brand.aria">
+      <img class="brand-logo" src="assets/logo-alicyn.svg" alt="Alicyn" decoding="async"
            onerror="this.style.display='none'" />
       <span class="brand-name">PIERCING PLAYGROUND</span>
     </a>
     <nav class="nav-tabs" aria-label="Vistas principales">
       <button data-nav="home" class="is-active" aria-label="Mapa">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l5-2 6 2 5-2v12l-5 2-6-2-5 2V7z"/><path d="M9 5v12M15 7v12"/></svg>
-        <span>Mapa</span>
+        <span data-i18n="nav.map">Mapa</span>
       </button>
       <button data-nav="planner" aria-label="Diseñar">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/><circle cx="12" cy="12" r="2"/></svg>
-        <span>Diseñar</span>
+        <span data-i18n="nav.design">Diseñar</span>
       </button>
       <button data-nav="inspo" aria-label="Inspo">
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="M20 15l-4-4-8 8"/></svg>
-        <span>Inspo</span>
+        <span data-i18n="nav.inspo">Inspo</span>
       </button>
       <button data-nav="community" aria-label="Comunidad">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 19a4 4 0 0 1 8 0"/><circle cx="12" cy="10" r="3"/><path d="M4 18a3 3 0 0 1 4-2.8M20 18a3 3 0 0 0-4-2.8"/></svg>
-        <span>Comunidad</span>
+        <span data-i18n="nav.community">Comunidad</span>
       </button>
       <button data-nav="profile" aria-label="Perfil">
         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
-        <span>Perfil</span>
+        <span data-i18n="nav.profile">Perfil</span>
       </button>
     </nav>
     <div class="header-user" id="header-user">
+      <div class="language-switcher" aria-label="Language">
+        <button type="button" data-set-lang="es" aria-pressed="false">ES</button>
+        <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+      </div>
       <div class="points-pill" id="header-points" title="Puntos Alicyn">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         <span id="header-points-value">0</span>
       </div>
-      <button class="btn btn-primary" id="btn-login">Iniciar sesión</button>
+      <button class="btn btn-primary" id="btn-login" data-i18n="auth.login">Iniciar sesión</button>
     </div>
   </div>
 </header>
@@ -2968,10 +3277,10 @@ html.alicyn-profile-pending .map-profile-overlay {
     <div class="container">
       <div class="map-disclaimer is-closed" id="map-disclaimer" role="status" aria-live="polite">
         <div>
-          <strong>Mapa interactivo</strong>
-          <p>Elige una zona del cuerpo para abrir piercings, cuidados, planeación, reseñas, comentarios e inspiración filtrada con criterio anatómico.</p>
+          <strong data-i18n="map.disclaimer.title">Mapa interactivo</strong>
+          <p data-i18n="map.disclaimer.copy">Elige una zona del cuerpo para abrir piercings, cuidados, planeación, reseñas, comentarios e inspiración filtrada con criterio anatómico.</p>
         </div>
-        <button class="map-disclaimer-action" id="btn-close-map-disclaimer" type="button">
+        <button class="map-disclaimer-action" id="btn-close-map-disclaimer" type="button" data-i18n="map.disclaimer.action">
           Entendido
         </button>
       </div>
@@ -2980,7 +3289,7 @@ html.alicyn-profile-pending .map-profile-overlay {
         <div class="bodymap-wrap">
         <div class="bodymap-photo-card">
           <div class="bodymap-frame" id="body-photo" aria-label="Mapa del cuerpo">
-            <img src="body-map.png" class="bodymap-image" alt="Cuerpo humano · Alicyn Body Map" onerror="this.parentElement.classList.add('img-missing')" />
+            <img src="body-map.png" class="bodymap-image" alt="Cuerpo humano · Alicyn Body Map" decoding="async" fetchpriority="high" onerror="this.parentElement.classList.add('img-missing')" />
             <button class="bodymap-point hit-zone" data-zone="head" style="--x:50%;--y:11.2%" aria-label="Cabeza" title="Cabeza"><span class="bodymap-point-label">head</span></button>
             <button class="bodymap-point hit-zone" data-zone="ear_left" style="--x:44.4%;--y:13.3%" aria-label="Oreja izquierda" title="Oreja izquierda"><span class="bodymap-point-label">ear_left</span></button>
             <button class="bodymap-point hit-zone" data-zone="ear_right" style="--x:55.6%;--y:13.3%" aria-label="Oreja derecha" title="Oreja derecha"><span class="bodymap-point-label">ear_right</span></button>
@@ -3004,8 +3313,8 @@ html.alicyn-profile-pending .map-profile-overlay {
         <div class="zone-info" id="zone-info" aria-hidden="true">
           <div class="empty">
             <div>
-              <p style="font-size:14px;color:var(--text-soft);margin:0 0 6px">Toca una zona del mapa</p>
-              <p style="font-size:12px;color:var(--text-mute);margin:0">Desde cada zona puedes llegar al planner, reseñas, comentarios e inspo curada.</p>
+              <p style="font-size:14px;color:var(--text-soft);margin:0 0 6px" data-i18n="map.empty.title">Toca una zona del mapa</p>
+              <p style="font-size:12px;color:var(--text-mute);margin:0" data-i18n="map.empty.copy">Desde cada zona puedes llegar al planner, reseñas, comentarios e inspo curada.</p>
             </div>
           </div>
         </div>
@@ -3020,9 +3329,9 @@ html.alicyn-profile-pending .map-profile-overlay {
   <div class="container section" style="border-top:0;padding-top:48px">
     <div class="section-head">
       <div>
-        <span class="eyebrow">Inspiración curada</span>
-        <h2>Fotos bonitas, sí. Anatomía honesta, primero.</h2>
-        <p>Esta pestaña está pensada para alimentar una galería propia con referencias de Pinterest y portafolios, filtradas por viabilidad, ética, joyería inicial correcta y salud del tejido.</p>
+        <span class="eyebrow" data-i18n="inspo.eyebrow">Inspiración curada</span>
+        <h2 data-i18n="inspo.title">Fotos bonitas, sí. Anatomía honesta, primero.</h2>
+        <p data-i18n="inspo.copy">Esta pestaña está pensada para alimentar una galería propia con referencias de Pinterest y portafolios, filtradas por viabilidad, ética, joyería inicial correcta y salud del tejido.</p>
       </div>
       <div class="inspo-toolbar">
         <select id="inspo-filter" aria-label="Filtrar inspiración por zona">
@@ -3082,7 +3391,7 @@ html.alicyn-profile-pending .map-profile-overlay {
     <div class="planner-grid design-workspace">
       <div class="ear-canvas">
         <div class="ear-photo" id="ear-photo" aria-label="Planeador de oreja">
-          <img src="assets/ear.png" alt="Oreja anatómica · Alicyn Body Map" onerror="this.parentElement.classList.add('img-missing')" />
+          <img src="assets/ear.png" alt="Oreja anatómica · Alicyn Body Map" loading="lazy" decoding="async" onerror="this.parentElement.classList.add('img-missing')" />
           <!-- Puntos posicionados sobre la anatomía de la oreja (porcentajes) -->
           <!-- ======================================================================
                EAR POINTS · v0.3 responsive system
@@ -3783,7 +4092,7 @@ html.alicyn-profile-pending .map-profile-overlay {
 
     <button class="oauth-btn google" data-oauth="google">
       <svg viewBox="0 0 48 48" width="18" height="18"><path fill="#FFC107" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-2.1 14-5.4l-6.5-5.5c-2 1.4-4.6 2.4-7.5 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.4 39.6 16.1 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.6l6.5 5.5c4.5-4.2 7.1-10.4 7.1-17.6 0-1.3-.1-2.4-.4-3.5z"/></svg>
-      Continuar con Google
+      <span data-i18n="auth.google">Continuar con Google</span>
     </button>
     <p class="login-legal">Al continuar aceptas los <a href="#">términos</a> y la <a href="#">política de privacidad</a>. Tu información se mantiene segura. Las fotos se moderan antes de publicarse.</p>
   </div>
@@ -3900,31 +4209,31 @@ html.alicyn-profile-pending .map-profile-overlay {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
         <path d="M4 7l5-2 6 2 5-2v12l-5 2-6-2-5 2V7z"/><path d="M9 5v12M15 7v12"/>
       </svg>
-      <span class="bn-label">Mapa</span>
+      <span class="bn-label" data-i18n="nav.map">Mapa</span>
     </button>
     <button class="bottom-nav-btn" data-nav="planner" aria-label="Diseñar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
         <circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/><circle cx="12" cy="12" r="2"/>
       </svg>
-      <span class="bn-label">Diseñar</span>
+      <span class="bn-label" data-i18n="nav.design">Diseñar</span>
     </button>
     <button class="bottom-nav-btn" data-nav="inspo" aria-label="Inspo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
         <rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.5"/><path d="M20 15l-4-4-8 8"/>
       </svg>
-      <span class="bn-label">Inspo</span>
+      <span class="bn-label" data-i18n="nav.inspo">Inspo</span>
     </button>
     <button class="bottom-nav-btn" data-nav="community" aria-label="Comunidad">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
         <path d="M8 19a4 4 0 0 1 8 0"/><circle cx="12" cy="10" r="3"/><path d="M4 18a3 3 0 0 1 4-2.8M20 18a3 3 0 0 0-4-2.8"/>
       </svg>
-      <span class="bn-label">Comunidad</span>
+      <span class="bn-label" data-i18n="nav.community">Comunidad</span>
     </button>
     <button class="bottom-nav-btn" data-nav="profile" aria-label="Perfil">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
         <circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/>
       </svg>
-      <span class="bn-label">Perfil</span>
+      <span class="bn-label" data-i18n="nav.profile">Perfil</span>
     </button>
   </div>
 </nav>
@@ -4505,7 +4814,6 @@ const Data = {
 if (typeof window !== 'undefined') window.AlicynData = Data;
 
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./supabase-client.js"></script>
 <script>
 /* ============================================================================
@@ -6947,7 +7255,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       btnLogin.onclick = (e) => { e.stopPropagation(); if (confirm('¿Cerrar sesión?')) logout(); };
       if (headerPoints) headerPoints.textContent = u.xp || 0;
     } else {
-      btnLogin.textContent = 'Iniciar sesión';
+      btnLogin.textContent = window.AlicynI18n?.t('auth.login') || 'Iniciar sesión';
       btnLogin.classList.add('btn-primary');
       btnLogin.title = '';
       btnLogin.onclick = openLogin;
@@ -7038,7 +7346,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       if (hubLevel) hubLevel.textContent = 'Perfil local sin backend';
       if (hubXp) hubXp.style.width = '0%';
       if (profileLogin) {
-        profileLogin.textContent = 'Continuar con Google';
+        profileLogin.textContent = window.AlicynI18n?.t('profile.login') || 'Continuar con Google';
         profileLogin.classList.add('btn-primary');
       }
       return;
@@ -7071,7 +7379,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (hubLevel) hubLevel.textContent = `Nivel ${cur.lv} - ${cur.name}`;
     if (hubXp) hubXp.style.width = pct + '%';
     if (profileLogin) {
-      profileLogin.textContent = 'Cerrar sesion';
+      profileLogin.textContent = window.AlicynI18n?.t('profile.logout') || 'Cerrar sesion';
       profileLogin.classList.remove('btn-primary');
     }
 
@@ -7478,6 +7786,10 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     });
     $$('#login-modal [data-oauth]').forEach(b => b.addEventListener('click', () => loginAs(b.dataset.oauth)));
     $('#login-modal')?.addEventListener('click', e => { if (e.target.id === 'login-modal') closeLogin(); });
+    window.addEventListener('alicyn:language-changed', () => {
+      renderHeader();
+      renderProfile();
+    });
 
     // Add experience modal
     $('#btn-add-experience')?.addEventListener('click', openAddExp);
