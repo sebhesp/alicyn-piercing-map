@@ -6,8 +6,8 @@
 (function () {
   'use strict';
 
-  const SUPABASE_URL = "PEGAR_PROJECT_URL_AQUI";
-  const SUPABASE_ANON_KEY = "PEGAR_ANON_PUBLIC_KEY_AQUI";
+  const SUPABASE_URL = https://pejggyicajjfcvrtjraf.supabase.co/rest/v1/;
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlamdneWljYWpqZmN2cnRqcmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDUyMTUsImV4cCI6MjA5MzYyMTIxNX0.DHMhj3jYTt7YsfXx0EvPdCnrsTKRGqhiYREtiVrdstg;
 
   const FAVORITES_KEY = 'alicyn.inspoFavorites.v1';
   const DESIGN_PROJECTS_KEY = 'alicyn.designProjects.v1';
@@ -16,8 +16,8 @@
   const configured = Boolean(
     SUPABASE_URL &&
     SUPABASE_ANON_KEY &&
-    SUPABASE_URL !== 'PEGAR_PROJECT_URL_AQUI' &&
-    SUPABASE_ANON_KEY !== 'PEGAR_ANON_PUBLIC_KEY_AQUI' &&
+    SUPABASE_URL !== https://pejggyicajjfcvrtjraf.supabase.co/rest/v1/ &&
+    SUPABASE_ANON_KEY !== eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBlamdneWljYWpqZmN2cnRqcmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwNDUyMTUsImV4cCI6MjA5MzYyMTIxNX0.DHMhj3jYTt7YsfXx0EvPdCnrsTKRGqhiYREtiVrdstg &&
     /^https?:\/\//.test(SUPABASE_URL)
   );
 
