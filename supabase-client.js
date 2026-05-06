@@ -2,12 +2,25 @@
    ALICYN SUPABASE CLIENT
    Frontend-only foundation for GitHub Pages.
    Paste the public project URL and anon public key below. Never use service keys.
+
+   Google OAuth checklist:
+   1. Supabase Project Settings -> API:
+      - Project URL goes in SUPABASE_URL.
+      - anon public / publishable key goes in SUPABASE_ANON_KEY.
+   2. Supabase Authentication -> URL Configuration:
+      - Site URL: https://sebhesp.github.io/alicyn-piercing-map/
+      - Redirect URL: https://sebhesp.github.io/alicyn-piercing-map/
+   3. Supabase Authentication -> Providers -> Google:
+      - Enable Google.
+   4. Google Cloud OAuth redirect URI:
+      - https://TU-PROYECTO.supabase.co/auth/v1/callback
    ============================================================================ */
 (function () {
   'use strict';
 
-  const SUPABASE_URL = "PEGAR_PROJECT_URL_AQUI";
-  const SUPABASE_ANON_KEY = "PEGAR_ANON_PUBLIC_KEY_AQUI";
+  const SUPABASE_URL = "https://pejggyicajjfcvrtjraf.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_dk1HLbLQSGejoXTX0ZgrTQ_GtmHFpQ-";
+  const GOOGLE_REDIRECT_TO = "https://sebhesp.github.io/alicyn-piercing-map/";
 
   const FAVORITES_KEY = 'alicyn.inspoFavorites.v1';
   const DESIGN_PROJECTS_KEY = 'alicyn.designProjects.v1';
@@ -208,10 +221,9 @@
 
   async function loginWithGoogle() {
     if (!state.configured || !state.client) return { ok: false, reason: 'not_configured' };
-    const redirectTo = window.location.origin + window.location.pathname;
     const { data, error } = await state.client.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo }
+      options: { redirectTo: GOOGLE_REDIRECT_TO }
     });
     if (error) {
       console.warn('[Alicyn Supabase] Google OAuth error', error);
@@ -237,7 +249,10 @@
   }
 
   async function signIn(provider) {
-    if (provider === 'google') return loginWithGoogle();
+    if (provider === 'google') {
+      if (state.configured && !state.client && state.ready) await state.ready;
+      return loginWithGoogle();
+    }
     if (provider === 'facebook') return loginWithFacebook();
     if (provider === 'apple') return loginWithApple();
     return { ok: false, reason: 'unsupported_provider' };
