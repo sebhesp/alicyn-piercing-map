@@ -2471,25 +2471,24 @@ html, body { overflow-x: hidden; }
 
         <div class="bodymap-wrap">
         <div class="bodymap-photo-card">
-          <div class="bodymap-photo" id="body-photo" aria-label="Mapa del cuerpo">
-            <img src="assets/body-map.png" alt="Cuerpo humano · Alicyn Body Map" onerror="this.parentElement.classList.add('img-missing')" />
-            <!-- Hit zones posicionados sobre los puntos verdes de la ilustración (porcentajes) -->
-            <button class="hit-zone" data-zone="eyebrow" style="--x:48%;--y:10%" aria-label="Ceja izquierda" title="Ceja"></button>
-            <button class="hit-zone" data-zone="eyebrow" style="--x:52%;--y:10%" aria-label="Ceja derecha" title="Ceja"></button>
-            <button class="hit-zone" data-zone="ear" style="--x:38%;--y:13%" aria-label="Oreja izquierda" title="Oreja"></button>
-            <button class="hit-zone" data-zone="ear" style="--x:62%;--y:13%" aria-label="Oreja derecha" title="Oreja"></button>
-            <button class="hit-zone" data-zone="nose" style="--x:50%;--y:13%" aria-label="Nariz" title="Nariz"></button>
-            <button class="hit-zone" data-zone="mouth" style="--x:50%;--y:15.5%" aria-label="Boca / Labios" title="Boca"></button>
-            <button class="hit-zone" data-zone="tongue" style="--x:50%;--y:17%" aria-label="Lengua" title="Lengua"></button>
-            <button class="hit-zone" data-zone="nipple" style="--x:43%;--y:28%" aria-label="Pezón izquierdo" title="Pezón"></button>
-            <button class="hit-zone" data-zone="nipple" style="--x:57%;--y:28%" aria-label="Pezón derecho" title="Pezón"></button>
-            <button class="hit-zone" data-zone="navel" style="--x:50%;--y:42%" aria-label="Ombligo" title="Ombligo"></button>
-            <button class="hit-zone" data-zone="surface" style="--x:50%;--y:48%;--w:18%;--h:6%" aria-label="Superficie / Body" title="Superficie"></button>
+          <div class="bodymap-frame" id="body-photo" aria-label="Mapa del cuerpo">
+            <img src="body-map.png" class="bodymap-image" alt="Cuerpo humano · Alicyn Body Map" onerror="this.parentElement.classList.add('img-missing')" />
+            <button class="bodymap-point hit-zone" data-zone="head" style="--x:50%;--y:8%" aria-label="Cabeza" title="Cabeza"><span class="bodymap-point-label">head</span></button>
+            <button class="bodymap-point hit-zone" data-zone="ear_left" style="--x:43%;--y:16%" aria-label="Oreja izquierda" title="Oreja izquierda"><span class="bodymap-point-label">ear_left</span></button>
+            <button class="bodymap-point hit-zone" data-zone="ear_right" style="--x:57%;--y:16%" aria-label="Oreja derecha" title="Oreja derecha"><span class="bodymap-point-label">ear_right</span></button>
+            <button class="bodymap-point hit-zone" data-zone="eyebrow" style="--x:50%;--y:13%" aria-label="Ceja" title="Ceja"><span class="bodymap-point-label">eyebrow</span></button>
+            <button class="bodymap-point hit-zone" data-zone="nose" style="--x:50%;--y:16%" aria-label="Nariz" title="Nariz"><span class="bodymap-point-label">nose</span></button>
+            <button class="bodymap-point hit-zone" data-zone="mouth" style="--x:50%;--y:19%" aria-label="Boca / Labios" title="Boca"><span class="bodymap-point-label">mouth</span></button>
+            <button class="bodymap-point hit-zone" data-zone="tongue" style="--x:50%;--y:21%" aria-label="Lengua" title="Lengua"><span class="bodymap-point-label">tongue</span></button>
+            <button class="bodymap-point hit-zone" data-zone="chest_left" style="--x:43%;--y:31%" aria-label="Pecho izquierdo" title="Pecho izquierdo"><span class="bodymap-point-label">chest_left</span></button>
+            <button class="bodymap-point hit-zone" data-zone="chest_right" style="--x:57%;--y:31%" aria-label="Pecho derecho" title="Pecho derecho"><span class="bodymap-point-label">chest_right</span></button>
+            <button class="bodymap-point hit-zone" data-zone="navel" style="--x:50%;--y:45%" aria-label="Ombligo" title="Ombligo"><span class="bodymap-point-label">navel</span></button>
+            <button class="bodymap-point hit-zone" data-zone="surface" style="--x:50%;--y:53%" aria-label="Superficie / Body" title="Superficie"><span class="bodymap-point-label">surface</span></button>
 
             <!-- Fallback si la imagen aún no existe -->
             <div class="img-fallback">
               <p><strong>Falta la imagen del cuerpo.</strong></p>
-              <p>Guarda tu ilustración como <code>assets/body-map.png</code> dentro de la carpeta del proyecto.</p>
+              <p>Guarda tu ilustración como <code>body-map.png</code> en la raíz del proyecto.</p>
             </div>
           </div>
         </div>
@@ -4174,16 +4173,28 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   // ── MAPA CORPORAL (VISTA HOME) ─────────────────────────────────────────────
   function initBodyMap() {
     const zoneInfo = document.getElementById('zone-info');
+    const bodyMapZoneTargets = {
+      head: ['eyebrow', 'nose', 'mouth', 'tongue'],
+      ear_left: ['ear'],
+      ear_right: ['ear'],
+      chest_left: ['nipple'],
+      chest_right: ['nipple']
+    };
 
     document.querySelectorAll('.hit-zone').forEach(el => {
       el.style.cursor = 'pointer';
       el.addEventListener('click', () => {
-        const zoneId = AlicynData.normalizeZone ? AlicynData.normalizeZone(el.dataset.zone) : el.dataset.zone;
+        const rawZoneId = el.dataset.zone;
+        const targetZones = bodyMapZoneTargets[rawZoneId] || [rawZoneId];
+        const zoneId = AlicynData.normalizeZone ? AlicynData.normalizeZone(targetZones[0]) : targetZones[0];
         const zone = AlicynData.ZONES.find(z => {
           const id = AlicynData.normalizeZone ? AlicynData.normalizeZone(z.id) : z.id;
           return id === zoneId;
         });
-        const piercings = AlicynData.byZone(zoneId);
+        const piercings = targetZones.flatMap(target => {
+          const normalized = AlicynData.normalizeZone ? AlicynData.normalizeZone(target) : target;
+          return AlicynData.byZone(normalized);
+        });
 
         // Highlight zone
         document.querySelectorAll('.hit-zone').forEach(z => z.classList.remove('is-active'));
@@ -7864,7 +7875,105 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     .alicyn-zone-panel.is-open {
       transform: translateY(0);
     }
-    #view-home .bodymap-photo { max-width: 280px; }
+    #view-home .bodymap-frame { max-width: 320px; }
+  }
+
+  #view-home .bodymap-frame {
+    position: relative;
+    width: min(100%, 420px);
+    margin: 0 auto;
+    z-index: 2;
+    filter: drop-shadow(0 16px 36px rgba(10,13,12,.18));
+    transition: transform .55s cubic-bezier(.2,.7,.2,1);
+    transform-origin: 50% 30%;
+  }
+  #view-home .bodymap-frame.is-zoomed { transform: scale(1.04); }
+  #view-home .bodymap-image {
+    display: block;
+    width: 100%;
+    height: auto !important;
+    object-fit: initial !important;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+    filter: brightness(1.05) contrast(.95) drop-shadow(0 20px 40px rgba(10,13,12,.25));
+    mix-blend-mode: luminosity;
+    opacity: .92;
+  }
+  #view-home .bodymap-point {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    transform: translate(-50%, -50%);
+    z-index: 5;
+  }
+  #view-home .bodymap-point-label {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 5px);
+    transform: translateX(-50%);
+    display: none;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(10,13,12,.86);
+    border: 1px solid rgba(95,212,168,.32);
+    color: var(--accent, #5fd4a8);
+    font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  body.bodymap-debug-mode #view-home .bodymap-point-label,
+  body.bodymap-admin-mode #view-home .bodymap-point-label { display: block; }
+  body.bodymap-admin-mode #view-home .bodymap-point {
+    cursor: grab;
+    touch-action: none;
+  }
+  body.bodymap-admin-mode #view-home .bodymap-point:active { cursor: grabbing; }
+  .bodymap-readout {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 12;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: rgba(10,13,12,.9);
+    border: 1px solid rgba(95,212,168,.5);
+    color: var(--accent, #5fd4a8);
+    font: 11px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+    pointer-events: none;
+  }
+  .bodymap-admin-panel {
+    width: min(100%, 420px);
+    margin: 12px auto 0;
+    padding: 14px;
+    border: 1px solid rgba(95,212,168,.28);
+    border-radius: 14px;
+    background: rgba(10,13,12,.84);
+    color: var(--text, #eef3f1);
+  }
+  .bodymap-admin-panel h3 { margin: 0 0 4px; font-size: 14px; }
+  .bodymap-admin-panel p { margin: 0; color: var(--text-mute); font-size: 12px; }
+  .bodymap-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .bodymap-admin-actions .btn { min-height: 40px; }
+  .bodymap-admin-list {
+    display: grid;
+    gap: 5px;
+    max-height: 180px;
+    overflow: auto;
+    margin-top: 12px;
+    padding-right: 2px;
+  }
+  .bodymap-admin-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--text-soft);
+    font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
   }
 </style>
 
@@ -7873,6 +7982,12 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   'use strict';
 
   const ZONE_META = {
+    head:    { step: 'Categoría · 00', label: 'Head Overview', desc: 'Entrada rápida a zonas faciales y orales.',
+      icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>' },
+    ear_left: { step: 'Categoría · 02', label: 'Left Ear', desc: 'Curaduría de oreja izquierda.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M6 8.5C6 5.5 8.5 3 11.5 3S17 5.5 17 8.5c0 2-1.1 3.7-2.7 4.6-.9.5-1.4 1.3-1.4 2.3V17a3 3 0 0 1-6 0"/></svg>' },
+    ear_right: { step: 'Categoría · 02', label: 'Right Ear', desc: 'Curaduría de oreja derecha.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M6 8.5C6 5.5 8.5 3 11.5 3S17 5.5 17 8.5c0 2-1.1 3.7-2.7 4.6-.9.5-1.4 1.3-1.4 2.3V17a3 3 0 0 1-6 0"/></svg>' },
     eyebrow: { step: 'Categoría · 01', label: 'Head Sites', desc: 'Ceja, bridge y zonas faciales superiores.',
       icon: '<svg viewBox="0 0 24 24"><path d="M5 12c0-4 3-7 7-7s7 3 7 7v4c0 1.1-.9 2-2 2h-2"/><path d="M9 14v3c0 1.66-1.34 3-3 3"/><circle cx="12" cy="11" r="1.4" fill="currentColor"/></svg>' },
     ear:     { step: 'Categoría · 02', label: 'Ear Curation', desc: 'Helix, tragus, lóbulo y resto del cartílago.',
@@ -7883,12 +7998,45 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       icon: '<svg viewBox="0 0 24 24"><path d="M3 12c2-3 5-4 9-4s7 1 9 4c-2 3-5 4-9 4s-7-1-9-4z"/><path d="M12 8v8"/></svg>' },
     tongue:  { step: 'Categoría · 05', label: 'Tongue · Oral', desc: 'Lengua, requiere cuidado oral riguroso.',
       icon: '<svg viewBox="0 0 24 24"><path d="M8 6c0-1 1-2 2-2h4c1 0 2 1 2 2v6c0 4-2 8-4 8s-4-4-4-8z"/><path d="M12 4v6"/></svg>' },
+    chest_left: { step: 'Categoría · 06', label: 'Left Chest', desc: 'Pecho y pezón izquierdo.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M3 14c2-3 6-5 9-5s7 2 9 5"/><circle cx="9" cy="14" r="1.6" fill="currentColor"/></svg>' },
+    chest_right: { step: 'Categoría · 06', label: 'Right Chest', desc: 'Pecho y pezón derecho.',
+      icon: '<svg viewBox="0 0 24 24"><path d="M3 14c2-3 6-5 9-5s7 2 9 5"/><circle cx="15" cy="14" r="1.6" fill="currentColor"/></svg>' },
     nipple:  { step: 'Categoría · 06', label: 'Chest & Neck', desc: 'Pezón, surface bars del torso.',
       icon: '<svg viewBox="0 0 24 24"><path d="M3 14c2-3 6-5 9-5s7 2 9 5"/><circle cx="9" cy="14" r="1.6" fill="currentColor"/><circle cx="15" cy="14" r="1.6" fill="currentColor"/></svg>' },
     navel:   { step: 'Categoría · 07', label: 'Navel Placements', desc: 'Ombligo. Anatomía decisiva, alta presión.',
       icon: '<svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z" opacity="0"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><path d="M12 8v3M12 13v3M8 12h3M13 12h3"/></svg>' },
     surface: { step: 'Categoría · 08', label: 'Surface & Other', desc: 'Surface bars, dermals, zonas no cartilaginosas.',
       icon: '<svg viewBox="0 0 24 24"><path d="M4 12h16"/><circle cx="8" cy="12" r="2" fill="currentColor"/><circle cx="16" cy="12" r="2" fill="currentColor"/></svg>' }
+  };
+
+  const BODY_MAP_CALIBRATION_KEY = 'alicyn.bodyMapCalibration.v1';
+  const BODY_MAP_DEFAULT_POINTS = [
+    { id: 'head', x: 50, y: 8 },
+    { id: 'ear_left', x: 43, y: 16 },
+    { id: 'ear_right', x: 57, y: 16 },
+    { id: 'eyebrow', x: 50, y: 13 },
+    { id: 'nose', x: 50, y: 16 },
+    { id: 'mouth', x: 50, y: 19 },
+    { id: 'tongue', x: 50, y: 21 },
+    { id: 'chest_left', x: 43, y: 31 },
+    { id: 'chest_right', x: 57, y: 31 },
+    { id: 'navel', x: 50, y: 45 },
+    { id: 'surface', x: 50, y: 53 }
+  ];
+  const BODY_MAP_ZONE_TARGETS = {
+    head: ['eyebrow', 'nose', 'mouth', 'tongue'],
+    ear_left: ['ear'],
+    ear_right: ['ear'],
+    chest_left: ['nipple'],
+    chest_right: ['nipple']
+  };
+  const mapParams = new URLSearchParams(location.search);
+  const bodyMapState = {
+    debug: mapParams.get('mapdebug') === '1',
+    admin: mapParams.get('mapadmin') === '1',
+    points: [],
+    drag: null
   };
 
   let panel, backdrop, currentZone = null;
@@ -7909,11 +8057,209 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     return panel;
   }
 
+  function clampMapPercent(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(100, n));
+  }
+
+  function roundMapPercent(value) {
+    return Math.round(clampMapPercent(value) * 10) / 10;
+  }
+
+  function bodyMapDefaults() {
+    return BODY_MAP_DEFAULT_POINTS.map(point => ({ id: point.id, x: point.x, y: point.y }));
+  }
+
+  function bodyMapButton(id) {
+    return document.querySelector(`#view-home .bodymap-point[data-zone="${id}"]`);
+  }
+
+  function loadBodyMapPoints() {
+    const defaults = bodyMapDefaults();
+    try {
+      const stored = JSON.parse(localStorage.getItem(BODY_MAP_CALIBRATION_KEY) || 'null');
+      if (!stored || !Array.isArray(stored.points)) return defaults;
+      const byId = new Map(defaults.map(point => [point.id, point]));
+      stored.points.forEach(point => {
+        if (!point || !byId.has(point.id)) return;
+        const target = byId.get(point.id);
+        target.x = roundMapPercent(point.x);
+        target.y = roundMapPercent(point.y);
+      });
+      return defaults;
+    } catch (err) {
+      return defaults;
+    }
+  }
+
+  function bodyMapPayload() {
+    return {
+      version: 'body-map-points-v0.1',
+      updatedAt: new Date().toISOString(),
+      image: 'body-map.png',
+      points: bodyMapState.points.map(point => ({
+        id: point.id,
+        x: roundMapPercent(point.x),
+        y: roundMapPercent(point.y)
+      }))
+    };
+  }
+
+  function applyBodyMapPoints(options = {}) {
+    bodyMapState.points.forEach(point => {
+      const btn = bodyMapButton(point.id);
+      if (!btn) return;
+      btn.style.setProperty('--x', roundMapPercent(point.x) + '%');
+      btn.style.setProperty('--y', roundMapPercent(point.y) + '%');
+      btn.dataset.x = roundMapPercent(point.x);
+      btn.dataset.y = roundMapPercent(point.y);
+      const label = btn.querySelector('.bodymap-point-label');
+      if (label) label.textContent = `${point.id} ${roundMapPercent(point.x)}%, ${roundMapPercent(point.y)}%`;
+      const row = document.querySelector(`[data-bodymap-row="${point.id}"] [data-bodymap-coords]`);
+      if (row) row.textContent = `${roundMapPercent(point.x)}%, ${roundMapPercent(point.y)}%`;
+    });
+    if (options.renderAdmin !== false) renderBodyMapAdminPanel();
+  }
+
+  function pointFromImageEvent(event) {
+    const image = document.querySelector('#view-home .bodymap-image');
+    if (!image) return null;
+    const rect = image.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    return {
+      x: roundMapPercent(((event.clientX - rect.left) / rect.width) * 100),
+      y: roundMapPercent(((event.clientY - rect.top) / rect.height) * 100)
+    };
+  }
+
+  function showBodyMapReadout(text) {
+    const frame = document.querySelector('#view-home .bodymap-frame');
+    if (!frame) return;
+    let readout = frame.querySelector('.bodymap-readout');
+    if (!readout) {
+      readout = document.createElement('div');
+      readout.className = 'bodymap-readout';
+      frame.appendChild(readout);
+    }
+    readout.textContent = text;
+  }
+
+  function copyBodyMapText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+  }
+
+  function downloadBodyMapJson() {
+    const blob = new Blob([JSON.stringify(bodyMapPayload(), null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'alicyn-body-map-calibration.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function renderBodyMapAdminPanel() {
+    if (!bodyMapState.admin) return;
+    const card = document.querySelector('#view-home .bodymap-photo-card');
+    if (!card) return;
+    let admin = document.getElementById('bodymap-admin-panel');
+    if (!admin) {
+      admin = document.createElement('section');
+      admin.id = 'bodymap-admin-panel';
+      admin.className = 'bodymap-admin-panel';
+      card.appendChild(admin);
+    }
+    admin.innerHTML = `
+      <h3>Body Map calibration</h3>
+      <p>Arrastra puntos sobre la imagen real. Coordenadas en porcentaje relativas a body-map.png.</p>
+      <div class="bodymap-admin-actions">
+        <button class="btn btn-primary" type="button" data-bodymap-save>Guardar</button>
+        <button class="btn" type="button" data-bodymap-export>Exportar JSON</button>
+        <button class="btn btn-danger" type="button" data-bodymap-reset>Resetear</button>
+      </div>
+      <div class="bodymap-admin-list">
+        ${bodyMapState.points.map(point => `
+          <div class="bodymap-admin-row" data-bodymap-row="${point.id}">
+            <span>${point.id}</span>
+            <span data-bodymap-coords>${roundMapPercent(point.x)}%, ${roundMapPercent(point.y)}%</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    admin.querySelector('[data-bodymap-save]')?.addEventListener('click', () => {
+      localStorage.setItem(BODY_MAP_CALIBRATION_KEY, JSON.stringify(bodyMapPayload()));
+      showBodyMapReadout('saved localStorage');
+    });
+    admin.querySelector('[data-bodymap-export]')?.addEventListener('click', downloadBodyMapJson);
+    admin.querySelector('[data-bodymap-reset]')?.addEventListener('click', () => {
+      localStorage.removeItem(BODY_MAP_CALIBRATION_KEY);
+      bodyMapState.points = bodyMapDefaults();
+      applyBodyMapPoints();
+      showBodyMapReadout('reset defaults');
+    });
+  }
+
+  function initBodyMapCalibration() {
+    bodyMapState.points = loadBodyMapPoints();
+    document.body.classList.toggle('bodymap-debug-mode', bodyMapState.debug);
+    document.body.classList.toggle('bodymap-admin-mode', bodyMapState.admin);
+    applyBodyMapPoints();
+
+    const frame = document.querySelector('#view-home .bodymap-frame');
+    if (!frame) return;
+
+    if (bodyMapState.debug || bodyMapState.admin) {
+      frame.addEventListener('click', event => {
+        if (bodyMapState.admin && event.target.closest('.bodymap-point')) return;
+        const point = pointFromImageEvent(event);
+        if (!point) return;
+        const text = `x: ${point.x}%   y: ${point.y}%`;
+        showBodyMapReadout(text);
+        copyBodyMapText(text);
+      });
+    }
+
+    if (!bodyMapState.admin) return;
+    frame.querySelectorAll('.bodymap-point').forEach(btn => {
+      btn.addEventListener('pointerdown', event => {
+        const point = bodyMapState.points.find(item => item.id === btn.dataset.zone);
+        if (!point) return;
+        event.preventDefault();
+        event.stopPropagation();
+        bodyMapState.drag = { id: point.id, pointerId: event.pointerId };
+        if (btn.setPointerCapture) btn.setPointerCapture(event.pointerId);
+      });
+    });
+    document.addEventListener('pointermove', event => {
+      if (!bodyMapState.drag || bodyMapState.drag.pointerId !== event.pointerId) return;
+      const point = bodyMapState.points.find(item => item.id === bodyMapState.drag.id);
+      const next = pointFromImageEvent(event);
+      if (!point || !next) return;
+      event.preventDefault();
+      point.x = next.x;
+      point.y = next.y;
+      applyBodyMapPoints({ renderAdmin: false });
+      showBodyMapReadout(`${point.id}\nx: ${point.x}%   y: ${point.y}%`);
+    });
+    document.addEventListener('pointerup', event => {
+      if (bodyMapState.drag && bodyMapState.drag.pointerId === event.pointerId) bodyMapState.drag = null;
+    });
+    document.addEventListener('pointercancel', event => {
+      if (bodyMapState.drag && bodyMapState.drag.pointerId === event.pointerId) bodyMapState.drag = null;
+    });
+  }
+
   function piercingsInZone(zoneId) {
     const list = (window.AlicynData && window.AlicynData.PIERCINGS) || [];
     const norm = (window.AlicynData && window.AlicynData.normalizeZone) || (z => z);
-    const target = norm(zoneId);
-    return list.filter(p => norm(p.zona) === target);
+    const targets = BODY_MAP_ZONE_TARGETS[zoneId] || [zoneId];
+    const normalizedTargets = new Set(targets.map(target => norm(target)));
+    return list.filter(p => normalizedTargets.has(norm(p.zona)));
   }
 
   function openPanel(zoneId) {
@@ -7928,7 +8274,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       b.classList.toggle('is-active', b.dataset.zone === zoneId);
     });
     // soft zoom on body
-    const photo = document.querySelector('#view-home .bodymap-photo');
+    const photo = document.querySelector('#view-home .bodymap-frame');
     if (photo) photo.classList.add('is-zoomed');
 
     p.innerHTML = `
@@ -7996,7 +8342,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (panel) panel.classList.remove('is-open');
     if (backdrop) backdrop.classList.remove('is-open');
     document.querySelectorAll('#view-home .hit-zone.is-active').forEach(b => b.classList.remove('is-active'));
-    const photo = document.querySelector('#view-home .bodymap-photo');
+    const photo = document.querySelector('#view-home .bodymap-frame');
     if (photo) photo.classList.remove('is-zoomed');
   }
 
@@ -8004,9 +8350,15 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     // Hook all hit-zones in the home view
     const home = document.getElementById('view-home');
     if (!home) return;
+    initBodyMapCalibration();
     home.addEventListener('click', e => {
       const btn = e.target.closest('.hit-zone[data-zone]');
       if (!btn) return;
+      if (bodyMapState.admin) {
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
       e.stopPropagation();
       openPanel(btn.dataset.zone);
     }, true);
