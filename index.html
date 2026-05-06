@@ -6894,5 +6894,499 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 })();
 
 </script>
+
+<!-- ============================================================================
+     v0.3 · Inspo favorites + Design overlay system
+     Toda la lógica vive en este bloque autocontenido al final del body.
+     localStorage:
+       alicyn.inspoFavorites.v1   → array [{id,image,zone,tags}]
+       alicyn.currentDesignOverlay → objeto {id,name,zone,image,tags,ts}
+     ============================================================================ -->
+<style id="alicyn-v3-styles">
+  /* Inspo card · botones nuevos */
+  .inspo-actions {
+    display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
+  }
+  .inspo-fav, .inspo-use {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 12px; border-radius: 10px;
+    border: 1px solid var(--line); background: rgba(255,255,255,.03);
+    color: var(--text-soft); cursor: pointer;
+    font: inherit; font-size: 13px;
+    transition: all .2s var(--ease, cubic-bezier(.2,.7,.2,1));
+  }
+  .inspo-fav:hover, .inspo-use:hover {
+    background: rgba(255,255,255,.06); color: var(--text);
+    border-color: var(--line-strong, rgba(255,255,255,.16));
+  }
+  .inspo-fav.is-on {
+    background: rgba(95,212,168,.15);
+    border-color: rgba(95,212,168,.5);
+    color: var(--accent, #5fd4a8);
+  }
+  .inspo-fav.is-on svg { fill: currentColor; }
+  .inspo-fav svg, .inspo-use svg { flex-shrink: 0; }
+  .inspo-use:hover { border-color: var(--accent, #5fd4a8); color: var(--accent, #5fd4a8); }
+  .inspo-use svg { transition: transform .2s; }
+  .inspo-use:hover svg { transform: translateX(3px); }
+
+  /* Design overlay layer dentro de .ear-photo */
+  #design-overlay {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 40%;
+    transform: translate(-50%, -50%);
+    pointer-events: auto; cursor: grab;
+    z-index: 3;
+    user-select: none; -webkit-user-select: none;
+    filter: drop-shadow(0 8px 18px rgba(0,0,0,.4));
+    touch-action: none;
+  }
+  #design-overlay:active { cursor: grabbing; }
+  #design-overlay::before {
+    /* badge de "overlay activo" */
+    content: 'overlay';
+    position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
+    background: rgba(95,212,168,.15); border: 1px solid rgba(95,212,168,.4);
+    color: var(--accent, #5fd4a8);
+    font-size: 9px; padding: 2px 8px; border-radius: 999px;
+    text-transform: uppercase; letter-spacing: .1em; font-weight: 600;
+    pointer-events: none; white-space: nowrap;
+  }
+  #design-overlay img {
+    display: block; width: 100%; height: auto;
+    user-select: none; -webkit-user-drag: none; pointer-events: none;
+  }
+  #design-overlay[hidden] { display: none !important; }
+
+  /* Controls panel (debajo de la oreja, dentro del .ear-canvas) */
+  #design-overlay-controls {
+    margin-top: 14px; padding: 14px;
+    border: 1px solid var(--line, rgba(255,255,255,.12));
+    border-radius: 12px;
+    background: rgba(255,255,255,.025);
+    display: flex; flex-direction: column; gap: 10px;
+    animation: oc-rise .35s var(--ease, cubic-bezier(.2,.7,.2,1));
+  }
+  @keyframes oc-rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  #design-overlay-controls[hidden] { display: none !important; }
+  #design-overlay-controls .oc-head {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  }
+  #design-overlay-controls .oc-title {
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: .1em;
+  }
+  #design-overlay-controls .oc-title strong {
+    color: var(--accent, #5fd4a8); font-weight: 600;
+    text-transform: none; letter-spacing: 0; font-size: 13px;
+  }
+  #design-overlay-controls .oc-mini {
+    border: 1px solid var(--line, rgba(255,255,255,.12));
+    background: transparent; color: var(--text-soft);
+    padding: 6px 12px; border-radius: 8px; font: inherit; font-size: 12px;
+    cursor: pointer; min-height: 32px;
+  }
+  #design-overlay-controls .oc-mini:hover {
+    color: var(--text); border-color: var(--line-strong, rgba(255,255,255,.16));
+  }
+  #design-overlay-controls .oc-row { display: flex; flex-direction: column; gap: 6px; }
+  #design-overlay-controls .oc-row label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: .08em;
+  }
+  #design-overlay-controls .oc-row label span {
+    color: var(--accent, #5fd4a8); font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  #design-overlay-controls input[type="range"] {
+    width: 100%; accent-color: var(--accent, #5fd4a8);
+    cursor: pointer;
+  }
+  #design-overlay-controls .oc-clear {
+    margin-top: 4px; padding: 9px 12px; border-radius: 10px;
+    border: 1px solid rgba(224,122,122,.35);
+    background: rgba(224,122,122,.06);
+    color: var(--danger, #e07a7a);
+    font: inherit; font-size: 13px; cursor: pointer;
+    min-height: 40px;
+    transition: background .2s;
+  }
+  #design-overlay-controls .oc-clear:hover { background: rgba(224,122,122,.12); }
+
+  /* Mini toast */
+  #alicyn-mini-toast {
+    position: fixed; bottom: 90px; left: 50%;
+    transform: translate(-50%, 16px);
+    background: rgba(15,20,19,.95);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(95,212,168,.3);
+    color: var(--text, #eef3f1);
+    padding: 10px 18px; border-radius: 999px;
+    font-size: 13px; font-weight: 500;
+    opacity: 0; pointer-events: none;
+    transition: opacity .25s var(--ease, cubic-bezier(.2,.7,.2,1)),
+                transform .25s var(--ease, cubic-bezier(.2,.7,.2,1));
+    z-index: 250;
+    box-shadow: 0 8px 28px rgba(0,0,0,.45);
+  }
+  #alicyn-mini-toast.is-on {
+    opacity: 1; transform: translate(-50%, 0);
+  }
+</style>
+
+<script id="alicyn-v3-script">
+(function () {
+  'use strict';
+  const FAV_KEY = 'alicyn.inspoFavorites.v1';
+  const OVERLAY_KEY = 'alicyn.currentDesignOverlay';
+
+  // ---------- helpers ----------
+  function loadFavs() {
+    try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch { return []; }
+  }
+  function saveFavs(arr) {
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(arr)); } catch {}
+  }
+  function isFav(id) { return loadFavs().some(f => f.id === id); }
+  function toggleFav(item) {
+    const list = loadFavs();
+    const idx = list.findIndex(f => f.id === item.id);
+    if (idx >= 0) { list.splice(idx, 1); saveFavs(list); return false; }
+    list.unshift(item); saveFavs(list); return true;
+  }
+
+  function toast(msg) {
+    let t = document.getElementById('alicyn-mini-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'alicyn-mini-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('is-on');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('is-on'), 1900);
+  }
+
+  function pidToInspoItem(pid) {
+    const p = (window.AlicynData && window.AlicynData.PIERCINGS || [])
+                .find(x => x.id === pid);
+    if (!p) return { id: pid, name: pid, zone: 'unknown', tags: [], image: null };
+    return {
+      id: pid,
+      name: p.nombre,
+      zone: p.zona,
+      tags: [p.zona, 'dolor:' + p.dolor, p.cicatrizacion].filter(Boolean),
+      image: null
+    };
+  }
+
+  function generatePlaceholderSvg(item) {
+    const initial = (item.name || '?').slice(0,1).toUpperCase();
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">'
+      + '<defs><radialGradient id="g" cx="50%" cy="50%" r="50%">'
+      + '<stop offset="0" stop-color="#5fd4a8" stop-opacity=".75"/>'
+      + '<stop offset="1" stop-color="#5fd4a8" stop-opacity="0"/>'
+      + '</radialGradient></defs>'
+      + '<circle cx="100" cy="100" r="68" fill="url(#g)"/>'
+      + '<circle cx="100" cy="100" r="44" fill="none" stroke="#5fd4a8" stroke-width="1.5" stroke-dasharray="3 4"/>'
+      + '<circle cx="100" cy="100" r="14" fill="#5fd4a8"/>'
+      + '<text x="100" y="106" text-anchor="middle" fill="#06120e" font-family="Inter,system-ui,sans-serif" font-size="16" font-weight="700">' + initial + '</text>'
+      + '</svg>';
+    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+  }
+
+  // ---------- Inspo cards · favoritos + Usar en diseño ----------
+  function enhanceCards() {
+    const grid = document.getElementById('inspo-grid');
+    if (!grid) return;
+    grid.querySelectorAll('.inspo-card').forEach(card => {
+      if (card.dataset.alicynV3) return;
+      const verBtn = card.querySelector('button[data-pid]');
+      if (!verBtn) return;
+      const pid = verBtn.dataset.pid;
+      card.dataset.alicynV3 = '1';
+      card.dataset.pid = pid;
+
+      const actions = document.createElement('div');
+      actions.className = 'inspo-actions';
+
+      // Favorite button
+      const favBtn = document.createElement('button');
+      favBtn.type = 'button';
+      favBtn.className = 'inspo-fav' + (isFav(pid) ? ' is-on' : '');
+      favBtn.setAttribute('aria-label', 'Guardar en mis referencias');
+      favBtn.innerHTML =
+        '<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        + '<path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/>'
+        + '</svg><span class="lbl">' + (isFav(pid) ? 'Guardado' : 'Guardar') + '</span>';
+      favBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const item = pidToInspoItem(pid);
+        const added = toggleFav(item);
+        favBtn.classList.toggle('is-on', added);
+        favBtn.querySelector('.lbl').textContent = added ? 'Guardado' : 'Guardar';
+        toast(added ? 'Guardado en tus referencias' : 'Quitado de favoritos');
+      });
+
+      // "Usar en diseño" button
+      const useBtn = document.createElement('button');
+      useBtn.type = 'button';
+      useBtn.className = 'inspo-use';
+      useBtn.innerHTML =
+        '<span>Usar en diseño</span>'
+        + '<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">'
+        + '<polyline points="9 18 15 12 9 6"/>'
+        + '</svg>';
+      useBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        const item = pidToInspoItem(pid);
+        const overlay = {
+          id: pid,
+          name: item.name,
+          zone: item.zone,
+          tags: item.tags,
+          image: generatePlaceholderSvg(item),
+          ts: Date.now()
+        };
+        try { localStorage.setItem(OVERLAY_KEY, JSON.stringify(overlay)); } catch {}
+        toast('Llevándote a Diseñar…');
+        // Navigate to planner ("Diseñar")
+        const navBtn = document.querySelector('[data-nav="planner"]');
+        if (navBtn) {
+          setTimeout(() => navBtn.click(), 250);
+        } else {
+          location.hash = '#planner';
+        }
+      });
+
+      actions.appendChild(favBtn);
+      actions.appendChild(useBtn);
+      verBtn.parentElement.appendChild(actions);
+    });
+  }
+
+  // Observe grid changes (renderInspo replaces innerHTML)
+  function watchInspo() {
+    const grid = document.getElementById('inspo-grid');
+    if (!grid) return;
+    const obs = new MutationObserver(() => enhanceCards());
+    obs.observe(grid, { childList: true, subtree: false });
+    enhanceCards();
+  }
+
+  // ---------- Design overlay ----------
+  const overlayState = {
+    active: false,
+    x: 50, y: 50,
+    scale: 100,
+    opacity: 80,
+    visible: true,
+    img: null,
+    name: ''
+  };
+
+  function loadOverlayData() {
+    try {
+      const raw = localStorage.getItem(OVERLAY_KEY);
+      if (!raw) return null;
+      const o = JSON.parse(raw);
+      if (!o || !o.image) return null;
+      return o;
+    } catch { return null; }
+  }
+
+  function clearOverlay() {
+    try { localStorage.removeItem(OVERLAY_KEY); } catch {}
+    overlayState.active = false;
+    const o = document.getElementById('design-overlay');
+    if (o) o.hidden = true;
+    const c = document.getElementById('design-overlay-controls');
+    if (c) c.hidden = true;
+    toast('Overlay eliminado');
+  }
+
+  function ensureOverlayDom(earPhoto) {
+    let overlay = document.getElementById('design-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'design-overlay';
+      overlay.hidden = true;
+      const img = document.createElement('img');
+      img.id = 'design-overlay-img';
+      img.alt = 'Inspo overlay';
+      img.draggable = false;
+      overlay.appendChild(img);
+      earPhoto.appendChild(overlay);
+      attachDrag(overlay);
+    }
+    return overlay;
+  }
+
+  function ensureControlsDom(earCanvas) {
+    let c = document.getElementById('design-overlay-controls');
+    if (c) return c;
+    c = document.createElement('div');
+    c.id = 'design-overlay-controls';
+    c.hidden = true;
+    c.innerHTML =
+      '<div class="oc-head">'
+      +   '<span class="oc-title">Inspo: <strong id="oc-name">—</strong></span>'
+      +   '<button type="button" id="oc-toggle" class="oc-mini">Ocultar</button>'
+      + '</div>'
+      + '<div class="oc-row">'
+      +   '<label for="oc-scale">Escala <span id="oc-scale-val">100</span>%</label>'
+      +   '<input type="range" id="oc-scale" min="20" max="300" value="100" />'
+      + '</div>'
+      + '<div class="oc-row">'
+      +   '<label for="oc-opacity">Opacidad <span id="oc-opacity-val">80</span>%</label>'
+      +   '<input type="range" id="oc-opacity" min="10" max="100" value="80" />'
+      + '</div>'
+      + '<button type="button" id="oc-clear" class="oc-clear">Limpiar overlay</button>';
+    earCanvas.appendChild(c);
+
+    c.querySelector('#oc-scale').addEventListener('input', e => {
+      overlayState.scale = +e.target.value;
+      c.querySelector('#oc-scale-val').textContent = overlayState.scale;
+      renderOverlay();
+    });
+    c.querySelector('#oc-opacity').addEventListener('input', e => {
+      overlayState.opacity = +e.target.value;
+      c.querySelector('#oc-opacity-val').textContent = overlayState.opacity;
+      renderOverlay();
+    });
+    c.querySelector('#oc-toggle').addEventListener('click', () => {
+      overlayState.visible = !overlayState.visible;
+      c.querySelector('#oc-toggle').textContent = overlayState.visible ? 'Ocultar' : 'Mostrar';
+      renderOverlay();
+    });
+    c.querySelector('#oc-clear').addEventListener('click', () => {
+      if (confirm('¿Quitar el overlay del diseño?')) clearOverlay();
+    });
+    return c;
+  }
+
+  function renderOverlay() {
+    const overlay = document.getElementById('design-overlay');
+    if (!overlay) return;
+    if (!overlayState.active) {
+      overlay.hidden = true;
+      return;
+    }
+    overlay.hidden = !overlayState.visible;
+    if (overlayState.img) {
+      const img = overlay.querySelector('img');
+      if (img && img.src !== overlayState.img) img.src = overlayState.img;
+    }
+    overlay.style.left = overlayState.x + '%';
+    overlay.style.top  = overlayState.y + '%';
+    overlay.style.width = (40 * overlayState.scale / 100) + '%';
+    overlay.style.opacity = overlayState.opacity / 100;
+  }
+
+  function attachDrag(overlay) {
+    let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, rect = null;
+    function start(e) {
+      dragging = true;
+      const ev = e.touches ? e.touches[0] : e;
+      const earPhoto = overlay.parentElement;
+      rect = earPhoto.getBoundingClientRect();
+      sx = ev.clientX; sy = ev.clientY;
+      ox = overlayState.x; oy = overlayState.y;
+      overlay.style.cursor = 'grabbing';
+      e.preventDefault();
+    }
+    function move(e) {
+      if (!dragging) return;
+      const ev = e.touches ? e.touches[0] : e;
+      const dx = (ev.clientX - sx) / rect.width  * 100;
+      const dy = (ev.clientY - sy) / rect.height * 100;
+      overlayState.x = Math.max(0, Math.min(100, ox + dx));
+      overlayState.y = Math.max(0, Math.min(100, oy + dy));
+      renderOverlay();
+      e.preventDefault();
+    }
+    function end() {
+      dragging = false;
+      overlay.style.cursor = 'grab';
+    }
+    overlay.addEventListener('mousedown', start);
+    overlay.addEventListener('touchstart', start, { passive: false });
+    document.addEventListener('mousemove', move);
+    document.addEventListener('touchmove', move, { passive: false });
+    document.addEventListener('mouseup', end);
+    document.addEventListener('touchend', end);
+  }
+
+  function setupOverlay() {
+    const earPhoto  = document.getElementById('ear-photo');
+    if (!earPhoto) return;
+    const earCanvas = earPhoto.closest('.ear-canvas');
+    if (!earCanvas) return;
+
+    const data = loadOverlayData();
+    const overlay = ensureOverlayDom(earPhoto);
+    const controls = ensureControlsDom(earCanvas);
+
+    if (!data) {
+      overlayState.active = false;
+      overlay.hidden = true;
+      controls.hidden = true;
+      return;
+    }
+
+    overlayState.active  = true;
+    overlayState.img     = data.image;
+    overlayState.name    = data.name || '—';
+    overlayState.visible = true;
+
+    controls.querySelector('#oc-name').textContent = overlayState.name;
+    controls.querySelector('#oc-scale').value = overlayState.scale;
+    controls.querySelector('#oc-scale-val').textContent = overlayState.scale;
+    controls.querySelector('#oc-opacity').value = overlayState.opacity;
+    controls.querySelector('#oc-opacity-val').textContent = overlayState.opacity;
+    controls.querySelector('#oc-toggle').textContent = 'Ocultar';
+    controls.hidden = false;
+
+    renderOverlay();
+  }
+
+  // Watch view-planner for activation
+  function watchPlanner() {
+    const planner = document.getElementById('view-planner');
+    if (!planner) return;
+    const obs = new MutationObserver(() => {
+      if (planner.classList.contains('is-active')) {
+        setTimeout(setupOverlay, 100);
+      }
+    });
+    obs.observe(planner, { attributes: true, attributeFilter: ['class'] });
+    if (planner.classList.contains('is-active')) {
+      setTimeout(setupOverlay, 100);
+    }
+  }
+
+  function init() {
+    watchInspo();
+    watchPlanner();
+    console.log('%c[Alicyn v0.3]', 'color:#5fd4a8;font-weight:bold',
+      'Inspo favorites + design overlay activos · localStorage keys:',
+      FAV_KEY, '·', OVERLAY_KEY);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 </body>
 </html>
