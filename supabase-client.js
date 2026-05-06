@@ -29,7 +29,7 @@
 
   const FAVORITES_KEY = 'alicyn.inspoFavorites.v1';
   const DESIGN_PROJECTS_KEY = 'alicyn.designProjects.v1';
-  const NOT_READY_MESSAGE = 'Disponible proximamente';
+  const NOT_READY_MESSAGE = 'Disponible próximamente';
 
   const configured = Boolean(
     SUPABASE_URL &&
@@ -69,6 +69,14 @@
   function updateAuth(session) {
     authState.session = session || null;
     authState.user = session?.user || null;
+    authState.isLoggedIn = Boolean(authState.user);
+    if (!authState.user) state.profile = null;
+    emitAuthChange();
+  }
+
+  function updateUser(user) {
+    authState.user = user || null;
+    if (!authState.user) authState.session = null;
     authState.isLoggedIn = Boolean(authState.user);
     if (!authState.user) state.profile = null;
     emitAuthChange();
@@ -424,13 +432,13 @@
     });
     window.alicynSupabase = state.client;
 
-    const { data, error } = await state.client.auth.getSession();
+    const { data, error } = await state.client.auth.getUser();
     if (!error) {
-      updateAuth(data.session || null);
+      updateUser(data.user || null);
       if (authUser()) await syncProfile();
     } else {
-      console.warn('[Alicyn Supabase] Session check failed', error);
-      updateAuth(null);
+      console.warn('[Alicyn Supabase] User check failed', error);
+      updateUser(null);
     }
 
     state.client.auth.onAuthStateChange((_event, session) => {

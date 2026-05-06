@@ -525,7 +525,7 @@
     } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).then(() => showToast('Plan copiado al portapapeles.'));
     } else {
-      showToast('Tu navegador no permite compartir automÃ¡ticamente.');
+      showToast('Tu navegador no permite compartir automáticamente.');
     }
   }
 
@@ -1047,7 +1047,7 @@
     if (waBtnEl) {
       waBtnEl.addEventListener('click', () => {
         if (!navigator.clipboard?.writeText) {
-          showToast('Tu navegador no permite copiar automÃ¡ticamente.');
+          showToast('Tu navegador no permite copiar automáticamente.');
           return;
         }
         navigator.clipboard.writeText(waText).then(() => {
@@ -1146,7 +1146,7 @@
 
   function copySummary() {
     if (!navigator.clipboard?.writeText) {
-      showToast('Tu navegador no permite copiar automÃ¡ticamente.');
+      showToast('Tu navegador no permite copiar automáticamente.');
       return;
     }
     navigator.clipboard.writeText(buildSummaryText()).then(() => {
