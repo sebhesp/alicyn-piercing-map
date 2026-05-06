@@ -20,7 +20,12 @@
 
   const SUPABASE_URL = "https://pejggyicajjfcvrtjraf.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_dk1HLbLQSGejoXTX0ZgrTQ_GtmHFpQ-";
-  const GOOGLE_REDIRECT_TO = "https://sebhesp.github.io/alicyn-piercing-map/";
+  // Compute redirect at runtime so it works on every host:
+  //   piercemap.com, www.piercemap.com, sebhesp.github.io/alicyn-piercing-map/, localhost
+  // Each host MUST be added to Supabase -> Authentication -> URL Configuration -> Redirect URLs.
+  function getGoogleRedirectTo() {
+    return window.location.origin + window.location.pathname;
+  }
 
   const FAVORITES_KEY = 'alicyn.inspoFavorites.v1';
   const DESIGN_PROJECTS_KEY = 'alicyn.designProjects.v1';
@@ -220,16 +225,31 @@
   }
 
   async function loginWithGoogle() {
-    if (!state.configured || !state.client) return { ok: false, reason: 'not_configured' };
-    const { data, error } = await state.client.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: GOOGLE_REDIRECT_TO }
-    });
-    if (error) {
-      console.warn('[Alicyn Supabase] Google OAuth error', error);
-      return { ok: false, error };
+    if (!state.configured) {
+      console.error('[Alicyn Supabase] Not configured. Check SUPABASE_URL and SUPABASE_ANON_KEY.');
+      return { ok: false, reason: 'not_configured' };
     }
-    return { ok: true, data };
+    if (!state.client && state.ready) await state.ready;
+    if (!state.client) {
+      console.error('[Alicyn Supabase] Client not available (CDN failed?).');
+      return { ok: false, reason: 'client_unavailable' };
+    }
+    const redirectTo = getGoogleRedirectTo();
+    console.info('[Alicyn Supabase] signInWithOAuth(google) → redirectTo:', redirectTo);
+    try {
+      const { data, error } = await state.client.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo }
+      });
+      if (error) {
+        console.error('[Alicyn Supabase] Google OAuth error', error);
+        return { ok: false, error };
+      }
+      return { ok: true, data };
+    } catch (err) {
+      console.error('[Alicyn Supabase] Google OAuth threw', err);
+      return { ok: false, error: err };
+    }
   }
 
   async function loginWithFacebook() {

@@ -10074,5 +10074,259 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 })();
 </script>
 
+
+<!-- ============================================================================
+     v0.5 · Google Auth bridge · Supabase
+     Ensures [data-google-login] / [data-logout] selectors work from anywhere,
+     hides Facebook/Apple buttons, syncs Google avatar to header.
+     Idempotent.
+     ============================================================================ -->
+<style id="alicyn-auth-v05-styles">
+  /* Hide Facebook & Apple buttons — Google only for now */
+  .oauth-btn.facebook, .oauth-btn.apple,
+  [data-oauth="facebook"], [data-oauth="apple"],
+  [data-facebook-login], [data-apple-login] { display: none !important; }
+
+  /* Header avatar (Google profile picture) */
+  .header-user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    border: 1.5px solid var(--alicyn-blue, #8FBFC3);
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(10,13,12,.18);
+  }
+  .header-user-meta {
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .header-user-meta {
+      display: flex; flex-direction: column; line-height: 1.1;
+      font-size: 11px; color: var(--text, #eef3f1);
+      text-align: right; margin-right: 4px;
+    }
+    .header-user-meta b { font-weight: 600; font-size: 12px; }
+    .header-user-meta small { color: rgba(238,243,241,.55); font-size: 10px; }
+  }
+
+  /* Inline error toast for auth */
+  .alicyn-auth-error {
+    position: fixed; top: 70px; right: 20px;
+    background: rgba(224,122,122,.96); color: #fff;
+    padding: 10px 16px; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    z-index: 250;
+    animation: alicyn-auth-fade .35s ease;
+    max-width: 320px;
+  }
+  @keyframes alicyn-auth-fade {
+    from { opacity: 0; transform: translateX(20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+</style>
+
+<script id="alicyn-auth-v05-script">
+(function () {
+  'use strict';
+
+  // ── 1. Tag existing Google button with [data-google-login] ────────────
+  function tagGoogleButtons() {
+    document.querySelectorAll('[data-oauth="google"], .oauth-btn.google').forEach(btn => {
+      if (!btn.hasAttribute('data-google-login')) {
+        btn.setAttribute('data-google-login', '');
+      }
+    });
+  }
+
+  // ── 2. Hide Facebook / Apple buttons if any exist ─────────────────────
+  function hideOtherProviders() {
+    document.querySelectorAll(
+      '.oauth-btn.facebook, .oauth-btn.apple, ' +
+      '[data-oauth="facebook"], [data-oauth="apple"], ' +
+      '[data-facebook-login], [data-apple-login]'
+    ).forEach(el => { el.style.display = 'none'; });
+  }
+
+  // ── 3. Show a simple visible error message when auth fails ────────────
+  function showError(msg) {
+    console.error('[Alicyn Auth]', msg);
+    const existing = document.querySelector('.alicyn-auth-error');
+    if (existing) existing.remove();
+    const div = document.createElement('div');
+    div.className = 'alicyn-auth-error';
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => { div.remove(); }, 4500);
+  }
+
+  // ── 4. Trigger Google login via Supabase ──────────────────────────────
+  async function triggerGoogleLogin() {
+    const bridge = window.AlicynSupabase;
+    if (!bridge) {
+      showError('Supabase no disponible · revisa supabase-client.js');
+      return;
+    }
+    if (!bridge.isConfigured?.()) {
+      showError('Faltan credenciales de Supabase');
+      return;
+    }
+    try {
+      if (bridge.ready) await bridge.ready;
+      const result = await bridge.signIn('google');
+      if (!result?.ok) {
+        showError('No se pudo iniciar Google · ' + (result?.error?.message || 'revisa Supabase Auth'));
+      }
+    } catch (err) {
+      console.error('[Alicyn Auth] login error', err);
+      showError('Error al iniciar sesión · ' + (err?.message || 'reintenta'));
+    }
+  }
+
+  // ── 5. Trigger logout via Supabase ────────────────────────────────────
+  async function triggerLogout() {
+    const bridge = window.AlicynSupabase;
+    try {
+      if (bridge?.signOut) {
+        const result = await bridge.signOut();
+        if (!result?.ok) console.error('[Alicyn Auth] signOut error', result?.error);
+      }
+      // Also clear local fallback used by app.js / community.js
+      try { localStorage.removeItem('alicyn.user'); } catch (_) {}
+      // Tell the rest of the app to refresh
+      window.dispatchEvent(new CustomEvent('alicyn:supabase-auth', {
+        detail: { configured: bridge?.isConfigured?.() || false, session: null, user: null, profile: null, isLoggedIn: false }
+      }));
+    } catch (err) {
+      console.error('[Alicyn Auth] logout error', err);
+      showError('Error al cerrar sesión');
+    }
+  }
+
+  // ── 6. Universal click delegation for [data-google-login] / [data-logout] ──
+  document.addEventListener('click', (e) => {
+    const loginBtn = e.target.closest('[data-google-login]');
+    if (loginBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      triggerGoogleLogin();
+      return;
+    }
+    const logoutBtn = e.target.closest('[data-logout]');
+    if (logoutBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      triggerLogout();
+      return;
+    }
+  }, true);
+
+  // ── 7. Update the header with name/avatar/email when logged in ────────
+  function updateHeaderUI(detail) {
+    const headerUser = document.getElementById('header-user');
+    if (!headerUser) return;
+
+    // Persist a localStorage fallback (key alicyn.user) so app.js / community.js
+    // can keep working with the existing renderProfile logic.
+    if (detail?.user) {
+      const u = detail.user;
+      const name =
+        u.user_metadata?.full_name ||
+        u.user_metadata?.name ||
+        u.email ||
+        'Alicyn user';
+      const avatarUrl = u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
+      const email = u.email || '';
+
+      try {
+        const fallback = {
+          userId: u.id,
+          name,
+          avatar: (name || '?').split(/\s+/).map(p => p[0] || '').slice(0, 2).join('').toUpperCase(),
+          avatarUrl,
+          email,
+          provider: u.app_metadata?.provider || 'google',
+          authSource: 'supabase',
+          xp: 0
+        };
+        localStorage.setItem('alicyn.user', JSON.stringify(fallback));
+      } catch (_) {}
+
+      // Replace #btn-login content with avatar + name (and add data-logout)
+      const btnLogin = document.getElementById('btn-login');
+      if (btnLogin) {
+        btnLogin.innerHTML = '';
+        if (avatarUrl) {
+          const img = document.createElement('img');
+          img.className = 'header-user-avatar';
+          img.src = avatarUrl;
+          img.alt = name;
+          img.referrerPolicy = 'no-referrer';
+          btnLogin.appendChild(img);
+        }
+        const meta = document.createElement('span');
+        meta.className = 'header-user-meta';
+        meta.innerHTML = `<b>${name.split(' ')[0] || name}</b><small>${email}</small>`;
+        btnLogin.appendChild(meta);
+
+        btnLogin.classList.remove('btn-primary');
+        btnLogin.setAttribute('data-logout', '');
+        btnLogin.removeAttribute('data-google-login');
+        btnLogin.title = 'Cerrar sesión';
+      }
+
+      // Close the login modal if open
+      const modal = document.getElementById('login-modal');
+      if (modal) modal.classList.remove('is-open');
+    } else {
+      // Logged out — restore the original button
+      const btnLogin = document.getElementById('btn-login');
+      if (btnLogin) {
+        btnLogin.innerHTML = 'Iniciar sesión';
+        btnLogin.classList.add('btn-primary');
+        btnLogin.removeAttribute('data-logout');
+        btnLogin.setAttribute('data-google-login', '');
+        btnLogin.title = '';
+      }
+    }
+  }
+
+  // ── 8. Listen to auth state changes from supabase-client.js ───────────
+  window.addEventListener('alicyn:supabase-auth', (e) => updateHeaderUI(e.detail || {}));
+
+  // ── 9. On load: tag, hide, and check for existing session ─────────────
+  function init() {
+    tagGoogleButtons();
+    hideOtherProviders();
+    // Make #btn-login also act as Google trigger when logged out
+    const btnLogin = document.getElementById('btn-login');
+    if (btnLogin && !btnLogin.hasAttribute('data-logout')) {
+      btnLogin.setAttribute('data-google-login', '');
+    }
+    // Re-tag whenever the DOM mutates (login modal may inject buttons)
+    const obs = new MutationObserver(() => { tagGoogleButtons(); hideOtherProviders(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+
+    // Check current session
+    const bridge = window.AlicynSupabase;
+    if (bridge?.ready) {
+      bridge.ready.then(() => {
+        const user = bridge.getUser?.();
+        if (user) {
+          updateHeaderUI({ user });
+        }
+      }).catch(err => console.warn('[Alicyn Auth] ready error', err));
+    }
+
+    console.info('[Alicyn Auth v0.5] ready · selectors: [data-google-login], [data-logout]');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 </body>
 </html>
