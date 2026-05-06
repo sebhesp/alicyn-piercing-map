@@ -6213,6 +6213,9 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function renderSelectedPiercingsSummary(piercings) {
     const output = document.getElementById('selected-piercings-output');
     if (!output) return;
+    if (!Array.isArray(piercings)) {
+      piercings = [...state.planner.selected].map(id => getPlannerPiercing(id)).filter(Boolean);
+    }
     if (!piercings.length) {
       output.innerHTML = `<p class="muted" style="margin:0">${tr('design.emptySelected')}</p>`;
       return;
@@ -7434,6 +7437,11 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       t.style.opacity = '0';
       t.style.transform = 'translateX(-50%) translateY(20px)';
     }, 3000);
+  }
+
+  function renderAnatomyPoints() {
+    drawCanvas();
+    renderPointsList();
   }
 
   window.AlicynMainRender = {
