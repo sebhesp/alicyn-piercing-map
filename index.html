@@ -9,8 +9,12 @@
 <script>
   (function () {
     try {
-      if (sessionStorage.getItem('alicyn.intro.v1') !== '1') {
+      var introSeen = sessionStorage.getItem('alicyn.intro.v1') === '1';
+      var personaSeen = sessionStorage.getItem('alicyn.mapPersona.v1') === '1';
+      if (!introSeen) {
         document.documentElement.classList.add('alicyn-intro-pending');
+      } else if (!personaSeen) {
+        document.documentElement.classList.add('alicyn-profile-pending');
       }
     } catch (err) {
       document.documentElement.classList.add('alicyn-intro-pending');
@@ -1903,39 +1907,6 @@ html, body { overflow-x: hidden; }
 .map-disclaimer.is-closed { display: none; }
 .map-disclaimer strong { display: block; margin-bottom: 2px; font-size: 13px; }
 .map-disclaimer p { margin: 0; color: var(--text-soft); font-size: 12px; line-height: 1.45; }
-.map-mode-gate {
-  width: min(620px, 100%);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 0 auto 18px;
-}
-.mode-card {
-  text-align: left;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgba(255,255,255,.025);
-  color: var(--text);
-  padding: 13px 14px;
-  cursor: pointer;
-  transition: border-color .2s var(--ease), background .2s var(--ease), transform .2s var(--ease);
-}
-.mode-card:hover,
-.mode-card.is-active {
-  border-color: rgba(143, 191, 195,.46);
-  background: rgba(143, 191, 195,.08);
-  transform: translateY(-1px);
-}
-.mode-card span {
-  display: block;
-  color: var(--accent);
-  font-size: 10px;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.mode-card strong { display: block; font-size: 15px; }
-.mode-card small { display: block; color: var(--text-mute); font-size: 12px; margin-top: 3px; line-height: 1.35; }
 .map-shell {
   display: grid;
   grid-template-columns: minmax(230px, .48fr) minmax(0, 1fr);
@@ -2163,7 +2134,6 @@ html, body { overflow-x: hidden; }
     width: 100%;
     margin-bottom: 12px;
   }
-  .map-mode-gate { grid-template-columns: 1fr; }
   .map-copy { display: block; }
   .map-copy h1 { font-size: 36px; }
   .map-copy p { font-size: 14px; max-width: none; }
@@ -2400,13 +2370,19 @@ html, body { overflow-x: hidden; }
 
 /* ---------- ALICYN INTRO ---------- */
 html.alicyn-intro-pending,
-html.alicyn-intro-pending body {
+html.alicyn-intro-pending body,
+html.alicyn-profile-pending,
+html.alicyn-profile-pending body {
   overflow: hidden;
 }
 html.alicyn-intro-pending .app-header,
 html.alicyn-intro-pending main,
 html.alicyn-intro-pending .bottom-nav,
-html.alicyn-intro-pending .app-footer {
+html.alicyn-intro-pending .app-footer,
+html.alicyn-profile-pending .app-header,
+html.alicyn-profile-pending main,
+html.alicyn-profile-pending .bottom-nav,
+html.alicyn-profile-pending .app-footer {
   opacity: 0;
   pointer-events: none;
 }
@@ -2651,6 +2627,98 @@ html.alicyn-intro-pending .alicyn-intro {
   }
 }
 
+.map-profile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: none;
+  place-items: center;
+  min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(720px 520px at 50% 28%, rgba(143,191,195,.12), transparent 66%),
+    linear-gradient(180deg, #0a0d0c 0%, #111716 100%);
+  color: #eef3f1;
+}
+html.alicyn-profile-pending .map-profile-overlay {
+  display: grid;
+}
+.map-profile-stage {
+  width: min(100%, 760px);
+  display: grid;
+  gap: clamp(22px, 4vw, 34px);
+  text-align: center;
+}
+.map-profile-kicker {
+  color: #8FBFC3;
+  font: 650 11px/1 var(--font-sans);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.map-profile-stage h2 {
+  margin: 0;
+  color: #eef3f1;
+  font: 650 clamp(28px, 5vw, 58px)/.96 var(--font-sans);
+  letter-spacing: 0;
+}
+.map-profile-stage p {
+  width: min(100%, 58ch);
+  margin: -8px auto 0;
+  color: rgba(238,243,241,.68);
+  font-size: 14px;
+  line-height: 1.65;
+}
+.map-profile-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.map-profile-choice {
+  min-height: 164px;
+  padding: 22px;
+  border: 1px solid rgba(238,243,241,.13);
+  border-radius: 18px;
+  background: rgba(238,243,241,.035);
+  color: #eef3f1;
+  text-align: left;
+  cursor: pointer;
+  transition: transform .22s var(--ease), border-color .22s var(--ease), background .22s var(--ease);
+}
+.map-profile-choice:hover,
+.map-profile-choice:focus-visible {
+  border-color: rgba(143,191,195,.55);
+  background: rgba(143,191,195,.08);
+  transform: translateY(-2px);
+  outline: none;
+}
+.map-profile-choice span {
+  display: block;
+  margin-bottom: 10px;
+  color: #8FBFC3;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.map-profile-choice strong {
+  display: block;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1;
+}
+.map-profile-choice small {
+  display: block;
+  margin-top: 14px;
+  color: rgba(238,243,241,.62);
+  font-size: 13px;
+  line-height: 1.5;
+}
+@media (max-width: 620px) {
+  .map-profile-stage { text-align: left; }
+  .map-profile-stage p { margin-left: 0; }
+  .map-profile-options { grid-template-columns: 1fr; }
+  .map-profile-choice { min-height: 132px; padding: 20px; }
+}
+
 </style>
 </head>
 <body>
@@ -2664,6 +2732,25 @@ html.alicyn-intro-pending .alicyn-intro {
     </div>
     <div class="alicyn-intro-word" id="alicyn-intro-word" aria-label="PIERCING PLAYGROUND">PIERCING PLAYGROUND</div>
     <button class="alicyn-intro-start" id="alicyn-intro-start" type="button">START</button>
+  </div>
+</div>
+<div class="map-profile-overlay" id="map-profile-overlay" role="dialog" aria-modal="true" aria-label="Elegir perfil para entrar al mapa" aria-hidden="true">
+  <div class="map-profile-stage">
+    <span class="map-profile-kicker">Alicyn Body Map</span>
+    <h2>Elige cómo quieres entrar.</h2>
+    <p>El mapa ajusta el lenguaje de la experiencia según el perfil. La herramienta sigue siendo educativa y local en esta versión.</p>
+    <div class="map-profile-options" aria-label="Modos de entrada">
+      <button class="map-profile-choice" type="button" data-map-persona="client">
+        <span>Explorador Alicyn</span>
+        <strong>Modo Cliente</strong>
+        <small>Información clara para explorar zonas, inspiración y decisiones con mejor criterio.</small>
+      </button>
+      <button class="map-profile-choice" type="button" data-map-persona="professional">
+        <span>Mesa profesional</span>
+        <strong>Perfil Profesional</strong>
+        <small>Entrada enfocada en evaluación, diseño, conversación con clientes y flujo de trabajo.</small>
+      </button>
+    </div>
   </div>
 </div>
 <script>
@@ -2704,6 +2791,7 @@ html.alicyn-intro-pending .alicyn-intro {
       try { sessionStorage.setItem(KEY, '1'); } catch (err) {}
       overlay.classList.add('is-exiting');
       root.classList.remove('alicyn-intro-pending');
+      window.dispatchEvent(new CustomEvent('alicyn:intro-finished'));
       window.setTimeout(() => overlay.remove(), 680);
     }
 
@@ -2712,6 +2800,73 @@ html.alicyn-intro-pending .alicyn-intro {
       start.classList.add('is-ready');
       if (reduceMotion) start.focus({ preventScroll: true });
     }, reduceMotion ? 50 : 3000);
+  })();
+</script>
+<script>
+  (function () {
+    const PERSONA_KEY = 'alicyn.mapPersona.v1';
+    const PERSONA_VALUE_KEY = 'alicyn.mapPersona.value';
+    const root = document.documentElement;
+    const overlay = document.getElementById('map-profile-overlay');
+    if (!overlay) return;
+
+    function hasPersona() {
+      try { return sessionStorage.getItem(PERSONA_KEY) === '1'; }
+      catch (err) { return false; }
+    }
+
+    function setPersona(value) {
+      try {
+        sessionStorage.setItem(PERSONA_KEY, '1');
+        sessionStorage.setItem(PERSONA_VALUE_KEY, value || 'client');
+      } catch (err) {}
+      document.body.dataset.mapPersona = value || 'client';
+    }
+
+    function showProfileGate() {
+      if (hasPersona()) return;
+      overlay.setAttribute('aria-hidden', 'false');
+      root.classList.add('alicyn-profile-pending');
+      window.setTimeout(() => overlay.querySelector('[data-map-persona]')?.focus({ preventScroll: true }), 80);
+    }
+
+    function closeMapBrief() {
+      const brief = document.getElementById('map-disclaimer');
+      if (brief) brief.classList.add('is-closed');
+    }
+
+    function showMapBrief() {
+      const brief = document.getElementById('map-disclaimer');
+      if (!brief) return;
+      brief.classList.remove('is-closed');
+      window.clearTimeout(showMapBrief.timer);
+      showMapBrief.timer = window.setTimeout(closeMapBrief, 1900);
+    }
+
+    function enterMap(value) {
+      setPersona(value);
+      overlay.setAttribute('aria-hidden', 'true');
+      root.classList.remove('alicyn-profile-pending');
+      showMapBrief();
+    }
+
+    overlay.querySelectorAll('[data-map-persona]').forEach(btn => {
+      btn.addEventListener('click', () => enterMap(btn.dataset.mapPersona));
+    });
+
+    window.addEventListener('alicyn:intro-finished', () => {
+      window.setTimeout(showProfileGate, 360);
+    });
+
+    if (!root.classList.contains('alicyn-intro-pending')) {
+      if (hasPersona()) {
+        try { document.body.dataset.mapPersona = sessionStorage.getItem(PERSONA_VALUE_KEY) || 'client'; } catch (err) {}
+        overlay.setAttribute('aria-hidden', 'true');
+        root.classList.remove('alicyn-profile-pending');
+      } else {
+        showProfileGate();
+      }
+    }
   })();
 </script>
 
@@ -2763,51 +2918,32 @@ html.alicyn-intro-pending .alicyn-intro {
   <!-- BODY MAP FIRST -->
   <div class="map-first">
     <div class="container">
-      <div class="map-disclaimer" id="map-disclaimer" role="status" aria-live="polite">
+      <div class="map-disclaimer is-closed" id="map-disclaimer" role="status" aria-live="polite">
         <div>
-          <strong>Antes de explorar</strong>
-          <p>Este mapa educa y orienta. La viabilidad real depende de anatomía, historial, joyería, técnica y valoración profesional presencial.</p>
+          <strong>Mapa interactivo</strong>
+          <p>Elige una zona del cuerpo para abrir piercings, cuidados, planeación, reseñas, comentarios e inspiración filtrada con criterio anatómico.</p>
         </div>
-        <button class="btn btn-icon btn-ghost" id="btn-close-map-disclaimer" aria-label="Cerrar aviso">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-
-      <div class="map-mode-gate" aria-label="Elige cómo quieres entrar al mapa">
-        <button class="mode-card is-active" data-persona="client">
-          <span>Explorador Alicyn</span>
-          <strong>Modo Cliente</strong>
-          <small>Información clara para decidir con criterio.</small>
-        </button>
-        <button class="mode-card" data-persona="piercer" data-nav="profile">
-          <span>Guía profesional</span>
-          <strong>Perfil profesional</strong>
-          <small>Comunidad, evaluación y herramientas para mesa.</small>
+        <button class="map-disclaimer-action" id="btn-close-map-disclaimer" type="button">
+          Entendido
         </button>
       </div>
 
       <div class="map-shell">
-        <div class="map-copy">
-          <span class="eyebrow">Alicyn Body Map</span>
-          <h1>El mapa es la entrada a todo.</h1>
-          <p>Elige una zona del cuerpo para abrir piercings, cuidados, planeación, reseñas, comentarios e inspiración filtrada con criterio anatómico.</p>
-        </div>
-
         <div class="bodymap-wrap">
         <div class="bodymap-photo-card">
           <div class="bodymap-frame" id="body-photo" aria-label="Mapa del cuerpo">
             <img src="body-map.png" class="bodymap-image" alt="Cuerpo humano · Alicyn Body Map" onerror="this.parentElement.classList.add('img-missing')" />
-            <button class="bodymap-point hit-zone" data-zone="head" style="--x:50%;--y:8%" aria-label="Cabeza" title="Cabeza"><span class="bodymap-point-label">head</span></button>
-            <button class="bodymap-point hit-zone" data-zone="ear_left" style="--x:43%;--y:16%" aria-label="Oreja izquierda" title="Oreja izquierda"><span class="bodymap-point-label">ear_left</span></button>
-            <button class="bodymap-point hit-zone" data-zone="ear_right" style="--x:57%;--y:16%" aria-label="Oreja derecha" title="Oreja derecha"><span class="bodymap-point-label">ear_right</span></button>
-            <button class="bodymap-point hit-zone" data-zone="eyebrow" style="--x:50%;--y:13%" aria-label="Ceja" title="Ceja"><span class="bodymap-point-label">eyebrow</span></button>
-            <button class="bodymap-point hit-zone" data-zone="nose" style="--x:50%;--y:16%" aria-label="Nariz" title="Nariz"><span class="bodymap-point-label">nose</span></button>
-            <button class="bodymap-point hit-zone" data-zone="mouth" style="--x:50%;--y:19%" aria-label="Boca / Labios" title="Boca"><span class="bodymap-point-label">mouth</span></button>
-            <button class="bodymap-point hit-zone" data-zone="tongue" style="--x:50%;--y:21%" aria-label="Lengua" title="Lengua"><span class="bodymap-point-label">tongue</span></button>
-            <button class="bodymap-point hit-zone" data-zone="chest_left" style="--x:43%;--y:31%" aria-label="Pecho izquierdo" title="Pecho izquierdo"><span class="bodymap-point-label">chest_left</span></button>
-            <button class="bodymap-point hit-zone" data-zone="chest_right" style="--x:57%;--y:31%" aria-label="Pecho derecho" title="Pecho derecho"><span class="bodymap-point-label">chest_right</span></button>
-            <button class="bodymap-point hit-zone" data-zone="navel" style="--x:50%;--y:45%" aria-label="Ombligo" title="Ombligo"><span class="bodymap-point-label">navel</span></button>
-            <button class="bodymap-point hit-zone" data-zone="surface" style="--x:50%;--y:53%" aria-label="Superficie / Body" title="Superficie"><span class="bodymap-point-label">surface</span></button>
+            <button class="bodymap-point hit-zone" data-zone="head" style="--x:50%;--y:11.2%" aria-label="Cabeza" title="Cabeza"><span class="bodymap-point-label">head</span></button>
+            <button class="bodymap-point hit-zone" data-zone="ear_left" style="--x:44.4%;--y:13.3%" aria-label="Oreja izquierda" title="Oreja izquierda"><span class="bodymap-point-label">ear_left</span></button>
+            <button class="bodymap-point hit-zone" data-zone="ear_right" style="--x:55.6%;--y:13.3%" aria-label="Oreja derecha" title="Oreja derecha"><span class="bodymap-point-label">ear_right</span></button>
+            <button class="bodymap-point hit-zone" data-zone="eyebrow" style="--x:50%;--y:12.1%" aria-label="Ceja" title="Ceja"><span class="bodymap-point-label">eyebrow</span></button>
+            <button class="bodymap-point hit-zone" data-zone="nose" style="--x:50%;--y:14.1%" aria-label="Nariz" title="Nariz"><span class="bodymap-point-label">nose</span></button>
+            <button class="bodymap-point hit-zone" data-zone="mouth" style="--x:50%;--y:16.1%" aria-label="Boca / Labios" title="Boca"><span class="bodymap-point-label">mouth</span></button>
+            <button class="bodymap-point hit-zone" data-zone="tongue" style="--x:50%;--y:17.4%" aria-label="Lengua" title="Lengua"><span class="bodymap-point-label">tongue</span></button>
+            <button class="bodymap-point hit-zone" data-zone="chest_left" style="--x:43.5%;--y:26.4%" aria-label="Pecho izquierdo" title="Pecho izquierdo"><span class="bodymap-point-label">chest_left</span></button>
+            <button class="bodymap-point hit-zone" data-zone="chest_right" style="--x:56.5%;--y:26.4%" aria-label="Pecho derecho" title="Pecho derecho"><span class="bodymap-point-label">chest_right</span></button>
+            <button class="bodymap-point hit-zone" data-zone="navel" style="--x:50%;--y:38.3%" aria-label="Ombligo" title="Ombligo"><span class="bodymap-point-label">navel</span></button>
+            <button class="bodymap-point hit-zone" data-zone="surface" style="--x:50%;--y:47.8%" aria-label="Superficie / Body" title="Superficie"><span class="bodymap-point-label">surface</span></button>
 
             <!-- Fallback si la imagen aún no existe -->
             <div class="img-fallback">
@@ -2817,7 +2953,7 @@ html.alicyn-intro-pending .alicyn-intro {
           </div>
         </div>
 
-        <div class="zone-info" id="zone-info">
+        <div class="zone-info" id="zone-info" aria-hidden="true">
           <div class="empty">
             <div>
               <p style="font-size:14px;color:var(--text-soft);margin:0 0 6px">Toca una zona del mapa</p>
@@ -4457,6 +4593,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       btn.classList.toggle('is-active', btn.dataset.nav === activeView);
     });
 
+    document.body.classList.toggle('is-map-view', viewId === 'home');
     state.currentView = viewId;
   }
 
@@ -4485,13 +4622,6 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         disclaimer.classList.add('is-closed');
       });
     }
-
-    document.querySelectorAll('.mode-card').forEach(card => {
-      card.addEventListener('click', () => {
-        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('is-active'));
-        card.classList.add('is-active');
-      });
-    });
   }
 
   // ── MAPA CORPORAL (VISTA HOME) ─────────────────────────────────────────────
@@ -8299,6 +8429,256 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     color: var(--text-soft);
     font: 11px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+
+  /* v0.5 · mapa fullscreen como experiencia de app */
+  html,
+  body,
+  main,
+  .view {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  #view-home {
+    min-height: 0;
+    overflow: hidden;
+  }
+  body.is-map-view .app-footer {
+    display: none;
+  }
+  #view-home .map-first {
+    height: calc(100dvh - 65px);
+    min-height: 520px;
+    padding: 0;
+    display: grid;
+    overflow: hidden;
+  }
+  #view-home .map-first::before {
+    background:
+      radial-gradient(780px 560px at 50% 34%, rgba(143,191,195,.10), transparent 66%),
+      linear-gradient(180deg, rgba(238,243,241,.018), transparent);
+  }
+  #view-home .map-first .container {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    padding: 0 clamp(18px, 3vw, 42px);
+    display: grid;
+    place-items: center;
+  }
+  #view-home .map-shell,
+  #view-home .bodymap-wrap {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    place-items: center;
+    gap: 0;
+  }
+  #view-home .map-copy,
+  #view-home .zone-info {
+    display: none !important;
+  }
+  #view-home .bodymap-photo-card {
+    width: 100%;
+    height: 100%;
+    min-height: 0 !important;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    overflow: visible;
+  }
+  #view-home .bodymap-photo-card::before {
+    display: none;
+  }
+  #view-home .bodymap-frame {
+    width: min(48vw, 540px, 54dvh);
+    max-width: none;
+    margin: 0 auto;
+    filter: drop-shadow(0 22px 46px rgba(0,0,0,.34));
+  }
+  #view-home .bodymap-frame.is-zoomed {
+    transform: scale(1.015);
+  }
+  #view-home .bodymap-image {
+    filter: drop-shadow(0 20px 42px rgba(0,0,0,.38));
+    mix-blend-mode: normal;
+    opacity: 1;
+  }
+  #view-home .hit-zone {
+    width: 40px !important;
+    height: 40px !important;
+    overflow: visible;
+    background: transparent;
+    touch-action: manipulation;
+  }
+  #view-home .hit-zone::before {
+    inset: 14px;
+    background: rgba(238,243,241,.95);
+    border: 1px solid rgba(10,13,12,.34);
+    box-shadow: 0 2px 10px rgba(0,0,0,.24);
+  }
+  #view-home .hit-zone::after {
+    inset: 9px;
+    border: 1px solid rgba(143,191,195,.46);
+    box-shadow: none;
+  }
+  #view-home .hit-zone:hover::before,
+  #view-home .hit-zone:focus-visible::before {
+    transform: scale(1.12);
+    background: #8FBFC3;
+    border-color: rgba(10,13,12,.5);
+    box-shadow: 0 0 0 4px rgba(143,191,195,.14), 0 4px 14px rgba(0,0,0,.26);
+  }
+  #view-home .hit-zone:hover::after,
+  #view-home .hit-zone:focus-visible::after {
+    opacity: .72;
+    transform: scale(1.08);
+  }
+  #view-home .hit-zone.is-active::before {
+    transform: scale(1.16);
+    background: #8FBFC3;
+    border-color: #0a0d0c;
+    box-shadow: 0 0 0 5px rgba(143,191,195,.18), 0 6px 18px rgba(0,0,0,.3);
+  }
+  #view-home .hit-zone.is-active::after {
+    opacity: .8;
+    transform: scale(1.12);
+    border-color: #8FBFC3;
+  }
+  #view-home .map-disclaimer {
+    position: fixed;
+    top: 82px;
+    left: 50%;
+    right: auto;
+    width: min(560px, calc(100vw - 28px));
+    transform: translateX(-50%);
+    z-index: 120;
+    border-radius: 16px;
+  }
+  .map-disclaimer-action {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid rgba(143,191,195,.28);
+    border-radius: 999px;
+    background: rgba(143,191,195,.12);
+    color: #eef3f1;
+    font: 650 12px/1 var(--font-sans);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .map-disclaimer-action:hover {
+    background: #8FBFC3;
+    color: #0a0d0c;
+  }
+  .alicyn-zone-panel {
+    max-height: min(720px, calc(100dvh - 120px));
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .alicyn-zone-panel-list {
+    min-height: 0;
+    overflow: auto;
+    padding-right: 2px;
+  }
+  .alicyn-zone-panel-foot {
+    position: sticky;
+    bottom: -26px;
+    background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.98) 42%);
+  }
+  #view-home .bodymap-admin-panel {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    z-index: 16;
+    max-height: min(320px, 42dvh);
+    overflow: auto;
+  }
+  @media (max-width: 900px) {
+    #view-home .map-first {
+      height: calc(100dvh - 61px);
+      min-height: 500px;
+    }
+    #view-home .bodymap-frame {
+      width: min(70vw, 460px, 55dvh);
+    }
+  }
+  @media (max-width: 720px) {
+    .alicyn-zone-panel {
+      bottom: 12px;
+      max-height: min(72dvh, calc(100dvh - 92px));
+      padding: 20px;
+      border-radius: 22px 22px 18px 18px;
+    }
+    .alicyn-zone-panel-head { margin-bottom: 12px; padding-bottom: 12px; }
+    .alicyn-zone-panel-title h3 { font-size: 18px; }
+    .alicyn-zone-panel-foot { bottom: -20px; margin-left: -20px; margin-right: -20px; padding: 14px 20px 0; }
+  }
+  @media (max-width: 480px) {
+    #view-home .map-first {
+      height: calc(100dvh - 116px - env(safe-area-inset-bottom, 0px));
+      min-height: 0;
+    }
+    #view-home .map-first .container {
+      padding: 0 12px;
+    }
+    #view-home .bodymap-frame {
+      width: min(88vw, 390px, 58dvh);
+      filter: drop-shadow(0 16px 32px rgba(0,0,0,.34));
+    }
+    #view-home .bodymap-frame.is-zoomed {
+      transform: none;
+    }
+    #view-home .hit-zone {
+      width: 44px !important;
+      height: 44px !important;
+    }
+    #view-home .hit-zone::before {
+      inset: 16px;
+    }
+    #view-home .hit-zone::after {
+      inset: 10px;
+    }
+    #view-home .map-disclaimer {
+      top: 66px;
+      align-items: center;
+      padding: 12px;
+    }
+    #view-home .map-disclaimer p {
+      font-size: 11px;
+      line-height: 1.38;
+    }
+    .map-disclaimer-action {
+      min-height: 36px;
+      padding: 0 12px;
+    }
+    .alicyn-zone-panel {
+      left: 10px;
+      right: 10px;
+      bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+      max-height: min(68dvh, calc(100dvh - 150px));
+      padding: 18px;
+      border-radius: 20px;
+    }
+    .alicyn-zone-panel-foot {
+      margin-left: -18px;
+      margin-right: -18px;
+      padding: 12px 18px 0;
+    }
+    .alicyn-zone-panel-foot .btn {
+      min-height: 44px;
+    }
+    #view-home .bodymap-admin-panel {
+      left: 10px;
+      right: 10px;
+      bottom: calc(74px + env(safe-area-inset-bottom, 0px));
+      width: auto;
+      max-height: 32dvh;
+    }
+  }
 </style>
 
 <script id="alicyn-hero-v32-script">
@@ -8335,18 +8715,19 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   };
 
   const BODY_MAP_CALIBRATION_KEY = 'alicyn.bodyMapCalibration.v1';
+  const BODY_MAP_VERSION = 'body-map-points-v0.2';
   const BODY_MAP_DEFAULT_POINTS = [
-    { id: 'head', x: 50, y: 8 },
-    { id: 'ear_left', x: 43, y: 16 },
-    { id: 'ear_right', x: 57, y: 16 },
-    { id: 'eyebrow', x: 50, y: 13 },
-    { id: 'nose', x: 50, y: 16 },
-    { id: 'mouth', x: 50, y: 19 },
-    { id: 'tongue', x: 50, y: 21 },
-    { id: 'chest_left', x: 43, y: 31 },
-    { id: 'chest_right', x: 57, y: 31 },
-    { id: 'navel', x: 50, y: 45 },
-    { id: 'surface', x: 50, y: 53 }
+    { id: 'head', x: 50, y: 11.2 },
+    { id: 'ear_left', x: 44.4, y: 13.3 },
+    { id: 'ear_right', x: 55.6, y: 13.3 },
+    { id: 'eyebrow', x: 50, y: 12.1 },
+    { id: 'nose', x: 50, y: 14.1 },
+    { id: 'mouth', x: 50, y: 16.1 },
+    { id: 'tongue', x: 50, y: 17.4 },
+    { id: 'chest_left', x: 43.5, y: 26.4 },
+    { id: 'chest_right', x: 56.5, y: 26.4 },
+    { id: 'navel', x: 50, y: 38.3 },
+    { id: 'surface', x: 50, y: 47.8 }
   ];
   const BODY_MAP_ZONE_TARGETS = {
     head: ['eyebrow', 'nose', 'mouth', 'tongue'],
@@ -8403,7 +8784,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const defaults = bodyMapDefaults();
     try {
       const stored = JSON.parse(localStorage.getItem(BODY_MAP_CALIBRATION_KEY) || 'null');
-      if (!stored || !Array.isArray(stored.points)) return defaults;
+      if (!stored || stored.version !== BODY_MAP_VERSION || !Array.isArray(stored.points)) return defaults;
       const byId = new Map(defaults.map(point => [point.id, point]));
       stored.points.forEach(point => {
         if (!point || !byId.has(point.id)) return;
@@ -8419,7 +8800,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function bodyMapPayload() {
     return {
-      version: 'body-map-points-v0.1',
+      version: BODY_MAP_VERSION,
       updatedAt: new Date().toISOString(),
       image: 'body-map.png',
       points: bodyMapState.points.map(point => ({
