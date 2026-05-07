@@ -91,7 +91,7 @@
     return user.user_metadata?.full_name ||
       user.user_metadata?.name ||
       user.email ||
-      'Alicyn user';
+      'PierceMap user';
   }
 
   function initials(name) {
@@ -362,7 +362,7 @@
     return tryWrite('design_projects insert', [
       () => state.client.from('design_projects').insert({
         user_id: user.id,
-        title: projectData.title || 'Alicyn ear design',
+        title: projectData.title || 'PierceMap design',
         status: projectData.status || 'draft',
         payload: projectData,
         created_at: now,
@@ -370,7 +370,7 @@
       }),
       () => state.client.from('design_projects').insert({
         profile_id: user.id,
-        name: projectData.title || 'Alicyn ear design',
+        name: projectData.title || 'PierceMap design',
         status: projectData.status || 'draft',
         data: projectData,
         created_at: now

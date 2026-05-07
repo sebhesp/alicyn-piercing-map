@@ -1,5 +1,5 @@
 /* ============================================================================
-   ALICYN BODY MAP — COMMUNITY MODULE (v2)
+   PIERCEMAP — COMMUNITY MODULE (v2)
    Auth (mock OAuth UX), perfiles, gamificación, experiencias, ratings,
    ripples, transiciones premium y toasts.
    En producción este módulo se conecta a Supabase (Auth + DB + Storage).
@@ -224,7 +224,7 @@
     closeLogin();
     renderProfile();
     renderHeader();
-    toast(`Bienvenido a Alicyn, ${s.name}`, 'success');
+    toast(`Bienvenido a PierceMap, ${s.name}`, 'success');
   }
 
   function logout() {
@@ -727,7 +727,7 @@
     // Welcome toast for first time visitors
     if (!localStorage.getItem('alicyn.visited')) {
       localStorage.setItem('alicyn.visited', '1');
-      setTimeout(() => toast('Bienvenido a Alicyn Body Map · v2', 'success'), 600);
+      setTimeout(() => toast('Bienvenido a PierceMap · v2', 'success'), 600);
     }
   }
 

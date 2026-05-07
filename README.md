@@ -1,6 +1,6 @@
-# Alicyn Body Map
+# PierceMap
 
-> **"Alicyn Body Map convierte la decisión de un piercing en una conversación informada entre cliente, anatomía y perforador profesional."**
+> **"PierceMap convierte la decisión de un piercing en una conversación informada entre cliente, anatomía y perforador profesional."**
 
 Herramienta web interactiva para estudios de piercing y sus clientes. Corre completamente en el navegador — sin servidor, sin login, sin datos externos. Diseñada para mesa: iPad, tablet Android, iPhone y escritorio.
 
@@ -19,7 +19,7 @@ Herramienta web interactiva para estudios de piercing y sus clientes. Corre comp
 
 ## Tesis de diseño
 
-El problema no es información — es la conversación. La mayoría de consultas de piercing terminan en malentendidos porque el cliente decide desde la estética ("se ve bonito") sin entender anatomía, cicatrización ni compatibilidad. Alicyn Body Map no reemplaza al perforador: le da contexto al cliente *antes* de que empiece la consulta, para que la conversación sea más honesta, rápida y profesional.
+El problema no es información — es la conversación. La mayoría de consultas de piercing terminan en malentendidos porque el cliente decide desde la estética ("se ve bonito") sin entender anatomía, cicatrización ni compatibilidad. PierceMap no reemplaza al perforador: le da contexto al cliente *antes* de que empiece la consulta, para que la conversación sea más honesta, rápida y profesional.
 
 **Principio central:** Esta herramienta visualiza posibilidades y registra observaciones. No diagnostica, no determina viabilidad, no garantiza resultados. El criterio final es siempre del perforador en la valoración presencial.
 
@@ -71,7 +71,7 @@ Reemplaza el binario "Apto / No apto" con 5 estados de observación que reflejan
 
 ---
 
-## Carga de Cicatrización Alicyn
+## Carga de cicatrización PierceMap
 
 Métrica propietaria basada en número de puntos activos. Aparece en el resumen exportable y guía la conversación de postprocedimiento:
 
@@ -88,10 +88,10 @@ Métrica propietaria basada en número de puntos activos. Aparece en el resumen 
 
 El resumen de evaluación incluye:
 - Nombre del cliente (opcional, personaliza el saludo)
-- Carga de Cicatrización Alicyn con descripción
+- Carga de cicatrización PierceMap con descripción
 - Lista de puntos con estado, joyería, fase y nota profesional
 - Cuidados generales de cicatrización
-- Disclaimer Alicyn (lenguaje orientativo, nunca absoluto)
+- Disclaimer PierceMap (lenguaje orientativo, nunca absoluto)
 
 Formatos de salida: copiar al portapapeles · descargar `.txt` · imprimir · WhatsApp (navigator.share)
 
@@ -123,7 +123,7 @@ Formatos de salida: copiar al portapapeles · descargar `.txt` · imprimir · Wh
 - [ ] ¿Qué fue lo primero que hiciste en la herramienta sin instrucciones?
 - [ ] ¿Algo en el mapa te parece incorrecto o incompleto?
 - [ ] ¿Los 5 estados anatómicos tienen sentido para tu trabajo diario? ¿Usarías todos?
-- [ ] ¿La Carga de Cicatrización Alicyn es un concepto que le explicarías a un cliente?
+- [ ] ¿La Carga de cicatrización PierceMap es un concepto que le explicarías a un cliente?
 - [ ] ¿El resumen exportado tiene el tono correcto? ¿Se lo darías a un cliente tal cual?
 - [ ] ¿Qué información falta en el resumen?
 - [ ] ¿El canvas de evaluación es usable con tu flujo real de consulta?
@@ -172,7 +172,7 @@ La herramienta nunca dice "esto sí se puede" o "esto no se puede". El lenguaje 
 
 ## Créditos
 
-Concebido y desarrollado para **Alicyn · MX**  
+Concebido y desarrollado para **PierceMap · MX**  
 Diseño de sistema: oscuro, editorial, premium — inspirado en atlas y herramientas de salud digital  
 Stack: HTML · CSS · Vanilla JS · Canvas API
 

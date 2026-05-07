@@ -1,5 +1,5 @@
 /* ============================================================================
-   ALICYN BODY MAP — APP LOGIC
+   PIERCEMAP — APP LOGIC
    Mobile-first · Vanilla JS · Sin dependencias externas
    Optimizado para iPhone 375–430px y tablet/iPad.
    ============================================================================ */
@@ -403,7 +403,7 @@
     if (earPhoto) earPhoto.classList.toggle('has-selection', count > 0);
     applyEarSide();
 
-    // Carga de Cicatrización Alicyn
+    // Carga de cicatrización PierceMap
     const fill   = document.getElementById('load-fill');
     const label  = document.getElementById('load-label');
     const cnt    = document.getElementById('load-count');
@@ -476,12 +476,12 @@
     const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
 
     const lines = [
-      'ALICYN BODY MAP · Plan de Composición de Oreja',
+      'PIERCEMAP · Plan de Composición de Oreja',
       '═'.repeat(50),
       dateStr,
       '',
       `Piercings en el plan: ${piercings.length}`,
-      `Carga de Cicatrización Alicyn: ${load.label}`,
+      `Carga de cicatrización PierceMap: ${load.label}`,
       '',
       '─'.repeat(50),
       'COMPOSICIÓN PLANEADA',
@@ -510,18 +510,18 @@
       '',
       AlicynData.ALICYN_DISCLAIMER
     ];
-    downloadText(lines.join('\n'), 'plan-oreja-alicyn.txt');
+    downloadText(lines.join('\n'), 'plan-oreja-piercemap.txt');
   }
 
   function sharePlan() {
     const sel = [...state.planner.selected];
     if (!sel.length) { showToast('Selecciona al menos un piercing.'); return; }
-    const text = 'Mi plan de oreja Alicyn: ' + sel.map(id => {
+    const text = 'Mi plan de oreja PierceMap: ' + sel.map(id => {
       const p = AlicynData.byId(id);
       return p ? p.nombre : id;
     }).join(', ');
     if (navigator.share) {
-      navigator.share({ title: 'Mi plan Alicyn', text });
+      navigator.share({ title: 'Mi plan PierceMap', text });
     } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).then(() => showToast('Plan copiado al portapapeles.'));
     } else {
@@ -1072,7 +1072,7 @@
       return line;
     }).join('\n\n');
 
-    return `${greeting}\n\nTe comparto el resumen de tu evaluaci\xF3n anat\xF3mica asistida con Alicyn Body Map:\n\n*Carga de Cicatrizaci\xF3n Alicyn: ${load.label}*\n${load.advice}\n\n*Puntos evaluados:*\n${pts}\n\n*Cuidados b\xE1sicos:*\n\xB7 Limpieza con suero fisiol\xF3gico 1–2 veces al d\xEDa\n\xB7 No manipular ni retirar la joyer\xEDa antes de tiempo\n\xB7 Consulta ante cualquier signo inusual\n\n_Esta evaluaci\xF3n es orientativa y no sustituye la valoraci\xF3n presencial de un perforador profesional. La viabilidad final depende de tu anatom\xEDa real._\n\n— Generado con Alicyn Body Map`;
+    return `${greeting}\n\nTe comparto el resumen de tu evaluaci\xF3n anat\xF3mica asistida con PierceMap:\n\n*Carga de cicatrizaci\xF3n PierceMap: ${load.label}*\n${load.advice}\n\n*Puntos evaluados:*\n${pts}\n\n*Cuidados b\xE1sicos:*\n\xB7 Limpieza con suero fisiol\xF3gico 1–2 veces al d\xEDa\n\xB7 No manipular ni retirar la joyer\xEDa antes de tiempo\n\xB7 Consulta ante cualquier signo inusual\n\n_Esta evaluaci\xF3n es orientativa y no sustituye la valoraci\xF3n presencial de un perforador profesional. La viabilidad final depende de tu anatom\xEDa real._\n\n— Generado con PierceMap`;
   }
 
   function closeSummary() {
@@ -1088,7 +1088,7 @@
     const sep        = '─'.repeat(52);
 
     const lines = [
-      'ALICYN BODY MAP \xB7 Resumen de Evaluaci\xF3n Anat\xF3mica',
+      'PIERCEMAP \xB7 Resumen de Evaluaci\xF3n Anat\xF3mica',
       '═'.repeat(52),
       dateStr,
       ...(clientName ? [`Cliente: ${clientName}`] : []),
@@ -1096,7 +1096,7 @@
       '“Un buen proyecto no empieza con la joyer\xEDa, empieza con la anatom\xEDa.”',
       '',
       sep,
-      `CARGA DE CICATRIZACI\xD3N ALICYN: ${load.label.toUpperCase()}`,
+      `CARGA DE CICATRIZACI\xD3N PIERCEMAP: ${load.label.toUpperCase()}`,
       load.desc,
       load.advice,
       sep,
@@ -1161,7 +1161,7 @@
     const clientName = getClientName();
     const slug = clientName
       ? 'evaluacion-' + clientName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.txt'
-      : 'evaluacion-anatomica-alicyn.txt';
+      : 'evaluacion-anatomica-piercemap.txt';
     downloadText(buildSummaryText(), slug);
   }
 

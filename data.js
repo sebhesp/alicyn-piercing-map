@@ -1,5 +1,5 @@
 /* ============================================================================
-   ALICYN BODY MAP — DATA LAYER
+   PIERCEMAP — DATA LAYER
    Base de datos local de piercings, zonas, fases y reglas de planeación.
    Todo el contenido es educativo y NO sustituye criterio profesional.
    ============================================================================ */
@@ -47,7 +47,7 @@ const PROJECT_PHASES = [
   { id: 'pf', label: 'Fase futura', desc: 'Para revisitar en una próxima consulta, según evolución de la anatomía y proceso.' }
 ];
 
-/* ---------- ESTADOS ANATÓMICOS — Sistema Alicyn ----------
+/* ---------- ESTADOS ANATÓMICOS — Sistema PierceMap ----------
    No indican diagnóstico ni resultado garantizado.
    Son orientaciones visuales para la conversación en consulta.
 */
@@ -107,7 +107,7 @@ const ANATOMY_STATES = [
   }
 ];
 
-/* ---------- CARGA DE CICATRIZACIÓN ALICYN ----------
+/* ---------- CARGA DE CICATRIZACIÓN PIERCEMAP ----------
    Sistema propietario para comunicar la demanda total de un plan de piercings.
    No predice resultados. Orienta la conversación sobre tiempos y fases.
 */

@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Alicyn Body Map · Planea tu próximo piercing con criterio profesional</title>
-<meta name="description" content="Plataforma interactiva para piercing shops y clientes. Explora zonas, tiempos de cicatrización, cuidados, errores comunes e inspiración. Incluye evaluación anatómica asistida." />
+<title>PierceMap · El mapa profesional del piercing</title>
+<meta name="description" content="Plataforma profesional para descubrir estudios, preparar revisiones previas, diseñar proyectos y gestionar experiencias de piercing." />
 <meta name="theme-color" content="#0a0d0c" />
 <link rel="preload" href="assets/logo-alicyn.svg" as="image" type="image/svg+xml" />
 <link rel="preload" href="body-map.png" as="image" type="image/png" />
 <script>
   (function () {
     try {
-      var langSaved = !!localStorage.getItem('alicyn_lang');
+      var langSaved = !!(localStorage.getItem('piercemap_language') || localStorage.getItem('alicyn_lang'));
       var introSeen = sessionStorage.getItem('alicyn.intro.v1') === '1';
       var personaSeen = sessionStorage.getItem('alicyn.mapPersona.v1') === '1';
       if (!langSaved) {
@@ -30,7 +30,7 @@
 </script>
 <style>
 /* ============================================================================
-   ALICYN BODY MAP — STYLES
+   PIERCEMAP — STYLES
    Estética: oscura, editorial, premium, inspirada en sistema operativo + atlas.
    ============================================================================ */
 
@@ -1391,7 +1391,7 @@ body {
 }
 
 /* ============================================================================
-   ALICYN BODY MAP — v2 STYLES
+   PIERCEMAP — v2 STYLES
    Image-based maps, premium transitions, community, gamification.
    Cargado DESPUÉS de styles.css para extender / sobrescribir lo necesario.
    ============================================================================ */
@@ -2898,9 +2898,9 @@ html.alicyn-profile-pending .map-profile-overlay {
 
 <div class="alicyn-language-gate" id="alicyn-language-gate" role="dialog" aria-modal="true" aria-label="Choose language" data-i18n-aria="language.title">
   <div class="alicyn-language-panel">
-    <img src="assets/logo-alicyn.svg" alt="Alicyn" decoding="async" />
+    <img src="assets/logo-alicyn.svg" alt="PierceMap" decoding="async" />
     <h1 data-i18n="language.title">Elige idioma</h1>
-    <p data-i18n="language.copy">Selecciona el idioma de la experiencia antes de entrar a Piercing Playground.</p>
+    <p data-i18n="language.copy">Selecciona el idioma de la experiencia antes de entrar a PierceMap.</p>
     <div class="alicyn-language-options" aria-label="Language options">
       <button type="button" data-lang-choice="es">ES</button>
       <button type="button" data-lang-choice="en">EN</button>
@@ -2908,26 +2908,26 @@ html.alicyn-profile-pending .map-profile-overlay {
   </div>
 </div>
 
-<div class="alicyn-intro" id="alicyn-intro" role="dialog" aria-modal="true" aria-label="Alicyn Piercing Playground">
+<div class="alicyn-intro" id="alicyn-intro" role="dialog" aria-modal="true" aria-label="PierceMap">
   <div class="alicyn-intro-stage">
     <div class="intro-lockup">
       <div class="alicyn-intro-drop-wrap" aria-hidden="true">
         <span class="alicyn-intro-ripple"></span>
         <img class="alicyn-intro-drop" src="assets/logo-alicyn-drop.svg" alt="" decoding="async" />
       </div>
-      <div class="alicyn-intro-word" id="alicyn-intro-word" aria-label="PIERCING PLAYGROUND" data-i18n="intro.title">PIERCING PLAYGROUND</div>
+      <div class="alicyn-intro-word" id="alicyn-intro-word" aria-label="PierceMap" data-i18n="intro.title">PierceMap</div>
       <button class="alicyn-intro-start" id="alicyn-intro-start" type="button" data-i18n="intro.start">START</button>
     </div>
   </div>
 </div>
 <div class="map-profile-overlay" id="map-profile-overlay" role="dialog" aria-modal="true" aria-label="Elegir perfil para entrar al mapa" data-i18n-aria="profile.title" aria-hidden="true">
   <div class="map-profile-stage">
-    <span class="map-profile-kicker" data-i18n="profile.kicker">Alicyn Body Map</span>
+    <span class="map-profile-kicker" data-i18n="profile.kicker">PierceMap</span>
     <h2 data-i18n="profile.title">Elige cómo quieres entrar.</h2>
     <p data-i18n="profile.copy">El mapa ajusta el lenguaje de la experiencia según el perfil. La herramienta sigue siendo educativa y local en esta versión.</p>
     <div class="map-profile-options" aria-label="Modos de entrada">
       <button class="map-profile-choice" type="button" data-map-persona="client">
-        <span data-i18n="profile.client.kicker">Explorador Alicyn</span>
+        <span data-i18n="profile.client.kicker">Explorador PierceMap</span>
         <strong data-i18n="profile.client.title">Modo Cliente</strong>
         <small data-i18n="profile.client.copy">Información clara para explorar zonas, inspiración y decisiones con mejor criterio.</small>
       </button>
@@ -2942,26 +2942,26 @@ html.alicyn-profile-pending .map-profile-overlay {
 <script>
 const i18n = {
   es: {
-    'meta.title': 'Alicyn Body Map · Planea tu próximo piercing con criterio profesional',
-    'meta.description': 'Plataforma interactiva para piercing shops y clientes. Explora zonas, tiempos de cicatrización, cuidados, errores comunes e inspiración. Incluye evaluación anatómica asistida.',
+    'meta.title': 'PierceMap · El mapa profesional del piercing',
+    'meta.description': 'Plataforma profesional para descubrir estudios, preparar revisiones previas, diseñar proyectos y gestionar experiencias de piercing.',
     'language.title': 'Elige idioma',
-    'language.copy': 'Selecciona el idioma de la experiencia antes de entrar a Piercing Playground.',
-    'intro.title': 'PIERCING PLAYGROUND',
+    'language.copy': 'Selecciona el idioma de la experiencia antes de entrar a PierceMap.',
+    'intro.title': 'PierceMap',
     'intro.start': 'START',
-    'footer.disclaimer': 'La información de esta herramienta es educativa y no sustituye la evaluación de un perforador profesional ni la atención médica. Los tiempos de cicatrización pueden variar según anatomía, técnica, joyería, cuidados y estilo de vida.',
+    'footer.disclaimer': 'La información en PierceMap es orientativa y no sustituye la valoración presencial de un profesional.',
     'footer.brand': '© PierceMap · MX',
-    'profile.kicker': 'Alicyn Body Map',
+    'profile.kicker': 'PierceMap',
     'profile.title': 'Elige cómo quieres entrar.',
     'profile.copy': 'El mapa ajusta el lenguaje de la experiencia según el perfil. La herramienta sigue siendo educativa y local en esta versión.',
-    'profile.client.kicker': 'Explorador Alicyn',
+    'profile.client.kicker': 'Explorador PierceMap',
     'profile.client.title': 'Modo Cliente',
     'profile.client.copy': 'Información clara para explorar zonas, inspiración y decisiones con mejor criterio.',
     'profile.pro.kicker': 'Mesa profesional',
     'profile.pro.title': 'Perfil Profesional',
     'profile.pro.copy': 'Entrada enfocada en evaluación, diseño, conversación con clientes y flujo de trabajo.',
-    'brand.aria': 'Inicio · Piercing Playground',
+    'brand.aria': 'Inicio · PierceMap',
     'nav.map': 'Mapa',
-    'nav.design': 'Diseñar',
+    'nav.design': 'Diseñador',
     'nav.inspo': 'Inspo',
     'nav.community': 'Comunidad',
     'nav.profile': 'Perfil',
@@ -2982,10 +2982,10 @@ const i18n = {
     'inspo.copy': 'Esta pestaña está pensada para alimentar una galería propia con referencias de Pinterest y portafolios, filtradas por viabilidad, ética, joyería inicial correcta y salud del tejido.',
     'profile.login': 'Continuar con Google',
     'profile.logout': 'Cerrar sesión',
-    'profile.join': 'Únete a Alicyn',
+    'profile.join': 'Únete a PierceMap',
     'profile.syncCopy': 'Inicia sesión para sincronizar tus favoritos, proyectos y experiencias.',
     'profile.legal': 'Al continuar aceptas los términos y la política de privacidad. Tu información se mantiene segura. Las fotos se moderan antes de publicarse.',
-    'profile.eyebrow': 'Perfil Alicyn',
+    'profile.eyebrow': 'Perfil PierceMap',
     'profile.mainTitle': 'Cuenta, progreso y herramientas profesionales en un solo lugar',
     'profile.mainCopy': 'Tu perfil centraliza comunidad, aprendizaje y el flujo de consulta. El modo piercer vive aquí como una herramienta de trabajo, no como una sección separada.',
     'profile.account': 'Tu cuenta',
@@ -3058,7 +3058,7 @@ const i18n = {
     'anatomy.deletePoint': 'Eliminar punto',
     'anatomy.registered': 'Puntos registrados',
     'anatomy.noPoints': 'Aún no has marcado puntos.',
-    'anatomy.principle': 'Principio central Alicyn:',
+    'anatomy.principle': 'Principio central PierceMap:',
     'anatomy.principleCopy': 'Cada anatomía es única. Esta herramienta visualiza posibilidades y registra observaciones. No determina viabilidad, no diagnostica ni garantiza resultados. El criterio final es siempre del perforador profesional en la valoración presencial.',
     'inspo.heading': 'Inspiración',
     'inspo.save': 'Guardar',
@@ -3066,7 +3066,7 @@ const i18n = {
     'inspo.use': 'Usar en diseño',
     'inspo.favoriteAria': 'Guardar en mis referencias',
     'inspo.how': 'Cómo lograr este resultado',
-    'inspo.recommendation': 'Recomendación Alicyn',
+    'inspo.recommendation': 'Recomendación PierceMap',
     'inspo.viability': 'Viabilidad',
     'inspo.viewCriteria': 'Ver criterio',
     'inspo.emptyTitle': 'No hay referencias para esta zona todavía.',
@@ -3076,7 +3076,7 @@ const i18n = {
     'inspo.savedToast': 'Guardado en tus referencias',
     'inspo.removedToast': 'Quitado de favoritos',
     'inspo.toDesign': 'Llevándote a Diseñar…',
-    'community.eyebrow': 'Comunidad Alicyn',
+    'community.eyebrow': 'Comunidad PierceMap',
     'community.title': 'Tu experiencia ayuda a quien viene después.',
     'community.copy': 'Comparte cómo viviste tu piercing: dolor, cuidados y cicatrización. Cada experiencia suma información real para decidir mejor.',
     'community.shareExperience': 'Compartir experiencia',
@@ -3175,7 +3175,7 @@ const i18n = {
     'drawer.care': 'Cuidados esenciales',
     'drawer.mistakes': 'Errores comunes',
     'drawer.alerts': 'Señales de alerta',
-    'drawer.recommendation': 'Recomendación Alicyn',
+    'drawer.recommendation': 'Recomendación PierceMap',
     'drawer.inspiration': 'Inspiración',
     'drawer.available': 'piercings disponibles · toca para ver detalles',
     'drawer.savePlan': 'Guardar en mi plan',
@@ -3184,26 +3184,26 @@ const i18n = {
     'drawer.close': 'Cerrar'
   },
   en: {
-    'meta.title': 'Alicyn Body Map · Plan your next piercing with professional criteria',
-    'meta.description': 'Interactive platform for piercing shops and clients. Explore zones, healing times, care, common mistakes and inspiration. Includes assisted anatomy evaluation.',
+    'meta.title': 'PierceMap · The professional piercing map',
+    'meta.description': 'Professional platform to discover studios, prepare pre-reviews, plan designs and manage piercing experiences.',
     'language.title': 'Choose language',
-    'language.copy': 'Select the experience language before entering Piercing Playground.',
-    'intro.title': 'PIERCING PLAYGROUND',
+    'language.copy': 'Select the experience language before entering PierceMap.',
+    'intro.title': 'PierceMap',
     'intro.start': 'START',
-    'footer.disclaimer': 'The information in this tool is educational and does not replace evaluation by a professional piercer or medical care. Healing times may vary by anatomy, technique, jewelry, care and lifestyle.',
+    'footer.disclaimer': 'Information on PierceMap is guidance-only and does not replace an in-person evaluation by a professional.',
     'footer.brand': '© PierceMap · MX',
-    'profile.kicker': 'Alicyn Body Map',
+    'profile.kicker': 'PierceMap',
     'profile.title': 'Choose how you want to enter.',
     'profile.copy': 'The map adjusts the experience language to your profile. This version remains educational and local.',
-    'profile.client.kicker': 'Alicyn Explorer',
+    'profile.client.kicker': 'PierceMap Explorer',
     'profile.client.title': 'Client Mode',
     'profile.client.copy': 'Clear information to explore zones, inspiration and better-informed decisions.',
     'profile.pro.kicker': 'Professional Desk',
     'profile.pro.title': 'Professional Profile',
     'profile.pro.copy': 'An entry point focused on evaluation, design, client conversations and workflow.',
-    'brand.aria': 'Home · Piercing Playground',
+    'brand.aria': 'Home · PierceMap',
     'nav.map': 'Map',
-    'nav.design': 'Design',
+    'nav.design': 'Planner',
     'nav.inspo': 'Inspo',
     'nav.community': 'Community',
     'nav.profile': 'Profile',
@@ -3224,10 +3224,10 @@ const i18n = {
     'inspo.copy': 'This tab is designed to feed a private gallery with Pinterest and portfolio references, filtered by viability, ethics, correct initial jewelry and tissue health.',
     'profile.login': 'Continue with Google',
     'profile.logout': 'Log out',
-    'profile.join': 'Join Alicyn',
+    'profile.join': 'Join PierceMap',
     'profile.syncCopy': 'Sign in to sync your favorites, projects and experiences.',
     'profile.legal': 'By continuing you accept the terms and privacy policy. Your information stays protected. Photos are moderated before publication.',
-    'profile.eyebrow': 'Alicyn Profile',
+    'profile.eyebrow': 'PierceMap Profile',
     'profile.mainTitle': 'Account, progress and professional tools in one place',
     'profile.mainCopy': 'Your profile centralizes community, learning and consultation flow. Piercer mode lives here as a working tool, not a separate section.',
     'profile.account': 'Your account',
@@ -3318,7 +3318,7 @@ const i18n = {
     'inspo.savedToast': 'Saved to your references',
     'inspo.removedToast': 'Removed from favorites',
     'inspo.toDesign': 'Taking you to Design…',
-    'community.eyebrow': 'Alicyn Community',
+    'community.eyebrow': 'PierceMap Community',
     'community.title': 'Your experience helps the next person.',
     'community.copy': 'Share what your piercing felt like: pain, care and healing. Every experience adds real information for better decisions.',
     'community.shareExperience': 'Share your experience',
@@ -3430,11 +3430,12 @@ const i18n = {
 (function () {
   'use strict';
   const LANG_KEY = 'alicyn_lang';
+  const PM_LANG_KEY = 'piercemap_language';
   const VALID = new Set(['es', 'en']);
 
   function savedLanguage() {
     try {
-      const saved = localStorage.getItem(LANG_KEY);
+      const saved = localStorage.getItem(PM_LANG_KEY) || localStorage.getItem(LANG_KEY);
       return VALID.has(saved) ? saved : null;
     } catch (err) {
       return null;
@@ -3487,7 +3488,10 @@ const i18n = {
 
   function setLanguage(lang) {
     if (!VALID.has(lang)) return getLanguage();
-    try { localStorage.setItem(LANG_KEY, lang); } catch (err) {}
+    try {
+      localStorage.setItem(LANG_KEY, lang);
+      localStorage.setItem(PM_LANG_KEY, lang);
+    } catch (err) {}
     document.documentElement.classList.remove('alicyn-lang-pending');
     applyTranslations();
     window.dispatchEvent(new CustomEvent('alicyn:language-changed', { detail: { lang } }));
@@ -3558,7 +3562,7 @@ const i18n = {
     renderIntroWord();
     window.addEventListener('alicyn:language-changed', () => {
       if (word) {
-        word.textContent = window.AlicynI18n?.t('intro.title') || 'PIERCING PLAYGROUND';
+        word.textContent = window.AlicynI18n?.t('intro.title') || 'PierceMap';
         renderIntroWord();
       }
     });
@@ -3649,10 +3653,10 @@ const i18n = {
 <!-- ============================== HEADER ============================== -->
 <header class="app-header">
   <div class="container">
-    <a class="brand" data-nav="home" data-view="map" role="button" tabindex="0" aria-label="Inicio · Piercing Playground" data-i18n-attr="aria-label:brand.aria">
-      <img class="brand-logo" src="assets/logo-alicyn.svg" alt="Alicyn" decoding="async"
+    <a class="brand" data-nav="home" data-view="map" role="button" tabindex="0" aria-label="Inicio · PierceMap" data-i18n-attr="aria-label:brand.aria">
+      <img class="brand-logo" src="assets/logo-alicyn.svg" alt="PierceMap" decoding="async"
            onerror="this.style.display='none'" />
-      <span class="brand-name">PIERCING PLAYGROUND</span>
+      <span class="brand-name">PierceMap</span>
     </a>
     <nav class="nav-tabs" aria-label="Vistas principales">
       <button data-nav="home" data-view="map" class="is-active" aria-label="Mapa">
@@ -3712,7 +3716,7 @@ const i18n = {
         <div class="bodymap-wrap">
         <div class="bodymap-photo-card">
           <div class="bodymap-frame" id="body-photo" aria-label="Mapa del cuerpo">
-            <img src="body-map.png" class="bodymap-image" alt="Cuerpo humano · Alicyn Body Map" decoding="async" fetchpriority="high" onerror="this.parentElement.classList.add('img-missing')" />
+          <img src="body-map.png" class="bodymap-image" alt="Cuerpo humano · PierceMap" decoding="async" fetchpriority="high" onerror="this.parentElement.classList.add('img-missing')" />
             <button class="bodymap-point hit-zone" data-zone="head" style="--x:50%;--y:11.2%" aria-label="Cabeza" title="Cabeza"><span class="bodymap-point-label">head</span></button>
             <button class="bodymap-point hit-zone" data-zone="ear_left" style="--x:44.4%;--y:13.3%" aria-label="Oreja izquierda" title="Oreja izquierda"><span class="bodymap-point-label">ear_left</span></button>
             <button class="bodymap-point hit-zone" data-zone="ear_right" style="--x:55.6%;--y:13.3%" aria-label="Oreja derecha" title="Oreja derecha"><span class="bodymap-point-label">ear_right</span></button>
@@ -3814,7 +3818,7 @@ const i18n = {
     <div class="planner-grid design-workspace">
       <div class="ear-canvas">
         <div class="ear-photo" id="ear-photo" aria-label="Planeador de oreja">
-          <img src="assets/ear.png" alt="Oreja anatómica · Alicyn Body Map" loading="lazy" decoding="async" onerror="this.parentElement.classList.add('img-missing')" />
+          <img src="assets/ear.png" alt="Oreja anatómica · PierceMap" loading="lazy" decoding="async" onerror="this.parentElement.classList.add('img-missing')" />
           <!-- Puntos posicionados sobre la anatomía de la oreja (porcentajes) -->
           <!-- ======================================================================
                EAR POINTS · v0.3 responsive system
@@ -4194,7 +4198,7 @@ const i18n = {
     </div>
 
     <div class="disclaimer-box" style="margin-top:24px">
-      <strong style="color:var(--text)" data-i18n="anatomy.principle">Principio central Alicyn:</strong> <span data-i18n="anatomy.principleCopy">Cada anatomía es única. Esta herramienta visualiza posibilidades y registra observaciones. No determina viabilidad, no diagnostica ni garantiza resultados. El criterio final es siempre del perforador profesional en la valoración presencial.</span>
+      <strong style="color:var(--text)" data-i18n="anatomy.principle">Principio central PierceMap:</strong> <span data-i18n="anatomy.principleCopy">Cada anatomía es única. Esta herramienta visualiza posibilidades y registra observaciones. No determina viabilidad, no diagnostica ni garantiza resultados. El criterio final es siempre del perforador profesional en la valoración presencial.</span>
     </div>
   </div>
 </section>
@@ -4207,7 +4211,7 @@ const i18n = {
     <div class="container">
       <span class="eyebrow" style="color:var(--accent)">Para perforadores profesionales</span>
       <h2 class="piercer-hero-title">La consulta cambia cuando el cliente entiende antes de preguntar.</h2>
-      <p class="piercer-hero-sub">Alicyn Body Map es la herramienta que usas en mesa — no después. Evalúa anatomía, construye el plan y entrega un resumen firmado con tu criterio. En minutos, desde cualquier dispositivo.</p>
+      <p class="piercer-hero-sub">PierceMap es la herramienta que usas en mesa — no después. Evalúa anatomía, construye el plan y entrega un resumen firmado con tu criterio. En minutos, desde cualquier dispositivo.</p>
       <div class="piercer-hero-ctas">
         <button class="btn btn-primary btn-lg" data-nav="anatomy">Iniciar evaluación</button>
         <button class="btn btn-lg" data-nav="home">Ver mapa de zonas</button>
@@ -4240,7 +4244,7 @@ const i18n = {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         </div>
         <h4>Resúmenes que educan</h4>
-        <p>Cada evaluación genera un texto profesional con la "Carga de Cicatrización Alicyn" — un lenguaje que el cliente entiende y respeta.</p>
+        <p>Cada evaluación genera un texto profesional con la "Carga de cicatrización PierceMap" — un lenguaje que el cliente entiende y respeta.</p>
       </div>
 
       <div class="piercer-pillar">
@@ -4302,7 +4306,7 @@ const i18n = {
           <li class="feat-available">Planeador de oreja por fases</li>
           <li class="feat-available">Canvas de evaluación anatómica con foto</li>
           <li class="feat-available">5 estados de observación anatómica</li>
-          <li class="feat-available">Carga de Cicatrización Alicyn (Baja → Muy alta)</li>
+          <li class="feat-available">Carga de cicatrización PierceMap (Baja → Muy alta)</li>
           <li class="feat-available">Resumen exportable: texto, portapapeles, .txt</li>
           <li class="feat-available">WhatsApp-ready con nombre del cliente</li>
           <li class="feat-available">Sin login · Sin servidor · Sin datos externos</li>
@@ -4327,7 +4331,7 @@ const i18n = {
 
     <div class="piercer-philosophy">
       <blockquote>
-        <p>"Alicyn Body Map acompaña — nunca reemplaza. Tu criterio presencial es el que determina. Esta herramienta hace que el cliente llegue más educado y la conversación sea más honesta."</p>
+        <p>"PierceMap acompaña — nunca reemplaza. Tu criterio presencial es el que determina. Esta herramienta hace que el cliente llegue más educado y la conversación sea más honesta."</p>
         <cite>Principio de diseño · Alicyn</cite>
       </blockquote>
     </div>
@@ -4339,7 +4343,7 @@ const i18n = {
 <!-- ============================== VIEW: COMMUNITY ============================== -->
 <section class="view" id="view-community">
   <div class="container community-hero">
-    <span class="eyebrow" data-i18n="community.eyebrow">Comunidad Alicyn</span>
+    <span class="eyebrow" data-i18n="community.eyebrow">Comunidad PierceMap</span>
     <h2 data-i18n="community.title">Tu experiencia ayuda a quien viene después.</h2>
     <p data-i18n="community.copy">Comparte cómo viviste tu piercing: dolor, cuidados y cicatrización. Cada experiencia suma información real para decidir mejor.</p>
     <div class="community-stats" id="community-stats">
@@ -4445,7 +4449,7 @@ const i18n = {
   <div class="container section" style="border-top:0;padding-top:48px">
     <div class="section-head">
       <div>
-        <span class="eyebrow" data-i18n="profile.eyebrow">Perfil Alicyn</span>
+        <span class="eyebrow" data-i18n="profile.eyebrow">Perfil PierceMap</span>
         <h2 data-i18n="profile.mainTitle">Cuenta, progreso y herramientas profesionales en un solo lugar</h2>
         <p data-i18n="profile.mainCopy">Tu perfil centraliza comunidad, aprendizaje y el flujo de consulta. El modo piercer vive aqui como una herramienta de trabajo, no como una seccion separada.</p>
       </div>
@@ -4510,7 +4514,7 @@ const i18n = {
         <path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z" fill="#06120e" stroke="none"/>
       </svg>
     </div>
-    <h3 data-i18n="profile.join">Únete a Alicyn</h3>
+    <h3 data-i18n="profile.join">Únete a PierceMap</h3>
     <p class="muted" data-i18n="profile.syncCopy">Inicia sesión para sincronizar tus favoritos, proyectos y experiencias.</p>
 
     <button class="oauth-btn google" data-oauth="google">
@@ -4610,7 +4614,7 @@ const i18n = {
     <div class="summary-card-head">
       <div>
         <h3>Resumen de evaluación</h3>
-        <p>Generado para entrega al cliente · Alicyn Body Map</p>
+        <p>Generado para entrega al cliente · PierceMap</p>
       </div>
       <button class="btn btn-icon btn-ghost" id="summary-close" aria-label="Cerrar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -4671,7 +4675,7 @@ const i18n = {
 
 <script>
 /* ============================================================================
-   ALICYN BODY MAP — DATA LAYER
+   PIERCEMAP — DATA LAYER
    Base de datos local de piercings, zonas, fases y reglas de planeación.
    Todo el contenido es educativo y NO sustituye criterio profesional.
    ============================================================================ */
@@ -4719,7 +4723,7 @@ const PROJECT_PHASES = [
   { id: 'pf', label: 'Fase futura', desc: 'Para revisitar en una próxima consulta, según evolución de la anatomía y proceso.' }
 ];
 
-/* ---------- ESTADOS ANATÓMICOS — Sistema Alicyn ----------
+/* ---------- ESTADOS ANATÓMICOS — Sistema PierceMap ----------
    No indican diagnóstico ni resultado garantizado.
    Son orientaciones visuales para la conversación en consulta.
 */
@@ -4779,7 +4783,7 @@ const ANATOMY_STATES = [
   }
 ];
 
-/* ---------- CARGA DE CICATRIZACIÓN ALICYN ----------
+/* ---------- CARGA DE CICATRIZACIÓN PIERCEMAP ----------
    Sistema propietario para comunicar la demanda total de un plan de piercings.
    No predice resultados. Orienta la conversación sobre tiempos y fases.
 */
@@ -5240,7 +5244,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 <script src="./supabase-client.js"></script>
 <script>
 /* ============================================================================
-   ALICYN BODY MAP — APP LOGIC
+   PIERCEMAP — APP LOGIC
    Mobile-first · Vanilla JS · Sin dependencias externas
    Optimizado para iPhone 375–430px y tablet/iPad.
    ============================================================================ */
@@ -5778,7 +5782,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (earPhoto) earPhoto.classList.toggle('has-selection', count > 0);
     applyEarSide();
 
-    // Carga de Cicatrización Alicyn
+    // Carga de cicatrización PierceMap
     const fill   = document.getElementById('load-fill');
     const label  = document.getElementById('load-label');
     const cnt    = document.getElementById('load-count');
@@ -5852,12 +5856,12 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
 
     const lines = [
-      'ALICYN BODY MAP · Plan de Composición de Oreja',
+      'PIERCEMAP · Plan de Composición de Oreja',
       '═'.repeat(50),
       dateStr,
       '',
       `Piercings en el plan: ${piercings.length}`,
-      `Carga de Cicatrización Alicyn: ${load.label}`,
+      `Carga de cicatrización PierceMap: ${load.label}`,
       '',
       '─'.repeat(50),
       'COMPOSICIÓN PLANEADA',
@@ -6051,7 +6055,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const piercings = selected.map(id => getPlannerPiercing(id)).filter(Boolean);
     const load = AlicynData.getHealingLoad(piercings.length);
     return {
-      title: 'Alicyn ear design',
+      title: 'PierceMap design',
       source,
       status: 'draft',
       createdFrom: 'github-pages-frontend',
@@ -6703,12 +6707,12 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
 
     const lines = [
-      'ALICYN BODY MAP - Plan de Composicion de Oreja',
+      'PIERCEMAP - Plan de Composicion de Oreja',
       '='.repeat(50),
       dateStr,
       '',
       `Piercings en el plan: ${piercings.length}`,
-      `Carga de Cicatrizacion Alicyn: ${load.label}`,
+      `Carga de cicatrizacion PierceMap: ${load.label}`,
       '',
       '-'.repeat(50),
       'COMPOSICION PLANEADA',
@@ -7290,7 +7294,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       return line;
     }).join('\n\n');
 
-    return `${greeting}\n\nTe comparto el resumen de tu evaluaci\xF3n anat\xF3mica asistida con Alicyn Body Map:\n\n*Carga de Cicatrizaci\xF3n Alicyn: ${load.label}*\n${load.advice}\n\n*Puntos evaluados:*\n${pts}\n\n*Cuidados b\xE1sicos:*\n\xB7 Limpieza con suero fisiol\xF3gico 1–2 veces al d\xEDa\n\xB7 No manipular ni retirar la joyer\xEDa antes de tiempo\n\xB7 Consulta ante cualquier signo inusual\n\n_Esta evaluaci\xF3n es orientativa y no sustituye la valoraci\xF3n presencial de un perforador profesional. La viabilidad final depende de tu anatom\xEDa real._\n\n— Generado con Alicyn Body Map`;
+    return `${greeting}\n\nTe comparto el resumen de tu evaluaci\xF3n anat\xF3mica asistida con PierceMap:\n\n*Carga de cicatrizaci\xF3n PierceMap: ${load.label}*\n${load.advice}\n\n*Puntos evaluados:*\n${pts}\n\n*Cuidados b\xE1sicos:*\n\xB7 Limpieza con suero fisiol\xF3gico 1–2 veces al d\xEDa\n\xB7 No manipular ni retirar la joyer\xEDa antes de tiempo\n\xB7 Consulta ante cualquier signo inusual\n\n_Esta evaluaci\xF3n es orientativa y no sustituye la valoraci\xF3n presencial de un perforador profesional. La viabilidad final depende de tu anatom\xEDa real._\n\n— Generado con PierceMap`;
   }
 
   function closeSummary() {
@@ -7306,7 +7310,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const sep        = '─'.repeat(52);
 
     const lines = [
-      'ALICYN BODY MAP \xB7 Resumen de Evaluaci\xF3n Anat\xF3mica',
+      'PIERCEMAP \xB7 Resumen de Evaluaci\xF3n Anat\xF3mica',
       '═'.repeat(52),
       dateStr,
       ...(clientName ? [`Cliente: ${clientName}`] : []),
@@ -7314,7 +7318,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       '“Un buen proyecto no empieza con la joyer\xEDa, empieza con la anatom\xEDa.”',
       '',
       sep,
-      `CARGA DE CICATRIZACI\xD3N ALICYN: ${load.label.toUpperCase()}`,
+      `CARGA DE CICATRIZACI\xD3N PIERCEMAP: ${load.label.toUpperCase()}`,
       load.desc,
       load.advice,
       sep,
@@ -7379,7 +7383,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const clientName = getClientName();
     const slug = clientName
       ? 'evaluacion-' + clientName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '.txt'
-      : 'evaluacion-anatomica-alicyn.txt';
+      : 'evaluacion-anatomica-piercemap.txt';
     downloadText(buildSummaryText(), slug);
   }
 
@@ -7492,7 +7496,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 </script>
 <script>
 /* ============================================================================
-   ALICYN BODY MAP — COMMUNITY MODULE (v2)
+   PIERCEMAP — COMMUNITY MODULE (v2)
    Auth (mock OAuth UX), perfiles, gamificación, experiencias, ratings,
    ripples, transiciones premium y toasts.
    En producción este módulo se conecta a Supabase (Auth + DB + Storage).
@@ -7735,7 +7739,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     closeLogin();
     renderProfile();
     renderHeader();
-    toast(`Bienvenido a Alicyn, ${s.name}`, 'success');
+    toast(`Bienvenido a PierceMap, ${s.name}`, 'success');
   }
 
   async function logout() {
@@ -8347,7 +8351,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     // Welcome toast for first time visitors
     if (!localStorage.getItem('alicyn.visited')) {
       localStorage.setItem('alicyn.visited', '1');
-      setTimeout(() => toast('Bienvenido a Alicyn Body Map · v2', 'success'), 600);
+      setTimeout(() => toast('Bienvenido a PierceMap · v2', 'success'), 600);
     }
   }
 
@@ -8631,7 +8635,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         };
         try { localStorage.setItem(OVERLAY_KEY, JSON.stringify(overlay)); } catch {}
         window.AlicynSupabase?.saveDesignProject?.({
-          title: 'Alicyn design inspo overlay',
+          title: 'PierceMap design inspo overlay',
           source: 'inspo_use',
           status: 'draft',
           overlay,
@@ -9020,7 +9024,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     color: var(--alicyn-blue-dark) !important;
   }
 
-  /* ── Header v3.1 · Logo + PIERCING PLAYGROUND ──────────────────────────── */
+  /* ── Header v3.1 · Logo + PierceMap ──────────────────────────── */
   .app-header .brand {
     display: inline-flex;
     align-items: center;
@@ -10297,7 +10301,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         u.user_metadata?.full_name ||
         u.user_metadata?.name ||
         u.email ||
-        'Alicyn user';
+        'PierceMap user';
       const avatarUrl = u.user_metadata?.avatar_url || u.user_metadata?.picture || '';
       const email = u.email || '';
 
@@ -12587,6 +12591,59 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     color: var(--text-soft);
     background: rgba(255,255,255,.025);
   }
+  .pm-bucket-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 18px;
+  }
+  .pm-big-number {
+    margin: 8px 0 0;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .pm-pre-review-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    object-fit: cover;
+    border: 1px solid rgba(143,191,195,.28);
+    background: rgba(143,191,195,.08);
+    flex: 0 0 auto;
+  }
+  .pm-pre-review-thumb.is-empty {
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .pm-pre-review-preview,
+  .pm-pre-review-image {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: rgba(255,255,255,.03);
+  }
+  .pm-pre-review-preview {
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: var(--text-soft);
+    font-size: 13px;
+  }
+  .pm-pre-review-preview img,
+  .pm-pre-review-image {
+    display: block;
+    max-height: 280px;
+    object-fit: cover;
+  }
+  .pm-pre-review-detail-card {
+    width: min(100%, 680px);
+  }
   @media (max-width: 720px) {
     .pm-view-tools,
     .pm-card-actions,
@@ -12623,25 +12680,265 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   window.__PierceMapB2BStabilizer__ = true;
 
   const KEYS = {
-    mode: 'piercemap.mode.v1',
+    language: 'piercemap_language',
+    mode: 'piercemap_mode',
     legacyMode: 'alicyn.studioMode',
     clientMode: 'alicyn.clientMode.v1',
-    onboarded: 'piercemap.onboarded.v1',
+    onboarded: 'piercemap_onboarded',
     legacyOnboarded: 'alicyn.onboarded.v1',
-    currentView: 'piercemap.currentView.v1',
+    currentView: 'piercemap_last_view',
     lastView: 'alicyn.lastView.v1',
-    studios: 'alicyn.studios.v1',
-    piercers: 'piercemap.piercers.v1',
-    jewelry: 'alicyn.jewelry.v1',
-    clients: 'alicyn.clients.v1',
-    reviews: 'piercemap.reviews.v1',
-    favorites: 'alicyn.favorites.v1',
-    projects: 'alicyn.designProjects.v1',
-    selectedJewelry: 'alicyn.plannerJewelry.v1',
-    studioProfile: 'alicyn.studioProfile.v1',
-    clientNotes: 'piercemap.clientNotes.v1',
-    activeStudio: 'piercemap.activeStudio.v1'
+    connectedStudio: 'piercemap_connected_studio',
+    studios: 'piercemap_studios',
+    legacyStudios: 'alicyn.studios.v1',
+    piercers: 'piercemap_piercers',
+    jewelry: 'piercemap_jewelry',
+    legacyJewelry: 'alicyn.jewelry.v1',
+    clients: 'piercemap_clients',
+    legacyClients: 'alicyn.clients.v1',
+    reviews: 'piercemap_reviews',
+    favorites: 'piercemap_favorites',
+    legacyFavorites: 'alicyn.favorites.v1',
+    projects: 'piercemap_projects',
+    legacyProjects: 'alicyn.designProjects.v1',
+    selectedJewelry: 'piercemap_planner_items',
+    legacySelectedJewelry: 'alicyn.plannerJewelry.v1',
+    studioProfile: 'piercemap_studio_profile',
+    legacyStudioProfile: 'alicyn.studioProfile.v1',
+    clientNotes: 'piercemap_client_notes',
+    preReviews: 'piercemap_pre_reviews',
+    legacyActiveStudio: 'piercemap.activeStudio.v1'
   };
+
+  const UI_TEXT = {
+    es: {
+      'brand.tagline': 'El mapa profesional del piercing',
+      'nav.studios': 'Estudios',
+      'nav.planner': 'Diseñador',
+      'nav.favorites': 'Favoritos',
+      'nav.profile': 'Perfil',
+      'nav.home': 'Inicio',
+      'nav.catalog': 'Catálogo',
+      'nav.clients': 'Clientes',
+      'mode.title': 'Elige cómo quieres entrar',
+      'mode.copy': 'PierceMap adapta la experiencia para clientes o para estudios profesionales.',
+      'mode.studio.copy': 'Gestionar perfil, catálogo, clientes, revisiones previas y proyectos del estudio.',
+      'mode.client.copy': 'Descubrir estudios, guardar joyas y preparar tu próxima cita.',
+      'studios.eyebrow': 'Estudios · Discover',
+      'studios.title': 'Encuentra el estudio correcto para cada piercing',
+      'studios.copy': 'Directorio profesional con perfiles verificados, catálogo, piercers, reseñas y entrada al ecosistema del estudio por código.',
+      'studios.enter': 'Entrar al ecosistema',
+      'studios.mapSoon': 'Mapa próximamente',
+      'studios.mapTitle': 'Mapa/directorio de estudios',
+      'studios.mapHint': 'Placeholder listo para OpenStreetMap/Leaflet. Google Maps no está integrado todavía.',
+      'studios.search': 'Buscar por estudio, ciudad o especialidad',
+      'studios.empty': 'No encontramos estudios con esos filtros.',
+      'studios.view': 'Ver estudio',
+      'studios.preReview': 'Enviar revisión previa',
+      'catalog.eyebrow': 'Catálogo',
+      'catalog.title': 'Joyería lista para vender desde consulta',
+      'catalog.copy': 'Inventario local de demo. Cada pieza puede guardarse, enviarse al Diseñador o marcarse como disponible/sobre pedido.',
+      'catalog.add': 'Agregar joya',
+      'catalog.search': 'Buscar joya, material o zona',
+      'catalog.empty': 'Empieza subiendo tus primeras piezas para usarlas en el Diseñador y mostrarlas a tus clientes.',
+      'clients.eyebrow': 'Clientes · CRM ligero',
+      'clients.title': 'Clientes, intereses y seguimiento',
+      'clients.copy': 'Lista local para demo: abre un cliente, revisa interés principal y guarda notas de seguimiento.',
+      'clients.add': 'Nuevo cliente',
+      'clients.empty': 'Agrega clientes o recibe revisiones previas para empezar a organizar tus próximos setups.',
+      'clients.preReviews': 'Revisiones previas',
+      'studio.eyebrow': 'Inicio',
+      'studio.defaultName': 'Tu estudio en PierceMap',
+      'studio.defaultCopy': 'Edita los datos básicos del estudio y comparte el código demo con clientes.',
+      'studio.code': 'Mostrar código',
+      'studio.openCatalog': 'Abrir catálogo',
+      'studio.publicProfile': 'Perfil público del estudio',
+      'studio.viewPreReviews': 'Ver revisiones previas',
+      'favorites.eyebrow': 'Favoritos',
+      'favorites.title': 'Todo lo guardado para volver rápido',
+      'favorites.empty': 'Guarda estudios, joyería, setups o revisiones previas para encontrarlos rápido después.',
+      'favorites.copy': 'Elementos guardados: estudios, piercers, joyas, setups y revisiones previas.',
+      'profile.eyebrow': 'Perfil',
+      'profile.guest': 'Invitado',
+      'profile.loginCopy': 'Inicia sesión con Google para sincronizar favoritos, proyectos y experiencias cuando Supabase esté listo.',
+      'profile.logout': 'Cerrar sesión',
+      'profile.google': 'Continuar con Google',
+      'profile.changeMode': 'Cambiar modo',
+      'profile.mode': 'Modo actual',
+      'profile.modeHint': 'La navegación cambia según este modo.',
+      'profile.favorites': 'Favoritos',
+      'profile.projects': 'Proyectos',
+      'profile.preReviews': 'Mis revisiones previas',
+      'profile.studioCode': 'Código de estudio',
+      'profile.activeStudio': 'Estudio activo',
+      'planner.selectedTitle': 'Joyas seleccionadas para este diseño',
+      'planner.copyWithItems': 'Estas piezas vienen de Estudios/Catálogo y quedan listas para guardar como proyecto.',
+      'planner.copyEmpty': 'Todavía no has enviado joyas al Diseñador.',
+      'planner.save': 'Guardar proyecto',
+      'planner.clear': 'Limpiar joyas',
+      'planner.toReview': 'Convertir en revisión previa',
+      'preReview.title': 'Revisión previa',
+      'preReview.new': 'Nueva revisión previa',
+      'preReview.copy': 'La revisión previa no sustituye una consulta presencial. Solo ayuda al piercer a conocer mejor tu caso antes de la cita.',
+      'preReview.studioCopy': 'Esta revisión ayuda a preparar la cita, pero la decisión final se toma presencialmente.',
+      'preReview.disclaimer': 'La revisión previa ayuda a preparar la cita, pero no confirma viabilidad, procedimiento ni resultado.',
+      'preReview.photo': 'Foto de referencia',
+      'preReview.area': 'Zona',
+      'preReview.interest': 'Interés',
+      'preReview.notes': 'Notas',
+      'preReview.assignStudio': 'Estudio',
+      'preReview.assignPiercer': 'Piercer',
+      'preReview.unassigned': 'Sin asignar',
+      'preReview.saveDraft': 'Guardar borrador',
+      'preReview.send': 'Enviar a estudio',
+      'preReview.open': 'Abrir revisión',
+      'preReview.delete': 'Eliminar',
+      'preReview.empty': 'Aún no tienes revisiones previas. Cuando compartas fotos antes de tu cita, aparecerán aquí.',
+      'preReview.studioEmpty': 'Aún no hay revisiones previas. Cuando un cliente comparta fotos antes de su cita, aparecerán aquí.',
+      'preReview.internalNote': 'Nota interna',
+      'preReview.status': 'Estado',
+      'preReview.saveChanges': 'Guardar cambios',
+      'preReview.createSetup': 'Crear setup',
+      'preReview.whatsapp': 'Contactar por WhatsApp',
+      'status.draft': 'Borrador',
+      'status.sent': 'Enviada',
+      'status.new': 'Nueva',
+      'status.reviewed': 'Revisada',
+      'status.requires_consultation': 'Requiere consulta',
+      'status.available': 'Disponible',
+      'status.on_order': 'Sobre pedido',
+      'common.all': 'Todos',
+      'common.cancel': 'Cancelar',
+      'common.save': 'Guardar',
+      'common.delete': 'Eliminar',
+      'common.comingSoon': 'Disponible próximamente',
+      'common.saved': 'Guardado correctamente',
+      'common.none': 'Ninguno',
+      'common.noCatalog': 'Sin catálogo todavía.',
+      'common.contact': 'Contactar',
+      'common.use': 'Usar',
+      'common.useInPlanner': 'Usar en Diseñador'
+    },
+    en: {
+      'brand.tagline': 'The professional piercing map',
+      'nav.studios': 'Studios',
+      'nav.planner': 'Planner',
+      'nav.favorites': 'Favorites',
+      'nav.profile': 'Profile',
+      'nav.home': 'Home',
+      'nav.catalog': 'Catalog',
+      'nav.clients': 'Clients',
+      'mode.title': 'Choose how you want to enter',
+      'mode.copy': 'PierceMap adapts the experience for clients or professional studios.',
+      'mode.studio.copy': 'Manage the studio profile, catalog, clients, pre-reviews and projects.',
+      'mode.client.copy': 'Discover studios, save jewelry and prepare your next appointment.',
+      'studios.eyebrow': 'Studios · Discover',
+      'studios.title': 'Find the right studio for each piercing',
+      'studios.copy': 'Professional directory with verified profiles, catalog, piercers, reviews and studio ecosystem access by code.',
+      'studios.enter': 'Enter ecosystem',
+      'studios.mapSoon': 'Map coming soon',
+      'studios.mapTitle': 'Studio map/directory',
+      'studios.mapHint': 'Placeholder ready for OpenStreetMap/Leaflet. Google Maps is not integrated yet.',
+      'studios.search': 'Search by studio, city or specialty',
+      'studios.empty': 'No studios match those filters.',
+      'studios.view': 'View studio',
+      'studios.preReview': 'Send pre-review',
+      'catalog.eyebrow': 'Catalog',
+      'catalog.title': 'Jewelry ready to sell during consultation',
+      'catalog.copy': 'Local demo inventory. Each piece can be saved, sent to Planner, or marked available/on order.',
+      'catalog.add': 'Add jewelry',
+      'catalog.search': 'Search jewelry, material or area',
+      'catalog.empty': 'Start by uploading your first pieces to use them in Planner and show them to clients.',
+      'clients.eyebrow': 'Clients · Light CRM',
+      'clients.title': 'Clients, interests and follow-up',
+      'clients.copy': 'Local demo list: open a client, review their main interest and save follow-up notes.',
+      'clients.add': 'New client',
+      'clients.empty': 'Add clients or receive pre-reviews to start organizing upcoming setups.',
+      'clients.preReviews': 'Pre-reviews',
+      'studio.eyebrow': 'Home',
+      'studio.defaultName': 'Your studio on PierceMap',
+      'studio.defaultCopy': 'Edit basic studio details and share the demo code with clients.',
+      'studio.code': 'Show code',
+      'studio.openCatalog': 'Open catalog',
+      'studio.publicProfile': 'Public studio profile',
+      'studio.viewPreReviews': 'View pre-reviews',
+      'favorites.eyebrow': 'Favorites',
+      'favorites.title': 'Everything saved for quick access',
+      'favorites.empty': 'Save studios, jewelry, setups or pre-reviews to find them quickly later.',
+      'favorites.copy': 'Saved items: studios, piercers, jewelry, setups and pre-reviews.',
+      'profile.eyebrow': 'Profile',
+      'profile.guest': 'Guest',
+      'profile.loginCopy': 'Sign in with Google to sync favorites, projects and experiences when Supabase is ready.',
+      'profile.logout': 'Log out',
+      'profile.google': 'Continue with Google',
+      'profile.changeMode': 'Change mode',
+      'profile.mode': 'Current mode',
+      'profile.modeHint': 'Navigation changes based on this mode.',
+      'profile.favorites': 'Favorites',
+      'profile.projects': 'Projects',
+      'profile.preReviews': 'My pre-reviews',
+      'profile.studioCode': 'Studio code',
+      'profile.activeStudio': 'Active studio',
+      'planner.selectedTitle': 'Jewelry selected for this design',
+      'planner.copyWithItems': 'These pieces come from Studios/Catalog and are ready to save as a project.',
+      'planner.copyEmpty': 'You have not sent jewelry to Planner yet.',
+      'planner.save': 'Save project',
+      'planner.clear': 'Clear jewelry',
+      'planner.toReview': 'Turn into pre-review',
+      'preReview.title': 'Pre-review',
+      'preReview.new': 'New pre-review',
+      'preReview.copy': 'Pre-review does not replace an in-person consultation. It only helps the piercer understand your case before the appointment.',
+      'preReview.studioCopy': 'This review helps prepare the appointment, but the final decision is made in person.',
+      'preReview.disclaimer': 'Pre-review helps prepare the appointment, but it does not confirm viability, procedure, or outcome.',
+      'preReview.photo': 'Reference photo',
+      'preReview.area': 'Area',
+      'preReview.interest': 'Interest',
+      'preReview.notes': 'Notes',
+      'preReview.assignStudio': 'Studio',
+      'preReview.assignPiercer': 'Piercer',
+      'preReview.unassigned': 'Unassigned',
+      'preReview.saveDraft': 'Save draft',
+      'preReview.send': 'Send to studio',
+      'preReview.open': 'Open review',
+      'preReview.delete': 'Delete',
+      'preReview.empty': 'You do not have pre-reviews yet. When you share photos before an appointment, they will appear here.',
+      'preReview.studioEmpty': 'There are no pre-reviews yet. When a client shares photos before an appointment, they will appear here.',
+      'preReview.internalNote': 'Internal note',
+      'preReview.status': 'Status',
+      'preReview.saveChanges': 'Save changes',
+      'preReview.createSetup': 'Create setup',
+      'preReview.whatsapp': 'Contact via WhatsApp',
+      'status.draft': 'Draft',
+      'status.sent': 'Sent',
+      'status.new': 'New',
+      'status.reviewed': 'Reviewed',
+      'status.requires_consultation': 'Requires consultation',
+      'status.available': 'Available',
+      'status.on_order': 'On order',
+      'common.all': 'All',
+      'common.cancel': 'Cancel',
+      'common.save': 'Save',
+      'common.delete': 'Delete',
+      'common.comingSoon': 'Coming soon',
+      'common.saved': 'Saved successfully',
+      'common.none': 'None',
+      'common.noCatalog': 'No catalog yet.',
+      'common.contact': 'Contact',
+      'common.use': 'Use',
+      'common.useInPlanner': 'Use in Planner'
+    }
+  };
+
+  function currentLang() {
+    const saved = localStorage.getItem(KEYS.language) || localStorage.getItem('alicyn_lang');
+    if (saved === 'en' || saved === 'es') return saved;
+    return String(navigator.language || '').toLowerCase().startsWith('en') ? 'en' : 'es';
+  }
+
+  function txt(key) {
+    const lang = currentLang();
+    return UI_TEXT[lang]?.[key] || UI_TEXT.es[key] || key;
+  }
 
   const DEMO_STUDIOS = [
     {
@@ -12725,7 +13022,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     jewelrySearch: '',
     jewelryType: 'all',
     jewelryMaterial: 'all',
-    jewelryStatus: 'all'
+    jewelryStatus: 'all',
+    preReviewStatus: 'all'
   };
 
   function read(key, fallback = null) {
@@ -12744,6 +13042,35 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function rawWrite(key, value) {
     try { localStorage.setItem(key, value); } catch (err) {}
+  }
+
+  function migrateKey(primary, legacy) {
+    try {
+      if (!primary || !legacy) return;
+      if (localStorage.getItem(primary) == null && localStorage.getItem(legacy) != null) {
+        localStorage.setItem(primary, localStorage.getItem(legacy));
+      }
+    } catch (err) {}
+  }
+
+  function migrateStorage() {
+    try {
+      if (localStorage.getItem(KEYS.mode) == null) {
+        const oldMode = localStorage.getItem(KEYS.legacyMode);
+        if (oldMode === 'on') write(KEYS.mode, 'studio');
+        if (oldMode === 'off') write(KEYS.mode, 'client');
+      }
+      migrateKey(KEYS.onboarded, KEYS.legacyOnboarded);
+      migrateKey(KEYS.currentView, KEYS.lastView);
+      migrateKey(KEYS.connectedStudio, KEYS.legacyActiveStudio);
+      migrateKey(KEYS.studios, KEYS.legacyStudios);
+      migrateKey(KEYS.jewelry, KEYS.legacyJewelry);
+      migrateKey(KEYS.clients, KEYS.legacyClients);
+      migrateKey(KEYS.favorites, KEYS.legacyFavorites);
+      migrateKey(KEYS.projects, KEYS.legacyProjects);
+      migrateKey(KEYS.selectedJewelry, KEYS.legacySelectedJewelry);
+      migrateKey(KEYS.studioProfile, KEYS.legacyStudioProfile);
+    } catch (err) {}
   }
 
   function html(value) {
@@ -12773,6 +13100,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     mergeSeed(KEYS.reviews, DEMO_REVIEWS);
     if (!Array.isArray(read(KEYS.favorites))) write(KEYS.favorites, []);
     if (!Array.isArray(read(KEYS.projects))) write(KEYS.projects, []);
+    if (!Array.isArray(read(KEYS.selectedJewelry))) write(KEYS.selectedJewelry, []);
+    if (!Array.isArray(read(KEYS.preReviews))) write(KEYS.preReviews, []);
     if (!read(KEYS.studioProfile)) {
       write(KEYS.studioProfile, {
         name: 'Mi estudio PierceMap',
@@ -12793,6 +13122,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function jewelry() { return read(KEYS.jewelry, []); }
   function clients() { return read(KEYS.clients, []); }
   function reviews() { return read(KEYS.reviews, []); }
+  function preReviews() { return read(KEYS.preReviews, []); }
+  function writePreReviews(list) { write(KEYS.preReviews, Array.isArray(list) ? list : []); }
 
   function getMode() {
     const direct = read(KEYS.mode);
@@ -12808,18 +13139,18 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function modeItems(mode) {
     if (mode === 'studio') {
       return [
-        { view:'studio', nav:'studio', label:'Studio Home', icon:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>' },
-        { view:'jewelry', nav:'jewelry', label:'Jewelry', icon:'<path d="M6 9l-2 4 8 8 8-8-2-4z"/><path d="M6 9h12"/>' },
-        { view:'clients', nav:'clients', label:'Clients', icon:'<circle cx="9" cy="9" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="8" r="2.5"/>' },
-        { view:'planner', nav:'planner', label:'Planner', icon:'<circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/>' },
-        { view:'profile-pm', nav:'profile-pm', label:'Profile', icon:'<circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/>' }
+        { view:'studio', nav:'studio', label:txt('nav.home'), icon:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>' },
+        { view:'jewelry', nav:'jewelry', label:txt('nav.catalog'), icon:'<path d="M6 9l-2 4 8 8 8-8-2-4z"/><path d="M6 9h12"/>' },
+        { view:'clients', nav:'clients', label:txt('nav.clients'), icon:'<circle cx="9" cy="9" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="8" r="2.5"/>' },
+        { view:'planner', nav:'planner', label:txt('nav.planner'), icon:'<circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/>' },
+        { view:'profile-pm', nav:'profile-pm', label:txt('nav.profile'), icon:'<circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/>' }
       ];
     }
     return [
-      { view:'discover', nav:'discover', label:'Studios', icon:'<circle cx="12" cy="12" r="9"/><path d="M14 9l-2 5-5 2 2-5z"/>' },
-      { view:'planner', nav:'planner', label:'Planner', icon:'<circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/>' },
-      { view:'favorites', nav:'favorites', label:'Favorites', icon:'<path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/>' },
-      { view:'profile-pm', nav:'profile-pm', label:'Profile', icon:'<circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/>' }
+      { view:'discover', nav:'discover', label:txt('nav.studios'), icon:'<circle cx="12" cy="12" r="9"/><path d="M14 9l-2 5-5 2 2-5z"/>' },
+      { view:'planner', nav:'planner', label:txt('nav.planner'), icon:'<circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/>' },
+      { view:'favorites', nav:'favorites', label:txt('nav.favorites'), icon:'<path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/>' },
+      { view:'profile-pm', nav:'profile-pm', label:txt('nav.profile'), icon:'<circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/>' }
     ];
   }
 
@@ -12943,19 +13274,19 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const div = document.createElement('div');
     div.className = 'pm-mode-picker';
     div.innerHTML = `
-      <div class="pm-mode-card" role="dialog" aria-modal="true" aria-label="Elegir modo">
-        <h2>Elige cómo quieres entrar</h2>
-        <p>PierceMap adapta la experiencia para clientes o para estudios profesionales.</p>
+      <div class="pm-mode-card" role="dialog" aria-modal="true" aria-label="${html(txt('mode.title'))}">
+        <h2>${html(txt('mode.title'))}</h2>
+        <p>${html(txt('mode.copy'))}</p>
         <div class="pm-mode-grid">
           <button class="pm-mode-opt" type="button" data-pm-mode="studio">
             <div class="pm-mode-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></div>
             <h3>Studio</h3>
-            <p>Gestionar perfil, joyería, clientes y proyectos del estudio.</p>
+            <p>${html(txt('mode.studio.copy'))}</p>
           </button>
           <button class="pm-mode-opt" type="button" data-pm-mode="client">
             <div class="pm-mode-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></div>
             <h3>Cliente</h3>
-            <p>Descubrir estudios, guardar joyas y planear el próximo piercing.</p>
+            <p>${html(txt('mode.client.copy'))}</p>
           </button>
         </div>
       </div>`;
@@ -12979,7 +13310,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     suppressLegacyProfileGate();
     const root = document.documentElement;
     const introPending = root.classList.contains('alicyn-intro-pending');
-    const hasLang = Boolean(localStorage.getItem('alicyn_lang'));
+    const hasLang = Boolean(localStorage.getItem(KEYS.language) || localStorage.getItem('alicyn_lang'));
     const mode = getMode();
     if (introPending) {
       root.classList.remove('alicyn-lang-pending');
@@ -13002,9 +13333,92 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   }
 
   function statusText(status) {
-    if (status === 'available') return 'Disponible';
-    if (status === 'on_order') return 'Sobre pedido';
-    return status || 'Sin estado';
+    if (status === 'available') return txt('status.available');
+    if (status === 'on_order') return txt('status.on_order');
+    if (status === 'draft') return txt('status.draft');
+    if (status === 'sent') return txt('status.sent');
+    if (status === 'new') return txt('status.new');
+    if (status === 'reviewed') return txt('status.reviewed');
+    if (status === 'requires_consultation') return txt('status.requires_consultation');
+    return status || txt('common.none');
+  }
+
+  function areaLabel(area) {
+    const labels = {
+      es: { ear:'Oreja', nose:'Nariz', lips:'Labios', navel:'Ombligo', eyebrow:'Ceja', other:'Otra' },
+      en: { ear:'Ear', nose:'Nose', lips:'Lips', navel:'Navel', eyebrow:'Eyebrow', other:'Other' }
+    };
+    return labels[currentLang()]?.[area] || labels.es[area] || area || txt('common.none');
+  }
+
+  function interestLabel(type) {
+    const labels = {
+      es: {
+        new_piercing:'Nueva perforación',
+        jewelry_change:'Cambio de joyería',
+        curated_setup:'Setup curado',
+        idea_review:'Revisión de idea',
+        follow_up:'Seguimiento'
+      },
+      en: {
+        new_piercing:'New piercing',
+        jewelry_change:'Jewelry change',
+        curated_setup:'Curated setup',
+        idea_review:'Idea review',
+        follow_up:'Follow-up'
+      }
+    };
+    return labels[currentLang()]?.[type] || labels.es[type] || type || txt('common.none');
+  }
+
+  function userId() {
+    return window.AlicynSupabase?.getUser?.()?.id || 'local_guest';
+  }
+
+  function preReviewDefaults(seed = {}) {
+    const now = new Date().toISOString();
+    return {
+      id: seed.id || 'pr_' + Date.now(),
+      user_id: seed.user_id || userId(),
+      studio_id: seed.studio_id || '',
+      piercer_id: seed.piercer_id || '',
+      client_id: seed.client_id || '',
+      image_data_url: seed.image_data_url || '',
+      body_area: seed.body_area || 'ear',
+      interest_type: seed.interest_type || 'idea_review',
+      notes: seed.notes || '',
+      status: seed.status || 'draft',
+      studio_notes: seed.studio_notes || '',
+      created_at: seed.created_at || now,
+      updated_at: now
+    };
+  }
+
+  function upsertPreReview(review) {
+    const next = preReviewDefaults(review);
+    const list = preReviews();
+    const idx = list.findIndex(item => item.id === next.id);
+    if (idx >= 0) list[idx] = { ...list[idx], ...next, updated_at: new Date().toISOString() };
+    else list.unshift(next);
+    writePreReviews(list);
+    if (!isFavorite('pre_review', next.id)) {
+      toggleFavorite('pre_review', next.id, {
+        label: `${txt('preReview.title')} · ${areaLabel(next.body_area)}`,
+        source_studio_id: next.studio_id || ''
+      });
+    }
+    return next;
+  }
+
+  function deletePreReview(id) {
+    writePreReviews(preReviews().filter(item => item.id !== id));
+    writeFavs(favs().filter(item => !(item.item_type === 'pre_review' && item.item_id === id)));
+  }
+
+  function preReviewsForMode(mode = getMode() || 'client') {
+    const connected = read(KEYS.connectedStudio, '');
+    if (mode === 'studio') return preReviews().filter(item => !item.studio_id || item.studio_id === connected || item.status === 'sent' || item.status === 'new');
+    return preReviews().filter(item => !item.user_id || item.user_id === userId() || item.user_id === 'local_guest');
   }
 
   function favs() {
@@ -13027,9 +13441,13 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   }
 
   function favoriteLabel(type, id) {
-    if (type === 'studio') return byId(studios(), id)?.name || 'Estudio';
+    if (type === 'studio') return byId(studios(), id)?.name || txt('nav.studios');
     if (type === 'piercer') return byId(piercers(), id)?.name || 'Piercer';
-    if (type === 'jewelry') return byId(jewelry(), id)?.name || 'Joya';
+    if (type === 'jewelry') return byId(jewelry(), id)?.name || txt('nav.catalog');
+    if (type === 'pre_review') {
+      const review = byId(preReviews(), id);
+      return review ? `${txt('preReview.title')} · ${areaLabel(review.body_area)}` : txt('preReview.title');
+    }
     return 'Setup';
   }
 
@@ -13070,32 +13488,32 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     view.innerHTML = `
       <div class="container">
         <div class="b2b-hero">
-          <div class="eyebrow">Studios · Discover</div>
-          <h1>Encuentra el estudio correcto para cada piercing</h1>
-          <p>Directorio profesional con perfiles verificados, catálogo, piercers, reseñas y entrada al ecosistema del estudio por código.</p>
+          <div class="eyebrow">${html(txt('studios.eyebrow'))}</div>
+          <h1>${html(txt('studios.title'))}</h1>
+          <p>${html(txt('studios.copy'))}</p>
           <div class="b2b-hero-actions">
-            <button class="btn btn-primary" type="button" data-pm-enter-code>Entrar al ecosistema</button>
-            <button class="btn" type="button" data-pm-placeholder="map">Mapa próximamente</button>
+            <button class="btn btn-primary" type="button" data-pm-enter-code>${html(txt('studios.enter'))}</button>
+            <button class="btn" type="button" data-pm-placeholder="map">${html(txt('studios.mapSoon'))}</button>
           </div>
         </div>
         <div class="b2b-map-shell">
           <div class="b2b-map-placeholder">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2C8 2 5 5 5 9c0 6 7 13 7 13s7-7 7-13c0-4-3-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-            <strong>Mapa/directorio de estudios</strong>
-            <small>Placeholder listo para OpenStreetMap/Leaflet. Google Maps no está integrado todavía.</small>
+            <strong>${html(txt('studios.mapTitle'))}</strong>
+            <small>${html(txt('studios.mapHint'))}</small>
           </div>
         </div>
         <div class="pm-view-tools">
-          <input class="pm-search-input" data-pm-search-studios placeholder="Buscar por estudio, ciudad o especialidad" value="${html(state.studioSearch)}" />
+          <input class="pm-search-input" data-pm-search-studios placeholder="${html(txt('studios.search'))}" value="${html(state.studioSearch)}" />
           <select class="pm-select" data-pm-filter-studios>
-            ${['all|Todos','walk|Walk-in','cita|Solo cita','privado|Privado'].map(item => {
+            ${[`all|${txt('common.all')}`,'walk|Walk-in', currentLang() === 'en' ? 'cita|Appointment only' : 'cita|Solo cita', currentLang() === 'en' ? 'privado|Private' : 'privado|Privado'].map(item => {
               const [value, label] = item.split('|');
               return `<option value="${value}" ${state.studioType === value ? 'selected' : ''}>${label}</option>`;
             }).join('')}
           </select>
         </div>
         <div class="b2b-grid">
-          ${filtered.map(studio => studioCard(studio)).join('') || '<div class="pm-empty-note">No encontramos estudios con esos filtros.</div>'}
+          ${filtered.map(studio => studioCard(studio)).join('') || `<div class="pm-empty-note">${html(txt('studios.empty'))}</div>`}
         </div>
       </div>`;
   }
@@ -13107,17 +13525,17 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         <div class="b2b-card-head">
           <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></div>
           <div class="b2b-card-title">
-            <h3>${html(studio.name)} ${studio.verified ? '<span class="pm-verified">Verified</span>' : ''}</h3>
+            <h3>${html(studio.name)} ${studio.verified ? '<span class="pm-verified">PierceMap Verified</span>' : ''}</h3>
             <small>${html(studio.city)} · ${html(studio.distance_km)} km</small>
           </div>
-          <button class="pm-fav-inline ${isFavorite('studio', studio.id) ? 'is-on' : ''}" type="button" data-pm-favorite="studio" data-id="${html(studio.id)}" aria-label="Guardar estudio">♥</button>
+          <button class="pm-fav-inline ${isFavorite('studio', studio.id) ? 'is-on' : ''}" type="button" data-pm-favorite="studio" data-id="${html(studio.id)}" aria-label="${html(txt('profile.favorites'))}">♥</button>
         </div>
         <div class="b2b-card-meta"><span>★ <b>${html(studio.rating)}</b> (${html(studio.reviews_count)})</span><span>${html(studio.type)}</span></div>
         <p class="pm-section-subtitle">${html((studio.specialties || []).join(' · '))}</p>
-        <div class="b2b-card-meta"><span>Catálogo: ${catalog.map(j => html(j.type)).join(' · ') || 'en preparación'}</span></div>
+        <div class="b2b-card-meta"><span>${html(txt('nav.catalog'))}: ${catalog.map(j => html(j.type)).join(' · ') || (currentLang() === 'en' ? 'in preparation' : 'en preparación')}</span></div>
         <div class="pm-card-actions">
-          <button class="btn btn-primary" type="button" data-open-studio-button="${html(studio.id)}">Ver estudio</button>
-          <button class="btn" type="button" data-pm-enter-studio="${html(studio.id)}">Entrar al ecosistema</button>
+          <button class="btn btn-primary" type="button" data-open-studio-button="${html(studio.id)}">${html(txt('studios.view'))}</button>
+          <button class="btn" type="button" data-pm-enter-studio="${html(studio.id)}">${html(txt('studios.enter'))}</button>
         </div>
       </article>`;
   }
@@ -13139,7 +13557,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     panel.innerHTML = `
       <div class="pm-studio-detail-card">
         <div class="pm-studio-banner">
-          <button class="pm-close-x" type="button" data-pm-close-studio aria-label="Cerrar">×</button>
+          <button class="pm-close-x" type="button" data-pm-close-studio aria-label="${html(currentLang() === 'en' ? 'Close' : 'Cerrar')}">×</button>
           <button class="pm-fab-fav ${isFavorite('studio', studio.id) ? 'is-on' : ''}" type="button" data-pm-favorite="studio" data-id="${html(studio.id)}">♥</button>
         </div>
         <div class="pm-studio-avatar">${html(studio.name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase())}</div>
@@ -13147,13 +13565,13 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
           <h2>${html(studio.name)} ${studio.verified ? '<span class="pm-verified">PierceMap Verified</span>' : ''}</h2>
           <p class="city">${html(studio.city)} · ${html(studio.type)} · LBP Approved futuro</p>
           <div class="stats">
-            <span>★ <b>${html(studio.rating)}</b> (${html(studio.reviews_count)} reseñas)</span>
-            <span><b>${html(studio.experience_years)}</b> años</span>
+            <span>★ <b>${html(studio.rating)}</b> (${html(studio.reviews_count)} ${currentLang() === 'en' ? 'reviews' : 'reseñas'})</span>
+            <span><b>${html(studio.experience_years)}</b> ${currentLang() === 'en' ? 'years' : 'años'}</span>
             <span>${html(studio.hours)}</span>
           </div>
           <p class="desc">${html(studio.description)}</p>
-          <div class="pm-studio-section"><h4>Especialidades</h4><div style="display:flex;flex-wrap:wrap;gap:6px">${(studio.specialties || []).map(s => `<span class="b2b-card-status">${html(s)}</span>`).join('')}</div></div>
-          <div class="pm-studio-section"><h4>Certificados</h4><p class="pm-section-subtitle">${html((studio.certificates || []).join(' · ') || 'Pendiente de validar')}</p></div>
+          <div class="pm-studio-section"><h4>${currentLang() === 'en' ? 'Specialties' : 'Especialidades'}</h4><div style="display:flex;flex-wrap:wrap;gap:6px">${(studio.specialties || []).map(s => `<span class="b2b-card-status">${html(s)}</span>`).join('')}</div></div>
+          <div class="pm-studio-section"><h4>${currentLang() === 'en' ? 'Certificates' : 'Certificados'}</h4><p class="pm-section-subtitle">${html((studio.certificates || []).join(' · ') || (currentLang() === 'en' ? 'Pending validation' : 'Pendiente de validar'))}</p></div>
           <div class="pm-studio-section">
             <h4>Piercers</h4>
             ${studioPiercers.map(p => `
@@ -13164,19 +13582,19 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
               </div>`).join('')}
           </div>
           <div class="pm-studio-section">
-            <h4>Catálogo preview</h4>
+            <h4>${html(txt('nav.catalog'))} preview</h4>
             ${studioJewelry.slice(0, 6).map(j => `
               <div class="pm-jewel-row">
                 <div class="pm-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l-2 4 8 8 8-8-2-4z"/></svg></div>
                 <div class="info"><b>${html(j.name)}</b><small>${html(j.material)} · ${html(j.compatible_area || j.area)} · ${statusText(j.status)}</small></div>
                 <span class="price">${j.price ? '$' + html(j.price) : '—'}</span>
                 <button class="pm-fav-inline ${isFavorite('jewelry', j.id) ? 'is-on' : ''}" type="button" data-pm-favorite="jewelry" data-id="${html(j.id)}" data-source-studio="${html(studio.id)}">♥</button>
-                <button class="btn btn-sm" type="button" data-use-in-planner="${html(j.id)}">Usar</button>
-              </div>`).join('') || '<p class="pm-section-subtitle">Sin catálogo todavía.</p>'}
+                <button class="btn btn-sm" type="button" data-use-in-planner="${html(j.id)}">${html(txt('common.use'))}</button>
+              </div>`).join('') || `<p class="pm-section-subtitle">${html(txt('common.noCatalog'))}</p>`}
           </div>
           <div class="pm-studio-section">
             <h4>Portfolio preview</h4>
-            <p class="pm-section-subtitle">Espacio preparado para fotos curadas del estudio. No hay carga pública todavía.</p>
+            <p class="pm-section-subtitle">${currentLang() === 'en' ? 'Space prepared for curated studio photos. Public upload is not enabled yet.' : 'Espacio preparado para fotos curadas del estudio. No hay carga pública todavía.'}</p>
           </div>
           <div class="pm-studio-section">
             <h4>Reviews</h4>
@@ -13184,9 +13602,10 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
           </div>
           <div class="pm-studio-section">
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-              <button class="btn btn-primary" type="button" data-use-studio-catalog="${html(studio.id)}">Usar catálogo en Planner</button>
-              <button class="btn" type="button" data-pm-enter-studio="${html(studio.id)}">Entrar al ecosistema</button>
-              <button class="btn" type="button" data-pm-contact="${html(studio.id)}">Contactar</button>
+              <button class="btn btn-primary" type="button" data-pm-start-pre-review="${html(studio.id)}">${html(txt('studios.preReview'))}</button>
+              <button class="btn" type="button" data-use-studio-catalog="${html(studio.id)}">${html(currentLang() === 'en' ? 'Use catalog in Planner' : 'Usar catálogo en Diseñador')}</button>
+              <button class="btn" type="button" data-pm-enter-studio="${html(studio.id)}">${html(txt('studios.enter'))}</button>
+              <button class="btn" type="button" data-pm-contact="${html(studio.id)}">${html(txt('common.contact'))}</button>
             </div>
           </div>
         </div>
@@ -13209,23 +13628,23 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     view.innerHTML = `
       <div class="container">
         <div class="b2b-hero">
-          <div class="eyebrow">Jewelry · Catálogo</div>
-          <h1>Joyería lista para vender desde consulta</h1>
-          <p>Inventario local de demo. Cada pieza puede guardarse, enviarse al Planner o marcarse como disponible/sobre pedido.</p>
-          <div class="b2b-hero-actions"><button class="btn btn-primary" type="button" data-pm-add-jewelry>Agregar joya</button></div>
+          <div class="eyebrow">${html(txt('catalog.eyebrow'))}</div>
+          <h1>${html(txt('catalog.title'))}</h1>
+          <p>${html(txt('catalog.copy'))}</p>
+          <div class="b2b-hero-actions"><button class="btn btn-primary" type="button" data-pm-add-jewelry>${html(txt('catalog.add'))}</button></div>
         </div>
         <div class="pm-view-tools">
-          <input class="pm-search-input" data-pm-search-jewelry placeholder="Buscar joya, material o zona" value="${html(state.jewelrySearch)}" />
-          <select class="pm-select" data-pm-jewelry-type>${types.map(t => `<option value="${html(t)}" ${state.jewelryType === t ? 'selected' : ''}>${t === 'all' ? 'Tipo' : html(t)}</option>`).join('')}</select>
+          <input class="pm-search-input" data-pm-search-jewelry placeholder="${html(txt('catalog.search'))}" value="${html(state.jewelrySearch)}" />
+          <select class="pm-select" data-pm-jewelry-type>${types.map(t => `<option value="${html(t)}" ${state.jewelryType === t ? 'selected' : ''}>${t === 'all' ? (currentLang() === 'en' ? 'Type' : 'Tipo') : html(t)}</option>`).join('')}</select>
           <select class="pm-select" data-pm-jewelry-material>${materials.map(m => `<option value="${html(m)}" ${state.jewelryMaterial === m ? 'selected' : ''}>${m === 'all' ? 'Material' : html(m)}</option>`).join('')}</select>
           <select class="pm-select" data-pm-jewelry-status>
-            <option value="all" ${state.jewelryStatus === 'all' ? 'selected' : ''}>Estado</option>
-            <option value="available" ${state.jewelryStatus === 'available' ? 'selected' : ''}>Disponible</option>
-            <option value="on_order" ${state.jewelryStatus === 'on_order' ? 'selected' : ''}>Sobre pedido</option>
+            <option value="all" ${state.jewelryStatus === 'all' ? 'selected' : ''}>${currentLang() === 'en' ? 'Status' : 'Estado'}</option>
+            <option value="available" ${state.jewelryStatus === 'available' ? 'selected' : ''}>${html(txt('status.available'))}</option>
+            <option value="on_order" ${state.jewelryStatus === 'on_order' ? 'selected' : ''}>${html(txt('status.on_order'))}</option>
           </select>
         </div>
         <div class="b2b-grid">
-          ${filtered.map(jewelryCard).join('') || '<div class="pm-empty-note">No hay joyería con esos filtros.</div>'}
+          ${filtered.map(jewelryCard).join('') || `<div class="pm-empty-note">${html(txt('catalog.empty'))}</div>`}
         </div>
       </div>`;
   }
@@ -13238,23 +13657,53 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
           <div class="b2b-card-title"><h3>${html(j.name)}</h3><small>${html(j.type)} · ${html(j.material)}</small></div>
           <button class="pm-fav-inline ${isFavorite('jewelry', j.id) ? 'is-on' : ''}" type="button" data-pm-favorite="jewelry" data-id="${html(j.id)}" data-source-studio="${html(j.studio_id || '')}">♥</button>
         </div>
-        <div class="b2b-card-meta"><span class="b2b-card-status ${j.status === 'on_order' ? 'danger' : ''}">${statusText(j.status)}</span><span>${html(j.compatible_area || j.area)}</span><span>${j.price ? '$' + html(j.price) : 'Sin precio'}</span></div>
+        <div class="b2b-card-meta"><span class="b2b-card-status ${j.status === 'on_order' ? 'danger' : ''}">${statusText(j.status)}</span><span>${html(j.compatible_area || j.area)}</span><span>${j.price ? '$' + html(j.price) : (currentLang() === 'en' ? 'No price' : 'Sin precio')}</span></div>
         <div class="pm-card-actions">
-          <button class="btn btn-primary" type="button" data-use-in-planner="${html(j.id)}">Usar en Planner</button>
-          <button class="btn" type="button" data-jewel-delete="${html(j.id)}">Eliminar</button>
+          <button class="btn btn-primary" type="button" data-use-in-planner="${html(j.id)}">${html(txt('common.useInPlanner'))}</button>
+          <button class="btn" type="button" data-jewel-delete="${html(j.id)}">${html(txt('common.delete'))}</button>
+        </div>
+      </article>`;
+  }
+
+  function preReviewCard(review) {
+    const studio = byId(studios(), review.studio_id);
+    const piercer = byId(piercers(), review.piercer_id);
+    const thumb = review.image_data_url
+      ? `<img class="pm-pre-review-thumb" src="${html(review.image_data_url)}" alt="${html(txt('preReview.photo'))}">`
+      : `<div class="pm-pre-review-thumb is-empty">${html(areaLabel(review.body_area)).slice(0, 2).toUpperCase()}</div>`;
+    return `
+      <article class="b2b-card pm-pre-review-card">
+        <div class="b2b-card-head">
+          ${thumb}
+          <div class="b2b-card-title">
+            <h3>${html(txt('preReview.title'))} · ${html(areaLabel(review.body_area))}</h3>
+            <small>${html(interestLabel(review.interest_type))} · ${new Date(review.updated_at || review.created_at || Date.now()).toLocaleDateString()}</small>
+          </div>
+          <span class="b2b-card-status">${html(statusText(review.status))}</span>
+        </div>
+        <p class="pm-section-subtitle">${html((review.notes || txt('preReview.disclaimer')).slice(0, 130))}</p>
+        <div class="b2b-card-meta">
+          <span>${html(studio?.name || txt('preReview.unassigned'))}</span>
+          <span>${html(piercer?.name || 'Piercer')}</span>
+        </div>
+        <div class="pm-card-actions">
+          <button class="btn btn-primary" type="button" data-open-pre-review="${html(review.id)}">${html(txt('preReview.open'))}</button>
+          <button class="btn" type="button" data-pm-send-review="${html(review.id)}">${html(txt('preReview.send'))}</button>
+          <button class="btn" type="button" data-pm-delete-review="${html(review.id)}">${html(txt('preReview.delete'))}</button>
         </div>
       </article>`;
   }
 
   function renderClients() {
     const view = ensureView('clients');
+    const previewList = preReviewsForMode('studio').filter(item => state.preReviewStatus === 'all' || item.status === state.preReviewStatus);
     view.innerHTML = `
       <div class="container">
         <div class="b2b-hero">
-          <div class="eyebrow">Clients · CRM ligero</div>
-          <h1>Clientes, intereses y seguimiento</h1>
-          <p>Lista local para demo: abre un cliente, revisa interés principal y guarda notas de seguimiento.</p>
-          <div class="b2b-hero-actions"><button class="btn btn-primary" type="button" data-pm-add-client>Nuevo cliente</button></div>
+          <div class="eyebrow">${html(txt('clients.eyebrow'))}</div>
+          <h1>${html(txt('clients.title'))}</h1>
+          <p>${html(txt('clients.copy'))}</p>
+          <div class="b2b-hero-actions"><button class="btn btn-primary" type="button" data-pm-add-client>${html(txt('clients.add'))}</button></div>
         </div>
         <div class="b2b-grid">
           ${clients().map(c => `
@@ -13265,44 +13714,62 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
                 <span class="b2b-card-status">${html(c.status)}</span>
               </div>
               <div class="b2b-card-meta"><span>${html(c.last || 'hoy')}</span><span>${html(c.visits || 0)} visitas</span></div>
-              <p class="pm-section-subtitle">${html(c.notes || 'Sin notas todavía.')}</p>
-              <div class="pm-card-actions"><button class="btn" type="button" data-open-client-button="${html(c.id)}">Abrir cliente</button></div>
+              <p class="pm-section-subtitle">${html(c.notes || (currentLang() === 'en' ? 'No notes yet.' : 'Sin notas todavía.'))}</p>
+              <div class="pm-card-actions"><button class="btn" type="button" data-open-client-button="${html(c.id)}">${currentLang() === 'en' ? 'Open client' : 'Abrir cliente'}</button></div>
             </article>`).join('')}
         </div>
+        <div class="b2b-section-head"><h2>${html(txt('clients.preReviews'))}</h2></div>
+        <div class="pm-view-tools">
+          <select class="pm-select" data-pm-review-filter>
+            ${['all','new','sent','reviewed','requires_consultation'].map(status => `<option value="${status}" ${state.preReviewStatus === status ? 'selected' : ''}>${status === 'all' ? txt('common.all') : statusText(status)}</option>`).join('')}
+          </select>
+        </div>
+        ${previewList.length ? `<div class="b2b-grid">${previewList.map(preReviewCard).join('')}</div>` : `<div class="pm-empty-note">${html(txt('preReview.studioEmpty'))}</div>`}
       </div>`;
   }
 
   function renderStudioHome() {
     const view = ensureView('studio');
     const profile = read(KEYS.studioProfile, {});
+    const studioReviews = preReviewsForMode('studio');
+    const newReviews = studioReviews.filter(item => ['new','sent'].includes(item.status)).length;
     view.innerHTML = `
       <div class="container">
         <div class="b2b-hero">
-          <div class="eyebrow">Studio Home</div>
-          <h1>${html(profile.name || 'Tu estudio en PierceMap')}</h1>
-          <p>${html(profile.description || 'Edita los datos básicos del estudio y comparte el código demo con clientes.')}</p>
+          <div class="eyebrow">${html(txt('studio.eyebrow'))}</div>
+          <h1>${html(profile.name || txt('studio.defaultName'))}</h1>
+          <p>${html(profile.description || txt('studio.defaultCopy'))}</p>
           <div class="b2b-hero-actions">
-            <button class="btn btn-primary" type="button" data-pm-generate-code>Mostrar código</button>
-            <button class="btn" type="button" data-pm-view="jewelry">Abrir catálogo</button>
+            <button class="btn btn-primary" type="button" data-pm-generate-code>${html(txt('studio.code'))}</button>
+            <button class="btn" type="button" data-pm-view="jewelry">${html(txt('studio.openCatalog'))}</button>
+            <button class="btn" type="button" data-pm-view="clients">${html(txt('studio.viewPreReviews'))}</button>
           </div>
         </div>
-        <div class="b2b-section-head"><h2>Perfil público del estudio</h2></div>
+        <div class="b2b-grid pm-dashboard-grid">
+          <article class="b2b-card"><strong>${html(txt('nav.catalog'))}</strong><p class="pm-big-number">${jewelry().length}</p><small>${currentLang() === 'en' ? 'loaded pieces' : 'piezas cargadas'}</small></article>
+          <article class="b2b-card"><strong>${html(txt('nav.clients'))}</strong><p class="pm-big-number">${clients().length}</p><small>${currentLang() === 'en' ? 'local records' : 'registros locales'}</small></article>
+          <article class="b2b-card"><strong>${html(txt('clients.preReviews'))}</strong><p class="pm-big-number">${newReviews}</p><small>${currentLang() === 'en' ? 'new or sent' : 'nuevas o enviadas'}</small></article>
+          <article class="b2b-card"><strong>${html(txt('profile.projects'))}</strong><p class="pm-big-number">${read(KEYS.projects, []).length}</p><small>${currentLang() === 'en' ? 'saved projects' : 'proyectos guardados'}</small></article>
+        </div>
+        <div class="b2b-section-head"><h2>${html(txt('studio.publicProfile'))}</h2></div>
         <div class="b2b-settings-stack">
           ${[
-            ['Nombre', profile.name || 'Sin configurar', 'name', 'text'],
-            ['Ciudad / colonia', profile.city || 'Sin configurar', 'city', 'text'],
-            ['Tipo de atención', profile.type || 'Solo cita', 'type', 'select', ['Walk-in','Solo cita','Privado']],
-            ['Especialidades', profile.specialties || 'Sin configurar', 'specialties', 'text'],
-            ['Años de experiencia', profile.experience_years || 0, 'experience_years', 'number'],
-            ['Horario', profile.hours || 'Sin configurar', 'hours', 'text'],
-            ['Descripción', profile.description || 'Sin configurar', 'description', 'textarea'],
-            ['Código de estudio', profile.code || 'Sin generar', 'code', 'text']
+            [currentLang() === 'en' ? 'Name' : 'Nombre', profile.name || (currentLang() === 'en' ? 'Not configured' : 'Sin configurar'), 'name', 'text'],
+            [currentLang() === 'en' ? 'City / neighborhood' : 'Ciudad / colonia', profile.city || (currentLang() === 'en' ? 'Not configured' : 'Sin configurar'), 'city', 'text'],
+            [currentLang() === 'en' ? 'Care type' : 'Tipo de atención', profile.type || 'Solo cita', 'type', 'select', ['Walk-in','Solo cita','Privado']],
+            [currentLang() === 'en' ? 'Specialties' : 'Especialidades', profile.specialties || (currentLang() === 'en' ? 'Not configured' : 'Sin configurar'), 'specialties', 'text'],
+            [currentLang() === 'en' ? 'Years of experience' : 'Años de experiencia', profile.experience_years || 0, 'experience_years', 'number'],
+            [currentLang() === 'en' ? 'Hours' : 'Horario', profile.hours || (currentLang() === 'en' ? 'Not configured' : 'Sin configurar'), 'hours', 'text'],
+            [currentLang() === 'en' ? 'Description' : 'Descripción', profile.description || (currentLang() === 'en' ? 'Not configured' : 'Sin configurar'), 'description', 'textarea'],
+            [txt('profile.studioCode'), profile.code || (currentLang() === 'en' ? 'Not generated' : 'Sin generar'), 'code', 'text']
           ].map(([label, value, key, type, options]) => `
             <div class="b2b-setting-row">
-              <div><strong>${html(label)}</strong><small>Se guarda localmente por ahora.</small></div>
+              <div><strong>${html(label)}</strong><small>${currentLang() === 'en' ? 'Saved locally for now.' : 'Se guarda localmente por ahora.'}</small></div>
               <button class="btn" type="button" data-pm-edit-studio="${html(key)}" data-type="${html(type)}" data-opts="${html((options || []).join('|'))}">${html(String(value).slice(0, 34))}</button>
             </div>`).join('')}
         </div>
+        <div class="b2b-section-head"><h2>${html(txt('clients.preReviews'))}</h2></div>
+        ${studioReviews.length ? `<div class="b2b-grid">${studioReviews.slice(0, 4).map(preReviewCard).join('')}</div>` : `<div class="pm-empty-note">${html(txt('preReview.studioEmpty'))}</div>`}
       </div>`;
   }
 
@@ -13312,12 +13779,27 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     view.innerHTML = `
       <div class="container">
         <div class="b2b-hero">
-          <div class="eyebrow">Favorites</div>
-          <h1>Todo lo guardado para volver rápido</h1>
-          <p>${list.length} elemento${list.length === 1 ? '' : 's'} guardado${list.length === 1 ? '' : 's'}: estudios, piercers, joyas y setups futuros.</p>
+          <div class="eyebrow">${html(txt('favorites.eyebrow'))}</div>
+          <h1>${html(txt('favorites.title'))}</h1>
+          <p>${html(txt('favorites.copy'))} ${list.length ? `(${list.length})` : ''}</p>
         </div>
-        ${list.length ? `<div class="b2b-grid">${list.map(favoriteCard).join('')}</div>` : `<div class="pm-empty-note">Aún no hay favoritos. Guarda estudios o joyería desde Studios y Jewelry.</div>`}
+        ${favoriteBuckets(list)}
+        ${list.length ? `<div class="b2b-grid">${list.map(favoriteCard).join('')}</div>` : `<div class="pm-empty-note">${html(txt('favorites.empty'))}</div>`}
       </div>`;
+  }
+
+  function favoriteBuckets(list) {
+    const labels = {
+      studio: txt('nav.studios'),
+      piercer: 'Piercers',
+      jewelry: currentLang() === 'en' ? 'Jewelry' : 'Joyería',
+      setup: currentLang() === 'en' ? 'Setups' : 'Setups',
+      pre_review: currentLang() === 'en' ? 'Pre-reviews' : 'Revisiones'
+    };
+    return `<div class="pm-bucket-row">${Object.entries(labels).map(([type, label]) => {
+      const count = list.filter(item => item.item_type === type).length;
+      return `<span class="b2b-card-status">${html(label)} · ${count}</span>`;
+    }).join('')}</div>`;
   }
 
   function favoriteCard(f) {
@@ -13329,8 +13811,9 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
           <button class="pm-fav-inline is-on" type="button" data-pm-favorite="${html(f.item_type)}" data-id="${html(f.item_id)}">♥</button>
         </div>
         <div class="pm-card-actions">
-          ${f.item_type === 'studio' ? `<button class="btn" type="button" data-open-studio-button="${html(f.item_id)}">Ver estudio</button>` : ''}
-          ${f.item_type === 'jewelry' ? `<button class="btn btn-primary" type="button" data-use-in-planner="${html(f.item_id)}">Usar en Planner</button>` : ''}
+          ${f.item_type === 'studio' ? `<button class="btn" type="button" data-open-studio-button="${html(f.item_id)}">${html(txt('studios.view'))}</button>` : ''}
+          ${f.item_type === 'jewelry' ? `<button class="btn btn-primary" type="button" data-use-in-planner="${html(f.item_id)}">${html(txt('common.useInPlanner'))}</button>` : ''}
+          ${f.item_type === 'pre_review' ? `<button class="btn btn-primary" type="button" data-open-pre-review="${html(f.item_id)}">${html(txt('preReview.open'))}</button>` : ''}
         </div>
       </article>`;
   }
@@ -13342,23 +13825,27 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const user = bridge?.getUser?.();
     const projects = read(KEYS.projects, []);
     const profile = read(KEYS.studioProfile, {});
+    const myPreReviews = preReviewsForMode(mode);
     view.innerHTML = `
       <div class="container">
         <div class="b2b-hero">
-          <div class="eyebrow">Profile</div>
-          <h1>${html(user?.user_metadata?.full_name || user?.email || 'Invitado')}</h1>
-          <p>${user ? html(user.email || 'Sesión activa') : 'Inicia sesión con Google para sincronizar favoritos, proyectos y experiencias cuando Supabase esté listo.'}</p>
+          <div class="eyebrow">${html(txt('profile.eyebrow'))}</div>
+          <h1>${html(user?.user_metadata?.full_name || user?.email || txt('profile.guest'))}</h1>
+          <p>${user ? html(user.email || (currentLang() === 'en' ? 'Active session' : 'Sesión activa')) : html(txt('profile.loginCopy'))}</p>
           <div class="b2b-hero-actions">
-            <button class="btn btn-primary" type="button" data-pm-profile-auth>${user ? 'Cerrar sesión' : 'Continuar con Google'}</button>
-            <button class="btn" type="button" data-pm-change-mode>Cambiar modo</button>
+            <button class="btn btn-primary" type="button" data-pm-profile-auth>${html(user ? txt('profile.logout') : txt('profile.google'))}</button>
+            <button class="btn" type="button" data-pm-change-mode>${html(txt('profile.changeMode'))}</button>
+            <button class="btn" type="button" data-pm-new-pre-review>${html(txt('preReview.new'))}</button>
           </div>
         </div>
         <div class="b2b-settings-stack">
-          <div class="b2b-setting-row"><div><strong>Modo actual</strong><small>La navegación cambia según este modo.</small></div><code>${mode === 'studio' ? 'Studio' : 'Cliente'}</code></div>
-          <div class="b2b-setting-row"><div><strong>Favoritos</strong><small>Estudios, piercers, joyas y setups.</small></div><code>${favs().length}</code></div>
-          <div class="b2b-setting-row"><div><strong>Proyectos</strong><small>Guardados localmente y listos para design_projects.</small></div><code>${projects.length}</code></div>
-          <div class="b2b-setting-row"><div><strong>${mode === 'studio' ? 'Código de estudio' : 'Estudio activo'}</strong><small>${mode === 'studio' ? 'Compártelo como link/QR futuro.' : 'Se llena al entrar con código.'}</small></div><code>${html(mode === 'studio' ? (profile.code || 'Sin código') : (read(KEYS.activeStudio, '') || 'Ninguno'))}</code></div>
+          <div class="b2b-setting-row"><div><strong>${html(txt('profile.mode'))}</strong><small>${html(txt('profile.modeHint'))}</small></div><code>${mode === 'studio' ? 'Studio' : (currentLang() === 'en' ? 'Client' : 'Cliente')}</code></div>
+          <div class="b2b-setting-row"><div><strong>${html(txt('profile.favorites'))}</strong><small>${currentLang() === 'en' ? 'Studios, piercers, jewelry, setups and pre-reviews.' : 'Estudios, piercers, joyas, setups y revisiones previas.'}</small></div><code>${favs().length}</code></div>
+          <div class="b2b-setting-row"><div><strong>${html(txt('profile.projects'))}</strong><small>${currentLang() === 'en' ? 'Saved locally and ready for design_projects.' : 'Guardados localmente y listos para design_projects.'}</small></div><code>${projects.length}</code></div>
+          <div class="b2b-setting-row"><div><strong>${html(mode === 'studio' ? txt('profile.studioCode') : txt('profile.activeStudio'))}</strong><small>${mode === 'studio' ? (currentLang() === 'en' ? 'Share it later as a link/QR.' : 'Compártelo como link/QR futuro.') : (currentLang() === 'en' ? 'Filled when you enter with a code.' : 'Se llena al entrar con código.')}</small></div><code>${html(mode === 'studio' ? (profile.code || (currentLang() === 'en' ? 'No code' : 'Sin código')) : (read(KEYS.connectedStudio, '') || txt('common.none')))}</code></div>
         </div>
+        <div class="b2b-section-head"><h2>${html(txt('profile.preReviews'))}</h2></div>
+        ${myPreReviews.length ? `<div class="b2b-grid">${myPreReviews.map(preReviewCard).join('')}</div>` : `<div class="pm-empty-note">${html(mode === 'studio' ? txt('preReview.studioEmpty') : txt('preReview.empty'))}</div>`}
       </div>`;
   }
 
@@ -13379,7 +13866,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const list = plannerJewelryList().filter(j => j.id !== item.id);
     list.unshift(item);
     setPlannerJewelry(list);
-    showInlineMsg(`✓ ${item.name} añadida al Planner`);
+    showInlineMsg(`✓ ${item.name} ${currentLang() === 'en' ? 'added to Planner' : 'añadida al Diseñador'}`);
     showView('planner');
   }
 
@@ -13395,14 +13882,15 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     }
     const selected = plannerJewelryList();
     panel.innerHTML = `
-      <strong>Joyas seleccionadas para este diseño</strong>
-      <p class="pm-section-subtitle">${selected.length ? 'Estas piezas vienen de Studios/Jewelry y quedan listas para guardar como proyecto.' : 'Todavía no has enviado joyas al Planner.'}</p>
+      <strong>${html(txt('planner.selectedTitle'))}</strong>
+      <p class="pm-section-subtitle">${html(selected.length ? txt('planner.copyWithItems') : txt('planner.copyEmpty'))}</p>
       <div class="pm-planner-list">
         ${selected.map(j => `<div class="pm-jewel-chip"><span><b>${html(j.name)}</b><br><small>${html(j.material)} · ${html(j.compatible_area || j.area || '')}</small></span><span>${j.price ? '$' + html(j.price) : ''}</span></div>`).join('')}
       </div>
       <div class="pm-card-actions">
-        <button class="btn btn-primary" type="button" data-pm-save-project ${selected.length ? '' : 'disabled'}>Guardar proyecto</button>
-        <button class="btn" type="button" data-pm-clear-planner ${selected.length ? '' : 'disabled'}>Limpiar joyas</button>
+        <button class="btn btn-primary" type="button" data-pm-save-project ${selected.length ? '' : 'disabled'}>${html(txt('planner.save'))}</button>
+        <button class="btn" type="button" data-pm-planner-to-review>${html(txt('planner.toReview'))}</button>
+        <button class="btn" type="button" data-pm-clear-planner ${selected.length ? '' : 'disabled'}>${html(txt('planner.clear'))}</button>
       </div>`;
   }
 
@@ -13412,9 +13900,9 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     list.unshift({
       id: 'dp_' + Date.now(),
       user_id: window.AlicynSupabase?.getUser?.()?.id || null,
-      studio_id: selected[0]?.studio_id || read(KEYS.activeStudio, '') || null,
+      studio_id: selected[0]?.studio_id || read(KEYS.connectedStudio, '') || null,
       client_id: null,
-      title: selected.length ? `Diseño con ${selected[0].name}` : 'Diseño PierceMap',
+      title: selected.length ? `${currentLang() === 'en' ? 'Design with' : 'Diseño con'} ${selected[0].name}` : (currentLang() === 'en' ? 'PierceMap design' : 'Diseño PierceMap'),
       image_url: '',
       selected_jewelry: selected,
       notes: '',
@@ -13426,7 +13914,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (window.AlicynSupabase?.isSignedIn?.()) {
       window.AlicynSupabase?.saveDesignProject?.(list[0]);
     }
-    showInlineMsg('✓ Proyecto guardado');
+    showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Project saved' : 'Proyecto guardado'));
     renderPlannerBridge();
   }
 
@@ -13443,7 +13931,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         <h3>${html(opts.title)}</h3>
         ${opts.hint ? `<p class="hint">${html(opts.hint)}</p>` : ''}
         ${(opts.fields || []).map(field => field.row ? `<div class="pm-row">${field.row.map(fieldHtml).join('')}</div>` : fieldHtml(field)).join('')}
-        <div class="pm-actions"><button class="btn" type="button" data-pm-modal-cancel>Cancelar</button><button class="btn btn-primary" type="button" data-pm-modal-save>${html(opts.saveLabel || 'Guardar')}</button></div>
+        <div class="pm-actions"><button class="btn" type="button" data-pm-modal-cancel>${html(txt('common.cancel'))}</button><button class="btn btn-primary" type="button" data-pm-modal-save>${html(opts.saveLabel || txt('common.save'))}</button></div>
       </div>`;
     modal.classList.add('is-open');
     modal.querySelector('[data-pm-modal-cancel]').onclick = () => modal.classList.remove('is-open');
@@ -13469,32 +13957,32 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function addJewelryModal() {
     openPromptModal({
-      title: 'Agregar joya',
-      hint: 'Se guarda localmente. El campo imagen acepta una URL opcional por ahora.',
+      title: txt('catalog.add'),
+      hint: currentLang() === 'en' ? 'Saved locally. The image field accepts an optional URL for now.' : 'Se guarda localmente. El campo imagen acepta una URL opcional por ahora.',
       fields: [
-        { name:'image_url', label:'Imagen URL opcional', placeholder:'https://...' },
-        { name:'name', label:'Nombre', placeholder:'Labret titanio · flat 3mm' },
+        { name:'image_url', label:currentLang() === 'en' ? 'Optional image URL' : 'Imagen URL opcional', placeholder:'https://...' },
+        { name:'name', label:currentLang() === 'en' ? 'Name' : 'Nombre', placeholder:'Labret titanio · flat 3mm' },
         { row:[
-          { name:'type', label:'Tipo', type:'select', options:['Labret','CBR','Barbell','Clicker','Surface bar','Microderma','Nostril','Otro'] },
+          { name:'type', label:currentLang() === 'en' ? 'Type' : 'Tipo', type:'select', options:['Labret','CBR','Barbell','Clicker','Surface bar','Microderma','Nostril', currentLang() === 'en' ? 'Other' : 'Otro'] },
           { name:'material', label:'Material', placeholder:'Titanio implant grade' }
         ]},
         { row:[
-          { name:'color', label:'Color', placeholder:'Plata' },
-          { name:'compatible_area', label:'Zona compatible', placeholder:'Oreja · Nariz' }
+          { name:'color', label:currentLang() === 'en' ? 'Color' : 'Color', placeholder:currentLang() === 'en' ? 'Silver' : 'Plata' },
+          { name:'compatible_area', label:currentLang() === 'en' ? 'Compatible area' : 'Zona compatible', placeholder:currentLang() === 'en' ? 'Ear · Nose' : 'Oreja · Nariz' }
         ]},
         { row:[
-          { name:'status', label:'Estado', type:'select', options:['available','on_order'] },
-          { name:'price', label:'Precio opcional', type:'number' }
+          { name:'status', label:currentLang() === 'en' ? 'Status' : 'Estado', type:'select', options:['available','on_order'] },
+          { name:'price', label:currentLang() === 'en' ? 'Optional price' : 'Precio opcional', type:'number' }
         ]}
       ],
-      saveLabel: 'Agregar',
+      saveLabel: currentLang() === 'en' ? 'Add' : 'Agregar',
       onSave(data) {
         const list = jewelry();
         const item = {
           id: 'j_' + Date.now(),
           studio_id: 'local',
-          name: data.name || 'Joya sin nombre',
-          type: data.type || 'Otro',
+          name: data.name || (currentLang() === 'en' ? 'Unnamed jewelry' : 'Joya sin nombre'),
+          type: data.type || (currentLang() === 'en' ? 'Other' : 'Otro'),
           material: data.material || '',
           color: data.color || '',
           compatible_area: data.compatible_area || '',
@@ -13508,27 +13996,27 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         list.unshift(item);
         write(KEYS.jewelry, list);
         renderJewelry();
-        showInlineMsg('✓ Joya agregada');
+        showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Jewelry added' : 'Joya agregada'));
       }
     });
   }
 
   function addClientModal() {
     openPromptModal({
-      title: 'Nuevo cliente',
+      title: txt('clients.add'),
       fields: [
-        { name:'name', label:'Nombre', placeholder:'Ana López' },
-        { name:'interest', label:'Interés principal', placeholder:'Helix · Conch' },
-        { name:'status', label:'Estado', type:'select', options:['Nuevo','Interesado','Agendado','Seguimiento','En curación','Cerrado'] },
-        { name:'notes', label:'Notas', type:'textarea', placeholder:'Preferencias, anatomía, joyería considerada...' }
+        { name:'name', label:currentLang() === 'en' ? 'Name' : 'Nombre', placeholder:'Ana López' },
+        { name:'interest', label:currentLang() === 'en' ? 'Main interest' : 'Interés principal', placeholder:'Helix · Conch' },
+        { name:'status', label:currentLang() === 'en' ? 'Status' : 'Estado', type:'select', options: currentLang() === 'en' ? ['New','Interested','Booked','Follow-up','Healing','Closed'] : ['Nuevo','Interesado','Agendado','Seguimiento','En curación','Cerrado'] },
+        { name:'notes', label:txt('preReview.notes'), type:'textarea', placeholder:currentLang() === 'en' ? 'Preferences, anatomy, considered jewelry...' : 'Preferencias, anatomía, joyería considerada...' }
       ],
-      saveLabel: 'Crear',
+      saveLabel: currentLang() === 'en' ? 'Create' : 'Crear',
       onSave(data) {
         const list = clients();
         list.unshift({ id:'c_' + Date.now(), ...data, visits:0, last:'hoy', favorites:[], created_at:new Date().toISOString() });
         write(KEYS.clients, list);
         renderClients();
-        showInlineMsg('✓ Cliente creado');
+        showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Client created' : 'Cliente creado'));
       }
     });
   }
@@ -13548,14 +14036,137 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       <div class="pm-client-card">
         <h3>${html(client.name)}</h3>
         <p class="hint">${html(client.interest)} · ${html(client.status)} · ${html(client.last || 'hoy')}</p>
-        <div class="pm-empty-note">${html(client.notes || 'Sin notas iniciales.')}</div>
+        <div class="pm-empty-note">${html(client.notes || (currentLang() === 'en' ? 'No initial notes.' : 'Sin notas iniciales.'))}</div>
         <div class="pm-field" style="margin-top:12px">
-          <label>Notas de seguimiento</label>
-          <textarea data-client-note="${html(client.id)}" placeholder="Escribe una nota para este cliente...">${html((notes[client.id] || []).join('\\n'))}</textarea>
+          <label>${currentLang() === 'en' ? 'Follow-up notes' : 'Notas de seguimiento'}</label>
+          <textarea data-client-note="${html(client.id)}" placeholder="${currentLang() === 'en' ? 'Write a note for this client...' : 'Escribe una nota para este cliente...'}">${html((notes[client.id] || []).join('\\n'))}</textarea>
         </div>
-        <div class="pm-actions"><button class="btn" type="button" data-pm-close-client>Cerrar</button><button class="btn btn-primary" type="button" data-pm-save-client-note="${html(client.id)}">Guardar nota</button></div>
+        <div class="pm-actions"><button class="btn" type="button" data-pm-close-client>${currentLang() === 'en' ? 'Close' : 'Cerrar'}</button><button class="btn btn-primary" type="button" data-pm-save-client-note="${html(client.id)}">${currentLang() === 'en' ? 'Save note' : 'Guardar nota'}</button></div>
       </div>`;
     modal.classList.add('is-open');
+  }
+
+  function optionList(items, selected = '') {
+    return items.map(item => `<option value="${html(item.value)}" ${String(item.value) === String(selected) ? 'selected' : ''}>${html(item.label)}</option>`).join('');
+  }
+
+  function preReviewAreaOptions(selected) {
+    return optionList(['ear','nose','lips','navel','eyebrow','other'].map(value => ({ value, label: areaLabel(value) })), selected);
+  }
+
+  function preReviewInterestOptions(selected) {
+    return optionList(['new_piercing','jewelry_change','curated_setup','idea_review','follow_up'].map(value => ({ value, label: interestLabel(value) })), selected);
+  }
+
+  function openPreReviewModal(seed = {}) {
+    const existing = seed.id ? byId(preReviews(), seed.id) : null;
+    const review = preReviewDefaults({ ...existing, ...seed });
+    let modal = document.getElementById('pm-pre-review-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'pm-pre-review-modal';
+      modal.className = 'pm-modal';
+      document.body.appendChild(modal);
+    }
+    const studioOptions = [{ value:'', label:txt('preReview.unassigned') }].concat(studios().map(studio => ({ value:studio.id, label:studio.name })));
+    const piercerOptions = [{ value:'', label:txt('preReview.unassigned') }].concat(piercers().map(piercer => ({ value:piercer.id, label:piercer.name })));
+    modal._imageData = review.image_data_url || '';
+    modal.innerHTML = `
+      <div class="pm-modal-card pm-pre-review-modal-card">
+        <h3>${html(existing ? txt('preReview.title') : txt('preReview.new'))}</h3>
+        <p class="hint">${html(txt('preReview.copy'))}</p>
+        <div class="pm-empty-note">${html(txt('preReview.disclaimer'))}</div>
+        <div class="pm-field" style="margin-top:12px">
+          <label>${html(txt('preReview.photo'))}</label>
+          <input type="file" accept="image/*" data-pm-pre-image>
+          <div class="pm-pre-review-preview">${review.image_data_url ? `<img src="${html(review.image_data_url)}" alt="${html(txt('preReview.photo'))}">` : `<span>${currentLang() === 'en' ? 'No photo selected yet.' : 'Aún no hay foto seleccionada.'}</span>`}</div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(txt('preReview.area'))}</label><select data-pm-pre-field="body_area">${preReviewAreaOptions(review.body_area)}</select></div>
+          <div class="pm-field"><label>${html(txt('preReview.interest'))}</label><select data-pm-pre-field="interest_type">${preReviewInterestOptions(review.interest_type)}</select></div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(txt('preReview.assignStudio'))}</label><select data-pm-pre-field="studio_id">${optionList(studioOptions, review.studio_id)}</select></div>
+          <div class="pm-field"><label>${html(txt('preReview.assignPiercer'))}</label><select data-pm-pre-field="piercer_id">${optionList(piercerOptions, review.piercer_id)}</select></div>
+        </div>
+        <div class="pm-field"><label>${html(txt('preReview.notes'))}</label><textarea data-pm-pre-field="notes" placeholder="${html(currentLang() === 'en' ? 'What would you like to do? Questions, favorite pieces, previous experiences...' : 'Qué te gustaría hacerte, dudas, piezas favoritas, experiencias previas...')}">${html(review.notes)}</textarea></div>
+        <div class="pm-actions">
+          <button class="btn" type="button" data-pm-close-pre-review>${html(txt('common.cancel'))}</button>
+          <button class="btn" type="button" data-pm-review-save-mode="draft">${html(txt('preReview.saveDraft'))}</button>
+          <button class="btn btn-primary" type="button" data-pm-review-save-mode="sent">${html(txt('preReview.send'))}</button>
+        </div>
+      </div>`;
+    modal.classList.add('is-open');
+    modal.onclick = event => { if (event.target === modal) modal.classList.remove('is-open'); };
+    const input = modal.querySelector('[data-pm-pre-image]');
+    input?.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        modal._imageData = String(reader.result || '');
+        const preview = modal.querySelector('.pm-pre-review-preview');
+        if (preview) preview.innerHTML = `<img src="${html(modal._imageData)}" alt="${html(txt('preReview.photo'))}">`;
+      };
+      reader.readAsDataURL(file);
+    });
+    modal.querySelectorAll('[data-pm-review-save-mode]').forEach(button => {
+      button.onclick = () => {
+        const data = { ...review };
+        modal.querySelectorAll('[data-pm-pre-field]').forEach(field => { data[field.dataset.pmPreField] = field.value; });
+        data.image_data_url = modal._imageData || review.image_data_url || '';
+        data.status = button.dataset.pmReviewSaveMode === 'sent' ? 'sent' : 'draft';
+        const saved = upsertPreReview(data);
+        modal.classList.remove('is-open');
+        showInlineMsg('✓ ' + (saved.status === 'sent' ? txt('preReview.send') : txt('common.saved')));
+        renderActive(document.querySelector('.view.is-active')?.id?.replace('view-', '') || defaultView(getMode() || 'client'));
+      };
+    });
+    modal.querySelector('[data-pm-close-pre-review]')?.addEventListener('click', () => modal.classList.remove('is-open'));
+  }
+
+  function openPreReviewDetail(id) {
+    const review = byId(preReviews(), id);
+    if (!review) return;
+    const studio = byId(studios(), review.studio_id);
+    let modal = document.getElementById('pm-pre-review-detail');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'pm-pre-review-detail';
+      modal.className = 'pm-modal';
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+      <div class="pm-client-card pm-pre-review-detail-card">
+        <h3>${html(txt('preReview.title'))} · ${html(areaLabel(review.body_area))}</h3>
+        <p class="hint">${html(txt('preReview.studioCopy'))}</p>
+        ${review.image_data_url ? `<img class="pm-pre-review-image" src="${html(review.image_data_url)}" alt="${html(txt('preReview.photo'))}">` : `<div class="pm-empty-note">${currentLang() === 'en' ? 'No photo attached.' : 'Sin foto adjunta.'}</div>`}
+        <div class="b2b-card-meta" style="margin:12px 0">
+          <span>${html(interestLabel(review.interest_type))}</span>
+          <span>${html(studio?.name || txt('preReview.unassigned'))}</span>
+          <span>${html(statusText(review.status))}</span>
+        </div>
+        <div class="pm-empty-note">${html(review.notes || txt('preReview.disclaimer'))}</div>
+        <div class="pm-row" style="margin-top:12px">
+          <div class="pm-field"><label>${html(txt('preReview.status'))}</label><select data-pm-detail-status>
+            ${['draft','sent','new','reviewed','requires_consultation'].map(status => `<option value="${status}" ${review.status === status ? 'selected' : ''}>${html(statusText(status))}</option>`).join('')}
+          </select></div>
+          <div class="pm-field"><label>${currentLang() === 'en' ? 'Associate client' : 'Asociar cliente'}</label><select data-pm-detail-client>
+            <option value="">${html(txt('preReview.unassigned'))}</option>
+            ${clients().map(client => `<option value="${html(client.id)}" ${review.client_id === client.id ? 'selected' : ''}>${html(client.name)}</option>`).join('')}
+          </select></div>
+        </div>
+        <div class="pm-field"><label>${html(txt('preReview.internalNote'))}</label><textarea data-pm-detail-note>${html(review.studio_notes || '')}</textarea></div>
+        <div class="pm-actions">
+          <button class="btn" type="button" data-pm-close-pre-detail>${currentLang() === 'en' ? 'Close' : 'Cerrar'}</button>
+          <button class="btn" type="button" data-pm-edit-pre-review="${html(review.id)}">${currentLang() === 'en' ? 'Edit' : 'Editar'}</button>
+          <button class="btn" type="button" data-pm-create-setup="${html(review.id)}">${html(txt('preReview.createSetup'))}</button>
+          <button class="btn" type="button" data-pm-whatsapp>${html(txt('preReview.whatsapp'))}</button>
+          <button class="btn btn-primary" type="button" data-pm-save-review-detail="${html(review.id)}">${html(txt('preReview.saveChanges'))}</button>
+        </div>
+      </div>`;
+    modal.classList.add('is-open');
+    modal.onclick = event => { if (event.target === modal) modal.classList.remove('is-open'); };
   }
 
   function editStudioField(button) {
@@ -13564,34 +14175,34 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const opts = (button.dataset.opts || '').split('|').filter(Boolean);
     const profile = read(KEYS.studioProfile, {});
     openPromptModal({
-      title: 'Editar perfil del estudio',
+      title: currentLang() === 'en' ? 'Edit studio profile' : 'Editar perfil del estudio',
       fields: [{ name:key, label:key, type, options: opts, value: profile[key] || '' }],
       onSave(data) {
         profile[key] = data[key];
         profile.updated_at = new Date().toISOString();
         write(KEYS.studioProfile, profile);
         renderStudioHome();
-        showInlineMsg('✓ Perfil guardado');
+        showInlineMsg('✓ ' + txt('common.saved'));
       }
     });
   }
 
   function enterStudioCode() {
     openPromptModal({
-      title: 'Entrar a un estudio',
-      hint: 'Códigos demo: NORTE24, ANATM, KINTS, AGUJA.',
-      fields: [{ name:'code', label:'Código', placeholder:'NORTE24' }],
-      saveLabel: 'Entrar',
+      title: currentLang() === 'en' ? 'Enter a studio' : 'Entrar a un estudio',
+      hint: currentLang() === 'en' ? 'Demo codes: NORTE24, ANATM, KINTS, AGUJA.' : 'Códigos demo: NORTE24, ANATM, KINTS, AGUJA.',
+      fields: [{ name:'code', label:currentLang() === 'en' ? 'Code' : 'Código', placeholder:'NORTE24' }],
+      saveLabel: currentLang() === 'en' ? 'Enter' : 'Entrar',
       onSave(data) {
         const code = String(data.code || '').trim().toUpperCase();
         const studio = studios().find(s => s.code === code);
         if (!studio) {
-          showInlineMsg('Código no encontrado');
+          showInlineMsg(currentLang() === 'en' ? 'Code not found' : 'Código no encontrado');
           return false;
         }
-        write(KEYS.activeStudio, studio.id);
+        write(KEYS.connectedStudio, studio.id);
         openStudioDetail(studio.id);
-        showInlineMsg(`✓ Ecosistema activo: ${studio.name}`);
+        showInlineMsg(`✓ ${currentLang() === 'en' ? 'Active ecosystem' : 'Ecosistema activo'}: ${studio.name}`);
       }
     });
   }
@@ -13599,11 +14210,11 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function useStudioCatalog(studioId) {
     const items = jewelry().filter(j => j.studio_id === studioId);
     if (!items.length) {
-      showInlineMsg('Este estudio aún no tiene catálogo');
+      showInlineMsg(currentLang() === 'en' ? 'This studio does not have a catalog yet' : 'Este estudio aún no tiene catálogo');
       return;
     }
     setPlannerJewelry(items.slice(0, 3));
-    showInlineMsg('✓ Catálogo enviado al Planner');
+    showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Catalog sent to Planner' : 'Catálogo enviado al Diseñador'));
     showView('planner');
   }
 
@@ -13666,7 +14277,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         const id = fav.dataset.id;
         const added = toggleFavorite(type, id, { source_studio_id: fav.dataset.sourceStudio || '' });
         document.querySelectorAll(`[data-pm-favorite="${CSS.escape(type)}"][data-id="${CSS.escape(id)}"]`).forEach(btn => btn.classList.toggle('is-on', added));
-        showInlineMsg(added ? 'Guardado en favoritos' : 'Quitado de favoritos');
+        showInlineMsg(added ? (currentLang() === 'en' ? 'Saved to favorites' : 'Guardado en favoritos') : (currentLang() === 'en' ? 'Removed from favorites' : 'Quitado de favoritos'));
         renderActive(document.querySelector('.view.is-active')?.id?.replace('view-', '') || '');
         return;
       }
@@ -13684,20 +14295,73 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         useStudioCatalog(useCatalog.dataset.useStudioCatalog);
         return;
       }
+      const startPreReview = event.target.closest('[data-pm-start-pre-review]');
+      if (startPreReview) {
+        event.preventDefault();
+        event.stopPropagation();
+        openPreReviewModal({ studio_id: startPreReview.dataset.pmStartPreReview || read(KEYS.connectedStudio, '') });
+        return;
+      }
+      if (event.target.closest('[data-pm-new-pre-review]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        openPreReviewModal({ studio_id: read(KEYS.connectedStudio, '') });
+        return;
+      }
+      if (event.target.closest('[data-pm-planner-to-review]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        const selected = plannerJewelryList();
+        openPreReviewModal({
+          studio_id: selected[0]?.studio_id || read(KEYS.connectedStudio, ''),
+          notes: selected.length
+            ? `${currentLang() === 'en' ? 'Selected jewelry' : 'Joyería seleccionada'}: ${selected.map(item => item.name).join(', ')}`
+            : ''
+        });
+        return;
+      }
+      const openReview = event.target.closest('[data-open-pre-review]');
+      if (openReview) {
+        event.preventDefault();
+        event.stopPropagation();
+        openPreReviewDetail(openReview.dataset.openPreReview);
+        return;
+      }
+      const deleteReview = event.target.closest('[data-pm-delete-review]');
+      if (deleteReview) {
+        event.preventDefault();
+        event.stopPropagation();
+        deletePreReview(deleteReview.dataset.pmDeleteReview);
+        showInlineMsg(currentLang() === 'en' ? 'Pre-review deleted' : 'Revisión previa eliminada');
+        renderActive(document.querySelector('.view.is-active')?.id?.replace('view-', '') || defaultView(getMode() || 'client'));
+        return;
+      }
+      const sendReview = event.target.closest('[data-pm-send-review]');
+      if (sendReview) {
+        event.preventDefault();
+        event.stopPropagation();
+        const review = byId(preReviews(), sendReview.dataset.pmSendReview);
+        if (review) {
+          upsertPreReview({ ...review, status: 'sent' });
+          showInlineMsg('✓ ' + txt('preReview.send'));
+          renderActive(document.querySelector('.view.is-active')?.id?.replace('view-', '') || defaultView(getMode() || 'client'));
+        }
+        return;
+      }
       if (event.target.closest('[data-pm-enter-studio], [data-pm-enter-code]')) {
         event.preventDefault();
         event.stopPropagation();
         const id = event.target.closest('[data-pm-enter-studio]')?.dataset.pmEnterStudio;
         if (id) {
-          write(KEYS.activeStudio, id);
-          showInlineMsg('Ecosistema del estudio activo');
+          write(KEYS.connectedStudio, id);
+          showInlineMsg(currentLang() === 'en' ? 'Studio ecosystem active' : 'Ecosistema del estudio activo');
         } else enterStudioCode();
         return;
       }
       if (event.target.closest('[data-pm-contact], [data-pm-placeholder]')) {
         event.preventDefault();
         event.stopPropagation();
-        showInlineMsg('Disponible próximamente');
+        showInlineMsg(txt('common.comingSoon'));
         return;
       }
       if (event.target.closest('[data-pm-add-jewelry]')) {
@@ -13712,7 +14376,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         event.stopPropagation();
         write(KEYS.jewelry, jewelry().filter(j => j.id !== del.dataset.jewelDelete));
         renderJewelry();
-        showInlineMsg('Joya eliminada');
+        showInlineMsg(currentLang() === 'en' ? 'Jewelry deleted' : 'Joya eliminada');
         return;
       }
       if (event.target.closest('[data-pm-add-client]')) {
@@ -13740,7 +14404,69 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         const notes = read(KEYS.clientNotes, {});
         notes[id] = text.split(/\n+/).filter(Boolean);
         write(KEYS.clientNotes, notes);
-        showInlineMsg('✓ Nota guardada');
+        showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Note saved' : 'Nota guardada'));
+        return;
+      }
+      const editReview = event.target.closest('[data-pm-edit-pre-review]');
+      if (editReview) {
+        event.preventDefault();
+        event.stopPropagation();
+        document.getElementById('pm-pre-review-detail')?.classList.remove('is-open');
+        openPreReviewModal({ id: editReview.dataset.pmEditPreReview });
+        return;
+      }
+      if (event.target.closest('[data-pm-close-pre-detail]')) {
+        event.stopPropagation();
+        document.getElementById('pm-pre-review-detail')?.classList.remove('is-open');
+        return;
+      }
+      const saveReviewDetail = event.target.closest('[data-pm-save-review-detail]');
+      if (saveReviewDetail) {
+        event.preventDefault();
+        event.stopPropagation();
+        const review = byId(preReviews(), saveReviewDetail.dataset.pmSaveReviewDetail);
+        if (review) {
+          upsertPreReview({
+            ...review,
+            status: document.querySelector('[data-pm-detail-status]')?.value || review.status,
+            client_id: document.querySelector('[data-pm-detail-client]')?.value || '',
+            studio_notes: document.querySelector('[data-pm-detail-note]')?.value || ''
+          });
+          document.getElementById('pm-pre-review-detail')?.classList.remove('is-open');
+          showInlineMsg('✓ ' + txt('common.saved'));
+          renderActive(document.querySelector('.view.is-active')?.id?.replace('view-', '') || defaultView(getMode() || 'client'));
+        }
+        return;
+      }
+      const createSetup = event.target.closest('[data-pm-create-setup]');
+      if (createSetup) {
+        event.preventDefault();
+        event.stopPropagation();
+        const review = byId(preReviews(), createSetup.dataset.pmCreateSetup);
+        if (review) {
+          const projects = read(KEYS.projects, []);
+          projects.unshift({
+            id: 'dp_' + Date.now(),
+            user_id: review.user_id || null,
+            studio_id: review.studio_id || read(KEYS.connectedStudio, ''),
+            client_id: review.client_id || null,
+            title: `${txt('preReview.title')} · ${areaLabel(review.body_area)}`,
+            image_url: review.image_data_url || '',
+            selected_jewelry: plannerJewelryList(),
+            notes: review.notes || '',
+            status: 'draft',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+          write(KEYS.projects, projects);
+          showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Setup created' : 'Setup creado'));
+        }
+        return;
+      }
+      if (event.target.closest('[data-pm-whatsapp]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        showInlineMsg(txt('common.comingSoon'));
         return;
       }
       const editStudio = event.target.closest('[data-pm-edit-studio]');
@@ -13756,7 +14482,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         const profile = read(KEYS.studioProfile, {});
         profile.code = profile.code || ('PMAP-' + Math.random().toString(36).slice(2, 7).toUpperCase());
         write(KEYS.studioProfile, profile);
-        showInlineMsg('Código de estudio: ' + profile.code);
+        showInlineMsg((currentLang() === 'en' ? 'Studio code: ' : 'Código de estudio: ') + profile.code);
         renderStudioHome();
         return;
       }
@@ -13791,7 +14517,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         event.stopPropagation();
         setPlannerJewelry([]);
         renderPlannerBridge();
-        showInlineMsg('Planner limpio');
+        showInlineMsg(currentLang() === 'en' ? 'Planner cleared' : 'Diseñador limpio');
       }
     }, true);
 
@@ -13823,6 +14549,10 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         state.jewelryStatus = event.target.value;
         renderJewelry();
       }
+      if (event.target.matches('[data-pm-review-filter]')) {
+        state.preReviewStatus = event.target.value;
+        renderClients();
+      }
     });
 
     window.addEventListener('alicyn:intro-finished', () => setTimeout(syncFlow, 40));
@@ -13833,6 +14563,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   }
 
   function init() {
+    migrateStorage();
     seedData();
     ensureViews();
     ensureModePicker();
@@ -13850,9 +14581,12 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       jewelry,
       clients,
       reviews,
+      preReviews,
       favorites: favs,
       toggleFavorite,
       addJewelryToPlanner,
+      openPreReviewModal,
+      upsertPreReview,
       saveProject
     };
     syncFlow();
