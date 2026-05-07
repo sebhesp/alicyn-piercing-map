@@ -2914,7 +2914,7 @@ html.alicyn-profile-pending .map-profile-overlay {
         <span class="alicyn-intro-ripple"></span>
         <img class="alicyn-intro-drop" src="assets/logo-alicyn-drop.svg" alt="" decoding="async" />
       </div>
-      <div class="alicyn-intro-word" id="alicyn-intro-word" aria-label="PierceMap" data-i18n="intro.title">PierceMap</div>
+      <div class="alicyn-intro-word" id="alicyn-intro-word" aria-label="PierceMap.com" data-i18n="intro.title">PierceMap.com</div>
       <button class="alicyn-intro-start" id="alicyn-intro-start" type="button" data-i18n="intro.start">START</button>
     </div>
   </div>
@@ -2945,7 +2945,7 @@ const i18n = {
     'meta.description': 'Plataforma profesional para descubrir estudios, preparar revisiones previas, diseñar proyectos y gestionar experiencias de piercing.',
     'language.title': 'Elige idioma',
     'language.copy': 'Selecciona el idioma de la experiencia antes de entrar a PierceMap.',
-    'intro.title': 'PierceMap',
+    'intro.title': 'PierceMap.com',
     'intro.start': 'START',
     'footer.disclaimer': 'La información en PierceMap es orientativa y no sustituye la valoración presencial de un profesional.',
     'footer.brand': '© PierceMap · MX',
@@ -3187,7 +3187,7 @@ const i18n = {
     'meta.description': 'Professional platform to discover studios, prepare pre-reviews, plan designs and manage piercing experiences.',
     'language.title': 'Choose language',
     'language.copy': 'Select the experience language before entering PierceMap.',
-    'intro.title': 'PierceMap',
+    'intro.title': 'PierceMap.com',
     'intro.start': 'START',
     'footer.disclaimer': 'Information on PierceMap is guidance-only and does not replace an in-person evaluation by a professional.',
     'footer.brand': '© PierceMap · MX',
@@ -3561,7 +3561,7 @@ const i18n = {
     renderIntroWord();
     window.addEventListener('alicyn:language-changed', () => {
       if (word) {
-        word.textContent = window.AlicynI18n?.t('intro.title') || 'PierceMap';
+        word.textContent = window.AlicynI18n?.t('intro.title') || 'PierceMap.com';
         renderIntroWord();
       }
     });
@@ -12722,6 +12722,201 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   .pm-pre-review-detail-card {
     width: min(100%, 680px);
   }
+  /* PierceMap polish: high-contrast UI contract for every interactive surface. */
+  :root {
+    color-scheme: dark;
+    --pm-ink: #f7fbfa;
+    --pm-ink-soft: #c9d4d1;
+    --pm-ink-muted: #91a09b;
+    --pm-surface: #0b0f0e;
+    --pm-surface-2: #111816;
+    --pm-surface-3: #18211f;
+    --pm-line-strong: rgba(238,243,241,.22);
+    --pm-focus: 0 0 0 3px rgba(143,191,195,.34);
+  }
+  body {
+    color: var(--pm-ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .alicyn-intro {
+    background: #020303 !important;
+    color: var(--pm-ink) !important;
+  }
+  .alicyn-intro::before {
+    border-color: rgba(238,243,241,.08) !important;
+  }
+  .alicyn-intro-drop-wrap {
+    display: none !important;
+  }
+  .alicyn-intro-word {
+    color: var(--pm-ink) !important;
+    text-transform: none !important;
+    font-weight: 800 !important;
+    letter-spacing: .01em !important;
+    font-size: clamp(48px, 11vw, 120px) !important;
+    line-height: .95 !important;
+    min-height: 1.08em !important;
+    text-shadow: none !important;
+  }
+  .alicyn-intro-word::after {
+    background: linear-gradient(90deg, transparent, rgba(238,243,241,.28), transparent) !important;
+    mix-blend-mode: normal !important;
+  }
+  .alicyn-intro-start {
+    border-color: rgba(238,243,241,.18) !important;
+    background: #f7fbfa !important;
+    color: #050706 !important;
+  }
+  .alicyn-intro-start:hover,
+  .alicyn-intro-start:focus-visible {
+    background: var(--accent) !important;
+    color: #050706 !important;
+    box-shadow: var(--pm-focus);
+  }
+  .pm-mode-picker {
+    background:
+      radial-gradient(circle at 50% 16%, rgba(143,191,195,.10), transparent 34%),
+      rgba(2,3,3,.96) !important;
+  }
+  .pm-mode-card,
+  .pm-modal-card,
+  .pm-client-card,
+  .pm-studio-detail-card,
+  .login-card,
+  .add-exp-card,
+  .summary-card,
+  .drawer,
+  .b2b-card,
+  .profile-card,
+  .stat-card,
+  .experience-card {
+    background: var(--pm-surface-2) !important;
+    color: var(--pm-ink) !important;
+    border-color: var(--pm-line-strong) !important;
+  }
+  .pm-mode-card p,
+  .pm-section-subtitle,
+  .hint,
+  small,
+  .b2b-card-meta,
+  .profile-card small,
+  .empty-state,
+  .pm-empty-note {
+    color: var(--pm-ink-soft) !important;
+  }
+  input,
+  select,
+  textarea,
+  .field input,
+  .field select,
+  .field textarea,
+  .pm-search-input,
+  .pm-select,
+  .pm-field input,
+  .pm-field select,
+  .pm-field textarea,
+  .feed-toolbar select,
+  .inspo-toolbar select {
+    background: #070a09 !important;
+    color: var(--pm-ink) !important;
+    border-color: rgba(238,243,241,.26) !important;
+    caret-color: var(--accent);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+  }
+  select {
+    color-scheme: dark;
+  }
+  option,
+  optgroup {
+    background: #070a09 !important;
+    color: #f7fbfa !important;
+  }
+  ::placeholder {
+    color: rgba(201,212,209,.72) !important;
+    opacity: 1 !important;
+  }
+  label,
+  .pm-field label,
+  .field label {
+    color: var(--pm-ink-soft) !important;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  .btn:focus-visible,
+  .pm-mode-opt:focus-visible,
+  .pm-nav-btn:focus-visible,
+  .bottom-nav-btn:focus-visible {
+    outline: none !important;
+    border-color: var(--accent) !important;
+    box-shadow: var(--pm-focus) !important;
+  }
+  input:disabled,
+  select:disabled,
+  textarea:disabled,
+  button:disabled,
+  .btn:disabled {
+    opacity: .58 !important;
+    cursor: not-allowed !important;
+  }
+  input[type="file"] {
+    padding: 8px !important;
+  }
+  input[type="file"]::file-selector-button {
+    min-height: 38px;
+    margin-right: 12px;
+    border: 1px solid rgba(238,243,241,.22);
+    border-radius: 999px;
+    background: #f7fbfa;
+    color: #050706;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn,
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:not(.btn-primary),
+  .pm-card-actions button:not(.btn-primary),
+  .oauth-btn {
+    background: rgba(247,251,250,.06) !important;
+    color: var(--pm-ink) !important;
+    border-color: rgba(238,243,241,.20) !important;
+  }
+  .btn:not(.btn-primary):hover,
+  .pm-card-actions button:not(.btn-primary):hover,
+  .oauth-btn:hover {
+    background: rgba(143,191,195,.13) !important;
+    border-color: rgba(143,191,195,.50) !important;
+    color: var(--pm-ink) !important;
+  }
+  .btn-primary,
+  button.btn-primary {
+    background: var(--accent) !important;
+    color: #06100e !important;
+    border-color: rgba(143,191,195,.75) !important;
+    font-weight: 800;
+  }
+  .pm-nav-btn,
+  .bottom-nav-btn {
+    color: var(--pm-ink-soft) !important;
+  }
+  .pm-nav-btn.is-active,
+  .bottom-nav-btn.is-active {
+    color: var(--accent) !important;
+    background: rgba(143,191,195,.12) !important;
+  }
+  .b2b-setting-row code,
+  code {
+    background: #050706 !important;
+    color: var(--accent) !important;
+    border: 1px solid rgba(143,191,195,.22);
+    border-radius: 8px;
+    padding: 4px 7px;
+  }
   @media (max-width: 720px) {
     .pm-view-tools,
     .pm-card-actions,
@@ -12783,10 +12978,26 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     legacySelectedJewelry: 'alicyn.plannerJewelry.v1',
     studioProfile: 'piercemap_studio_profile',
     legacyStudioProfile: 'alicyn.studioProfile.v1',
+    clientProfile: 'piercemap_client_profile',
     clientNotes: 'piercemap_client_notes',
+    visualSettings: 'piercemap_visual_settings',
     preReviews: 'piercemap_pre_reviews',
     legacyActiveStudio: 'piercemap.activeStudio.v1'
   };
+
+  const USER_SCOPED_KEYS = new Set([
+    'piercemap_connected_studio',
+    'piercemap_favorites',
+    'piercemap_projects',
+    'piercemap_planner_items',
+    'piercemap_studio_profile',
+    'piercemap_client_profile',
+    'piercemap_client_notes',
+    'piercemap_pre_reviews',
+    'piercemap_clients',
+    'piercemap_jewelry',
+    'piercemap_visual_settings'
+  ]);
 
   const UI_TEXT = {
     es: {
@@ -13024,6 +13235,17 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     return UI_TEXT[lang]?.[key] || UI_TEXT.es[key] || key;
   }
 
+  function authScopeId() {
+    const user = window.AlicynSupabase?.getUser?.();
+    return user?.id || '';
+  }
+
+  function storageKey(key) {
+    const scope = authScopeId();
+    if (!scope || !USER_SCOPED_KEYS.has(key)) return key;
+    return `${key}:user:${scope}`;
+  }
+
   const DEMO_STUDIOS = [
     {
       id: 'st_norte', slug: 'estudio-del-norte', code: 'NORTE24',
@@ -13113,7 +13335,12 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function read(key, fallback = null) {
     try {
-      const raw = localStorage.getItem(key);
+      const scoped = storageKey(key);
+      let raw = localStorage.getItem(scoped);
+      if (raw == null && scoped !== key && !USER_SCOPED_KEYS.has(key)) {
+        raw = localStorage.getItem(key);
+        if (raw != null) localStorage.setItem(scoped, raw);
+      }
       if (raw == null) return fallback;
       return JSON.parse(raw);
     } catch (err) {
@@ -13122,7 +13349,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   }
 
   function write(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (err) {}
+    try { localStorage.setItem(storageKey(key), JSON.stringify(value)); } catch (err) {}
   }
 
   function rawWrite(key, value) {
@@ -13187,6 +13414,21 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (!Array.isArray(read(KEYS.projects))) write(KEYS.projects, []);
     if (!Array.isArray(read(KEYS.selectedJewelry))) write(KEYS.selectedJewelry, []);
     if (!Array.isArray(read(KEYS.preReviews))) write(KEYS.preReviews, []);
+    if (!read(KEYS.clientProfile)) {
+      write(KEYS.clientProfile, {
+        interests: [],
+        connected_studios: [],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    }
+    if (!read(KEYS.visualSettings)) {
+      write(KEYS.visualSettings, {
+        contrast: 'high',
+        theme: 'dark-premium',
+        updated_at: new Date().toISOString()
+      });
+    }
     if (!read(KEYS.studioProfile)) {
       write(KEYS.studioProfile, {
         name: 'Mi estudio PierceMap',
@@ -14651,7 +14893,11 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     window.addEventListener('alicyn:intro-finished', () => setTimeout(syncFlow, 40));
     window.addEventListener('alicyn:language-changed', () => setTimeout(syncFlow, 40));
     window.addEventListener('alicyn:supabase-auth', () => {
+      seedData();
       if (document.getElementById('view-profile-pm')?.classList.contains('is-active')) renderProfile();
+      if (document.getElementById('view-favorites')?.classList.contains('is-active')) renderFavorites();
+      if (document.getElementById('view-clients')?.classList.contains('is-active')) renderClients();
+      if (document.getElementById('view-jewelry')?.classList.contains('is-active')) renderJewelry();
     });
   }
 
