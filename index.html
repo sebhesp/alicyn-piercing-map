@@ -11277,5 +11277,1152 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 })();
 </script>
 
+
+<!-- ============================================================================
+     v0.7 PierceMap B2B-first
+     - Mode picker (Studio / Cliente) on first load · persistente
+     - Demo data centralizado (studios, piercers, jewelry, reviews, clients)
+     - CRUD funcional en localStorage (Jewelry, Clients, Favorites, Studio profile)
+     - "Usar en Planner" desde Jewelry
+     - Ecosystem code entry
+     - Cliente-mode nav (Studios · Planner · Favorites · Profile)
+     Idempotente. No destructivo.
+     ============================================================================ -->
+<style id="alicyn-v07-styles">
+  /* ─── Mode picker (overlay primer login) ─── */
+  .pm-mode-picker {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(10,13,12,.92);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px; animation: pm-fade .3s ease;
+  }
+  .pm-mode-picker.is-open { display: flex; }
+  @keyframes pm-fade { from { opacity: 0; } to { opacity: 1; } }
+  .pm-mode-card {
+    background: var(--graphite, #0a0d0c);
+    border: 1px solid rgba(143,191,195,.18);
+    border-radius: 22px; padding: 36px 32px;
+    max-width: 560px; width: 100%;
+    text-align: center; box-shadow: 0 24px 80px rgba(0,0,0,.55);
+  }
+  .pm-mode-card h2 {
+    margin: 0 0 8px;
+    font-size: clamp(22px, 3vw, 28px);
+    color: var(--text, #eef3f1);
+    letter-spacing: -.01em;
+  }
+  .pm-mode-card p {
+    margin: 0 0 24px;
+    color: var(--text-soft, #b9c4c0);
+    font-size: 14px;
+  }
+  .pm-mode-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 480px) { .pm-mode-grid { grid-template-columns: 1fr; } }
+  .pm-mode-opt {
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--line, rgba(255,255,255,.1));
+    border-radius: 14px; padding: 24px 18px;
+    color: var(--text); font: inherit; cursor: pointer;
+    transition: all .25s ease; text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pm-mode-opt:hover {
+    border-color: var(--alicyn-blue, #8FBFC3);
+    transform: translateY(-2px);
+    background: rgba(143,191,195,.08);
+  }
+  .pm-mode-opt-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(143,191,195,.12);
+    border: 1px solid rgba(143,191,195,.25);
+    color: var(--alicyn-blue);
+    display: grid; place-items: center;
+    margin-bottom: 12px;
+  }
+  .pm-mode-opt-icon svg { width: 22px; height: 22px; }
+  .pm-mode-opt h3 { margin: 0 0 4px; font-size: 15px; color: var(--text); }
+  .pm-mode-opt p { margin: 0; font-size: 12px; color: var(--text-mute, #7d8a86); }
+  .pm-mode-foot {
+    font-size: 11px; color: var(--text-mute);
+    text-align: center; margin-top: 8px;
+  }
+  .pm-mode-foot a { color: var(--alicyn-blue); text-decoration: none; cursor: pointer; }
+
+  /* ─── Cliente-mode nav: hide Discover/Jewelry/Clients/Studio when in client mode ─── */
+  body.client-mode [data-b2b-nav="jewelry"],
+  body.client-mode [data-b2b-nav="clients"],
+  body.client-mode [data-b2b-nav="studio"] { display: none !important; }
+  body.client-mode [data-b2b-nav="discover"] span { /* keep "Studios" as label */ }
+  body.client-mode .nav-tabs > button:not(.is-b2b) { display: none !important; }
+  body.client-mode .is-b2b { display: inline-flex; }
+
+  /* When client-mode, add Favorites + Profile to nav */
+  body.client-mode [data-b2b-nav="favorites"],
+  body.client-mode [data-b2b-nav="profile-pm"] { display: inline-flex; }
+  body:not(.client-mode) [data-b2b-nav="favorites"],
+  body:not(.client-mode) [data-b2b-nav="profile-pm"] { display: none !important; }
+
+  /* ─── Form modal (Jewelry / Client / Studio editor) ─── */
+  .pm-modal {
+    position: fixed; inset: 0; z-index: 200;
+    background: rgba(10,13,12,.7);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    display: none; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .pm-modal.is-open { display: flex; animation: pm-fade .2s ease; }
+  .pm-modal-card {
+    background: var(--graphite, #0a0d0c);
+    border: 1px solid var(--line, rgba(255,255,255,.1));
+    border-radius: 18px; padding: 24px;
+    width: min(540px, 100%); max-height: 90vh; overflow: auto;
+    color: var(--text); box-shadow: 0 20px 60px rgba(0,0,0,.5);
+  }
+  .pm-modal-card h3 { margin: 0 0 8px; font-size: 18px; }
+  .pm-modal-card p.hint { margin: 0 0 16px; font-size: 13px; color: var(--text-soft); }
+  .pm-field { margin-bottom: 12px; }
+  .pm-field label {
+    display: block; font-size: 11px;
+    color: var(--text-mute); text-transform: uppercase;
+    letter-spacing: .08em; margin-bottom: 5px;
+  }
+  .pm-field input, .pm-field select, .pm-field textarea {
+    width: 100%; padding: 9px 11px; border-radius: 8px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--line, rgba(255,255,255,.1));
+    color: var(--text); font: inherit; font-size: 13px;
+  }
+  .pm-field input:focus, .pm-field select:focus, .pm-field textarea:focus {
+    outline: none; border-color: var(--alicyn-blue);
+    background: rgba(143,191,195,.06);
+  }
+  .pm-field textarea { resize: vertical; min-height: 70px; }
+  .pm-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 480px) { .pm-row { grid-template-columns: 1fr; } }
+  .pm-actions { display: flex; gap: 8px; margin-top: 16px; }
+  .pm-actions .btn { flex: 1; justify-content: center; }
+
+  /* ─── Studio profile detail panel (modal-like) ─── */
+  .pm-studio-detail {
+    position: fixed; inset: 0; z-index: 195;
+    background: rgba(10,13,12,.6);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    display: none; align-items: stretch; justify-content: flex-end;
+  }
+  .pm-studio-detail.is-open { display: flex; animation: pm-fade .2s ease; }
+  .pm-studio-detail-card {
+    background: var(--graphite, #0a0d0c);
+    width: min(520px, 100%);
+    height: 100vh; overflow: auto;
+    padding: 24px;
+    box-shadow: -10px 0 40px rgba(0,0,0,.5);
+    color: var(--text);
+  }
+  @media (max-width: 720px) {
+    .pm-studio-detail-card { width: 100%; }
+  }
+  .pm-studio-banner {
+    height: 140px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--alicyn-blue, #8FBFC3), var(--alicyn-blue-dark, #6FA4A9));
+    margin-bottom: -34px;
+    position: relative;
+  }
+  .pm-studio-avatar {
+    width: 70px; height: 70px; border-radius: 16px;
+    background: var(--graphite); border: 3px solid var(--graphite);
+    display: grid; place-items: center;
+    font-weight: 700; font-size: 22px;
+    color: var(--alicyn-blue);
+    position: relative; left: 24px;
+  }
+  .pm-studio-meta { padding: 0 4px; }
+  .pm-studio-meta h2 {
+    margin: 14px 0 4px; font-size: 22px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pm-verified {
+    font-size: 10px; padding: 3px 8px; border-radius: 999px;
+    background: rgba(143,191,195,.14); color: var(--alicyn-blue);
+    font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .pm-studio-meta .city {
+    color: var(--text-soft); font-size: 13px; margin: 0 0 12px;
+  }
+  .pm-studio-meta .stats {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 13px; color: var(--text-soft); margin-bottom: 14px;
+  }
+  .pm-studio-meta .stats b { color: var(--text); }
+  .pm-studio-meta .desc {
+    font-size: 14px; line-height: 1.55; color: var(--text-soft);
+    margin: 0 0 16px;
+  }
+  .pm-studio-section h4 {
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--alicyn-blue); margin: 18px 0 10px; font-weight: 600;
+  }
+  .pm-piercer-row, .pm-jewel-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; background: rgba(255,255,255,.025);
+    border: 1px solid var(--line); border-radius: 10px;
+    margin-bottom: 6px;
+  }
+  .pm-piercer-row .pm-avatar, .pm-jewel-row .pm-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(143,191,195,.15);
+    display: grid; place-items: center; font-size: 11px; font-weight: 700;
+    color: var(--alicyn-blue);
+  }
+  .pm-piercer-row .info, .pm-jewel-row .info { flex: 1; min-width: 0; }
+  .pm-piercer-row b, .pm-jewel-row b { font-size: 13px; display: block; }
+  .pm-piercer-row small, .pm-jewel-row small { font-size: 11px; color: var(--text-mute); }
+  .pm-jewel-row .price { font-size: 12px; color: var(--alicyn-blue); font-weight: 600; }
+
+  .pm-fab-fav {
+    position: absolute; top: 16px; right: 16px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    color: white; cursor: pointer;
+    display: grid; place-items: center;
+  }
+  .pm-fab-fav.is-on { background: var(--alicyn-blue); color: var(--graphite); border-color: transparent; }
+  .pm-fab-fav svg { width: 18px; height: 18px; }
+  .pm-close-x {
+    position: absolute; top: 16px; right: 60px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.2);
+    color: white; cursor: pointer;
+    display: grid; place-items: center;
+  }
+
+  /* Heart icon in jewelry/studio cards */
+  .b2b-fav-btn {
+    margin-left: auto;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,.05);
+    border: 1px solid var(--line, rgba(255,255,255,.1));
+    color: var(--text-mute); cursor: pointer;
+    display: grid; place-items: center;
+    transition: all .2s;
+  }
+  .b2b-fav-btn:hover { background: rgba(143,191,195,.1); color: var(--alicyn-blue); }
+  .b2b-fav-btn.is-on { background: rgba(143,191,195,.2); color: var(--alicyn-blue); border-color: var(--alicyn-blue); }
+  .b2b-fav-btn svg { width: 14px; height: 14px; }
+
+  /* Use-in-planner button */
+  .b2b-card .b2b-card-actions {
+    display: flex; gap: 6px; margin-top: 6px;
+    padding-top: 8px; border-top: 1px solid var(--line);
+  }
+  .b2b-card-actions button {
+    flex: 1; padding: 7px 10px; border-radius: 8px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--line);
+    color: var(--text-soft); font: inherit; font-size: 11px;
+    cursor: pointer; transition: all .2s;
+  }
+  .b2b-card-actions button:hover { color: var(--text); border-color: var(--alicyn-blue); }
+  .b2b-card-actions button.primary {
+    background: var(--alicyn-blue); color: var(--graphite); border-color: transparent; font-weight: 600;
+  }
+</style>
+
+<script id="alicyn-v07-script">
+(function () {
+  'use strict';
+  if (window.__AlicynV07__) return;
+  window.__AlicynV07__ = true;
+
+  // ────────── Storage keys ──────────
+  const KEYS = {
+    onboarded: 'alicyn.onboarded.v1',
+    mode: 'alicyn.studioMode',                // shared with v0.6
+    clientMode: 'alicyn.clientMode.v1',
+    lastView: 'alicyn.lastView.v1',
+    studios: 'alicyn.studios.v1',             // local cache + user-added
+    jewelry: 'alicyn.jewelry.v1',
+    clients: 'alicyn.clients.v1',
+    studioProfile: 'alicyn.studioProfile.v1',
+    favorites: 'alicyn.favorites.v1',         // [{type, id, ts}]
+    plannerJewelry: 'alicyn.plannerJewelry.v1' // selected jewelry to use in planner
+  };
+
+  function ls(key, fallback = null) {
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) {}
+  }
+
+  // ────────── Demo data (centralized, ready to migrate to Supabase) ──────────
+  const DEMO_STUDIOS = [
+    {
+      id: 'st_norte', slug: 'estudio-del-norte', code: 'NORTE24',
+      name: 'Estudio del Norte', city: 'CDMX · Roma Norte',
+      lat: 19.4145, lng: -99.1681, distance_km: 2.1,
+      type: 'Solo cita', verified: true, rating: 4.9, reviews_count: 124,
+      specialties: ['Curación de oreja', 'Cartílago', 'Surface'],
+      experience_years: 8, description: 'Estudio fundado en 2016 con enfoque en anatomía y curaciones complejas. APP-trained.',
+      hours: 'Mar-Sáb 11:00–20:00',
+      jewelry_ids: ['j1', 'j2', 'j3'],
+      piercer_ids: ['p1', 'p2']
+    },
+    {
+      id: 'st_anatom', slug: 'anatomico-mx', code: 'ANATM',
+      name: 'Anatómico MX', city: 'CDMX · Condesa',
+      lat: 19.4126, lng: -99.1736, distance_km: 3.4,
+      type: 'Walk-in', verified: true, rating: 4.8, reviews_count: 89,
+      specialties: ['Surface', 'Microderma', 'Septum'],
+      experience_years: 6, description: 'Especialistas en surface y microderma. Walk-ins bienvenidos.',
+      hours: 'Lun-Dom 12:00–21:00',
+      jewelry_ids: ['j4', 'j5'],
+      piercer_ids: ['p3']
+    },
+    {
+      id: 'st_kintsugi', slug: 'kintsugi-piercing', code: 'KINTS',
+      name: 'Kintsugi Piercing', city: 'Guadalajara · Lafayette',
+      lat: 20.6736, lng: -103.3700, distance_km: 540.2,
+      type: 'Privado', verified: true, rating: 4.9, reviews_count: 67,
+      specialties: ['Ear curation', 'Joyería oro 14k'],
+      experience_years: 5, description: 'Estudio privado, sesiones de curación dedicadas con consulta extendida.',
+      hours: 'Mié-Sáb · solo cita',
+      jewelry_ids: ['j6', 'j7', 'j8'],
+      piercer_ids: ['p4', 'p5', 'p6']
+    }
+  ];
+
+  const DEMO_PIERCERS = [
+    { id:'p1', studio_id:'st_norte', name:'Diego R.', specialties:['Curación de oreja','Daith'], experience_years:7, rating:4.9, bio:'Especialista en curaciones complejas con enfoque en anatomía individual.' },
+    { id:'p2', studio_id:'st_norte', name:'Laura M.', specialties:['Cartílago','Conch'], experience_years:5, rating:4.8, bio:'Conch experta. Trabaja titanio implant grade y oro 14k.' },
+    { id:'p3', studio_id:'st_anatom', name:'Karen V.', specialties:['Microderma','Surface'], experience_years:6, rating:4.7, bio:'Surface bars y microderma. APP fellow desde 2021.' },
+    { id:'p4', studio_id:'st_kintsugi', name:'Marco S.', specialties:['Ear curation'], experience_years:8, rating:5.0, bio:'Curador. Setups multi-fase con planificación detallada.' },
+    { id:'p5', studio_id:'st_kintsugi', name:'Valentina L.', specialties:['Septum','Daith'], experience_years:4, rating:4.9, bio:'Septum y daith. Consulta presencial profunda.' },
+    { id:'p6', studio_id:'st_kintsugi', name:'Esteban A.', specialties:['Helix','Forward Helix'], experience_years:5, rating:4.8, bio:'Helix stacks. Curaciones lineales y simétricas.' }
+  ];
+
+  const DEMO_JEWELRY = [
+    { id:'j1', studio_id:'st_norte', name:'Labret titanio · flat 3mm', type:'Labret', material:'Titanio implant grade', color:'Plata', area:'Oreja', status:'available', price:680, image_url:null },
+    { id:'j2', studio_id:'st_norte', name:'CBR titanio · ópalo blanco', type:'CBR', material:'Titanio · ópalo', color:'Blanco', area:'Oreja · Nariz', status:'available', price:920, image_url:null },
+    { id:'j3', studio_id:'st_norte', name:'Industrial titanio · liso', type:'Barbell', material:'Titanio', color:'Plata', area:'Oreja', status:'available', price:1100, image_url:null },
+    { id:'j4', studio_id:'st_anatom', name:'Surface bar · titanio', type:'Surface bar', material:'Titanio', color:'Plata', area:'Surface', status:'on_order', price:1450, image_url:null },
+    { id:'j5', studio_id:'st_anatom', name:'Microderma · titanio', type:'Microderma', material:'Titanio', color:'Plata', area:'Surface', status:'available', price:1350, image_url:null },
+    { id:'j6', studio_id:'st_kintsugi', name:'Labret oro 14k · diamante', type:'Labret', material:'Oro 14k · diamante', color:'Oro', area:'Oreja', status:'on_order', price:4800, image_url:null },
+    { id:'j7', studio_id:'st_kintsugi', name:'Clicker niobio · luna', type:'Clicker', material:'Niobio', color:'Negro', area:'Oreja', status:'on_order', price:1850, image_url:null },
+    { id:'j8', studio_id:'st_kintsugi', name:'Nostril oro · engaste fino', type:'Nostril', material:'Oro 14k', color:'Oro', area:'Nariz', status:'available', price:2200, image_url:null }
+  ];
+
+  const DEMO_REVIEWS = [
+    { id:'r1', studio_id:'st_norte', user_name:'Ana L.', rating:5, title:'Honestos sobre anatomía', body:'Me explicaron por qué mi daith no era viable y me ofrecieron una alternativa. Cero presión.', created_at:'2026-04-12' },
+    { id:'r2', studio_id:'st_norte', user_name:'Pedro M.', rating:5, title:'Curación impecable', body:'Setup de helix stack perfecto. Todo cicatrizó sin problemas.', created_at:'2026-03-20' },
+    { id:'r3', studio_id:'st_anatom', user_name:'Sofía R.', rating:5, title:'Surface bien hecho', body:'El único estudio donde no me migró. Sabían lo que hacían.', created_at:'2026-04-02' },
+    { id:'r4', studio_id:'st_kintsugi', user_name:'Daniel O.', rating:5, title:'Profesionalismo total', body:'La consulta dura, pero vale la pena. Marco te explica cada decisión.', created_at:'2026-04-25' }
+  ];
+
+  const DEMO_CLIENTS = [
+    { id:'c1', name:'Ana López', interest:'Helix · Conch', status:'En curación', last:'hace 3 días', notes:'Setup multi-fase, cicatrización estable.', visits:4 },
+    { id:'c2', name:'Daniel Ortiz', interest:'Industrial', status:'Plan abierto', last:'hace 1 semana', notes:'Anatomía borderline, evaluación presencial pendiente.', visits:2 },
+    { id:'c3', name:'María José Cruz', interest:'Lóbulo · Tragus', status:'Cerrado', last:'hace 1 mes', notes:'Setup completado, joyería final colocada.', visits:6 }
+  ];
+
+  // Initialize demo data on first run
+  if (!ls(KEYS.studios)) lsSet(KEYS.studios, DEMO_STUDIOS);
+  if (!ls(KEYS.jewelry)) lsSet(KEYS.jewelry, DEMO_JEWELRY);
+  if (!ls(KEYS.clients)) lsSet(KEYS.clients, DEMO_CLIENTS);
+  if (!ls(KEYS.studioProfile)) {
+    lsSet(KEYS.studioProfile, {
+      name:'', city:'', type:'Walk-in', specialties:'', experience_years:0,
+      description:'', hours:'', code:'', verified:false
+    });
+  }
+  if (!ls(KEYS.favorites)) lsSet(KEYS.favorites, []);
+
+  // Expose for debugging
+  window.AlicynV07 = {
+    keys: KEYS,
+    studios: () => ls(KEYS.studios) || [],
+    jewelry: () => ls(KEYS.jewelry) || [],
+    clients: () => ls(KEYS.clients) || [],
+    favorites: () => ls(KEYS.favorites) || [],
+    piercers: () => DEMO_PIERCERS,
+    reviews: () => DEMO_REVIEWS,
+    studio: (id) => (ls(KEYS.studios) || []).find(s => s.id === id),
+    addJewelry: (j) => {
+      const list = ls(KEYS.jewelry) || [];
+      list.unshift({ ...j, id: 'j_' + Date.now(), studio_id: 'local' });
+      lsSet(KEYS.jewelry, list);
+      return list[0];
+    },
+    addClient: (c) => {
+      const list = ls(KEYS.clients) || [];
+      list.unshift({ ...c, id: 'c_' + Date.now() });
+      lsSet(KEYS.clients, list);
+      return list[0];
+    },
+    toggleFav: (type, id) => {
+      const list = ls(KEYS.favorites) || [];
+      const idx = list.findIndex(f => f.type === type && f.id === id);
+      if (idx >= 0) { list.splice(idx, 1); lsSet(KEYS.favorites, list); return false; }
+      list.unshift({ type, id, ts: Date.now() }); lsSet(KEYS.favorites, list); return true;
+    },
+    isFav: (type, id) => (ls(KEYS.favorites) || []).some(f => f.type === type && f.id === id),
+    saveStudioProfile: (p) => lsSet(KEYS.studioProfile, p),
+    studioProfile: () => ls(KEYS.studioProfile),
+    setPlannerJewelry: (jewel) => lsSet(KEYS.plannerJewelry, jewel),
+    plannerJewelry: () => ls(KEYS.plannerJewelry)
+  };
+
+  // ────────── Mode picker (intro overlay) ──────────
+  function ensureModePicker() {
+    if (document.querySelector('.pm-mode-picker')) return;
+    const div = document.createElement('div');
+    div.className = 'pm-mode-picker';
+    div.innerHTML = `
+      <div class="pm-mode-card">
+        <h2>Bienvenido a PierceMap</h2>
+        <p>Elige cómo vas a usar la plataforma. Puedes cambiar de modo desde Perfil cuando quieras.</p>
+        <div class="pm-mode-grid">
+          <button class="pm-mode-opt" data-pm-mode="client">
+            <div class="pm-mode-opt-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+            </div>
+            <h3>Soy cliente</h3>
+            <p>Descubrir estudios, guardar piezas, planear mi próximo piercing.</p>
+          </button>
+          <button class="pm-mode-opt" data-pm-mode="studio">
+            <div class="pm-mode-opt-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+            </div>
+            <h3>Soy estudio o piercer</h3>
+            <p>Gestionar mi perfil, joyería, clientes y proyectos.</p>
+          </button>
+        </div>
+        <div class="pm-mode-foot">
+          <a data-pm-skip>Continuar como invitado</a>
+        </div>
+      </div>`;
+    document.body.appendChild(div);
+    div.addEventListener('click', (e) => {
+      const opt = e.target.closest('[data-pm-mode]');
+      if (opt) {
+        const mode = opt.dataset.pmMode;
+        applyMode(mode);
+        lsSet(KEYS.onboarded, true);
+        div.classList.remove('is-open');
+      }
+      if (e.target.closest('[data-pm-skip]')) {
+        applyMode('client');
+        lsSet(KEYS.onboarded, true);
+        div.classList.remove('is-open');
+      }
+    });
+  }
+
+  function showModePicker() {
+    ensureModePicker();
+    const m = document.querySelector('.pm-mode-picker');
+    if (m) m.classList.add('is-open');
+  }
+
+  function applyMode(mode) {
+    if (mode === 'studio') {
+      document.body.classList.add('studio-mode');
+      document.body.classList.remove('client-mode');
+      lsSet(KEYS.mode, 'on');
+      lsSet(KEYS.clientMode, false);
+      const t = document.querySelector('.b2b-mode-toggle');
+      if (t) { t.classList.add('is-on'); t.setAttribute('aria-pressed', 'true'); }
+      const dest = document.querySelector('[data-b2b-nav="discover"]');
+      if (dest) setTimeout(() => dest.click(), 50);
+    } else {
+      // Cliente
+      document.body.classList.remove('studio-mode');
+      document.body.classList.add('client-mode');
+      lsSet(KEYS.mode, 'off');
+      lsSet(KEYS.clientMode, true);
+      const t = document.querySelector('.b2b-mode-toggle');
+      if (t) { t.classList.remove('is-on'); t.setAttribute('aria-pressed', 'false'); }
+      const dest = document.querySelector('[data-b2b-nav="discover"]');
+      if (dest) setTimeout(() => dest.click(), 50);
+    }
+  }
+
+  // ────────── Inject extra B2B nav buttons (Favorites + Profile-PM) ──────────
+  const EXTRA_NAV_ICONS = {
+    favorites:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg>',
+    'profile-pm': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>'
+  };
+  function injectExtraNav() {
+    const nav = document.querySelector('.nav-tabs');
+    if (!nav) return;
+    [['favorites','Favorites','favorites'], ['profile-pm','Profile','profile-pm']].forEach(([nv, lbl, view]) => {
+      if (nav.querySelector(`[data-b2b-nav="${nv}"]`)) return;
+      const b = document.createElement('button');
+      b.className = 'is-b2b';
+      b.setAttribute('data-b2b-nav', nv);
+      b.setAttribute('data-nav', nv);
+      b.setAttribute('data-view', view);
+      b.setAttribute('aria-label', lbl);
+      b.innerHTML = EXTRA_NAV_ICONS[nv] + '<span>' + lbl + '</span>';
+      nav.appendChild(b);
+    });
+  }
+
+  // ────────── Inject views: favorites, profile-pm ──────────
+  function injectExtraViews() {
+    const main = document.querySelector('main');
+    if (!main) return;
+    if (!document.getElementById('view-favorites')) {
+      const v = document.createElement('section');
+      v.className = 'view b2b-view';
+      v.id = 'view-favorites';
+      main.appendChild(v);
+    }
+    if (!document.getElementById('view-profile-pm')) {
+      const v = document.createElement('section');
+      v.className = 'view b2b-view';
+      v.id = 'view-profile-pm';
+      main.appendChild(v);
+    }
+  }
+
+  function renderFavorites() {
+    const view = document.getElementById('view-favorites');
+    if (!view) return;
+    const favs = ls(KEYS.favorites) || [];
+    const studios = ls(KEYS.studios) || [];
+    const jewels = ls(KEYS.jewelry) || [];
+    const cards = favs.map(f => {
+      if (f.type === 'studio') {
+        const s = studios.find(x => x.id === f.id);
+        if (!s) return '';
+        return `
+          <article class="b2b-card" data-open-studio="${s.id}">
+            <div class="b2b-card-head">
+              <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></div>
+              <div class="b2b-card-title"><h3>${s.name}</h3><small>${s.city}</small></div>
+              <button class="b2b-fav-btn is-on" data-fav-toggle data-fav-type="studio" data-fav-id="${s.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg></button>
+            </div>
+            <div class="b2b-card-meta"><span>★ <b>${s.rating}</b></span><span>${s.specialties[0] || ''}</span></div>
+          </article>`;
+      }
+      if (f.type === 'jewelry') {
+        const j = jewels.find(x => x.id === f.id);
+        if (!j) return '';
+        return `
+          <article class="b2b-card">
+            <div class="b2b-card-head">
+              <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l-2 4 8 8 8-8-2-4z"/></svg></div>
+              <div class="b2b-card-title"><h3>${j.name}</h3><small>${j.material}</small></div>
+              <button class="b2b-fav-btn is-on" data-fav-toggle data-fav-type="jewelry" data-fav-id="${j.id}"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg></button>
+            </div>
+            <div class="b2b-card-meta"><span>${j.area}</span>${j.price ? `<span>$${j.price}</span>` : ''}</div>
+            <div class="b2b-card-actions">
+              <button class="primary" data-use-in-planner="${j.id}">Usar en Planner</button>
+            </div>
+          </article>`;
+      }
+      return '';
+    }).filter(Boolean).join('');
+
+    view.innerHTML = `
+      <div class="container">
+        <div class="b2b-hero">
+          <div class="eyebrow">Favorites · Tu lista</div>
+          <h1>Estudios y piezas guardadas</h1>
+          <p>${favs.length} ${favs.length === 1 ? 'elemento guardado' : 'elementos guardados'} · Toca el corazón en cualquier estudio o pieza para añadirlo.</p>
+        </div>
+        ${favs.length ? `<div class="b2b-grid">${cards}</div>` :
+          `<div class="b2b-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg>
+            <h3>Aún no tienes favoritos</h3>
+            <p>Marca con corazón los estudios y joyas que te interesen para volverlos a encontrar fácil.</p>
+            <button class="btn btn-primary" data-pm-go="discover">Explorar estudios</button>
+          </div>`}
+      </div>`;
+  }
+
+  function renderProfilePM() {
+    const view = document.getElementById('view-profile-pm');
+    if (!view) return;
+    const favs = (ls(KEYS.favorites) || []).length;
+    const isStudio = document.body.classList.contains('studio-mode');
+    const bridge = window.AlicynSupabase;
+    const user = bridge?.getUser?.();
+    view.innerHTML = `
+      <div class="container">
+        <div class="b2b-hero">
+          <div class="eyebrow">Profile</div>
+          <h1>${user ? (user.user_metadata?.full_name || user.email) : 'Invitado'}</h1>
+          <p>${user?.email || 'Inicia sesión con Google para sincronizar tus datos.'}</p>
+        </div>
+        <div class="b2b-section-head"><h2>Cuenta</h2></div>
+        <div class="b2b-settings-stack">
+          <div class="b2b-setting-row">
+            <div><strong>Modo activo</strong><small>Cliente o Estudio. Puedes cambiar cuando quieras.</small></div>
+            <button class="btn" data-pm-switch-mode>${isStudio ? 'Estudio' : 'Cliente'} · cambiar</button>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Sesión</strong><small>${user ? 'Conectado vía Google' : 'No has iniciado sesión'}</small></div>
+            <button class="btn" data-pm-auth-toggle>${user ? 'Cerrar sesión' : 'Iniciar sesión'}</button>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Favoritos</strong><small>Estudios y piezas guardadas en tu lista.</small></div>
+            <code>${favs}</code>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Idioma</strong><small>Detectado del navegador.</small></div>
+            <code>${(navigator.language || 'es').split('-')[0].toUpperCase()}</code>
+          </div>
+        </div>
+        <div class="b2b-section-head"><h2>Ecosistema del estudio</h2></div>
+        <div class="b2b-settings-stack">
+          <div class="b2b-setting-row">
+            <div><strong>Entrar a un estudio</strong><small>Si tu estudio te dio un código, escríbelo aquí.</small></div>
+            <button class="btn" data-pm-enter-code>+ Código</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ────────── Discover: enrich with ecosystem code entry + open studio detail ──────────
+  function enhanceDiscover() {
+    const view = document.getElementById('view-discover');
+    if (!view || view.dataset.v07Enhanced) return;
+    view.dataset.v07Enhanced = '1';
+
+    // Add code-entry CTA in hero actions
+    const heroActions = view.querySelector('.b2b-hero-actions');
+    if (heroActions && !heroActions.querySelector('[data-pm-enter-code]')) {
+      const btn = document.createElement('button');
+      btn.className = 'btn';
+      btn.setAttribute('data-pm-enter-code', '');
+      btn.textContent = '+ Código de estudio';
+      heroActions.appendChild(btn);
+    }
+
+    // Replace the static studios grid with the dynamic one
+    const grid = view.querySelector('.b2b-grid');
+    if (grid) {
+      const studios = ls(KEYS.studios) || [];
+      grid.innerHTML = studios.map(s => {
+        const isFav = (ls(KEYS.favorites) || []).some(f => f.type === 'studio' && f.id === s.id);
+        return `
+          <article class="b2b-card" data-open-studio="${s.id}">
+            <div class="b2b-card-head">
+              <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></div>
+              <div class="b2b-card-title">
+                <h3>${s.name} ${s.verified ? '<span class="pm-verified">Verified</span>' : ''}</h3>
+                <small>${s.city} · ${s.distance_km} km</small>
+              </div>
+              <button class="b2b-fav-btn ${isFav ? 'is-on' : ''}" data-fav-toggle data-fav-type="studio" data-fav-id="${s.id}" aria-label="Guardar"><svg viewBox="0 0 24 24" fill="${isFav?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg></button>
+            </div>
+            <div class="b2b-card-meta"><span>★ <b>${s.rating}</b> (${s.reviews_count})</span><span>${s.type}</span></div>
+            <div class="b2b-card-meta"><span>${s.specialties.slice(0,2).join(' · ')}</span></div>
+          </article>`;
+      }).join('');
+    }
+  }
+
+  // ────────── Studio detail panel ──────────
+  function openStudioDetail(studioId) {
+    const studio = (ls(KEYS.studios) || []).find(s => s.id === studioId);
+    if (!studio) return;
+    const piercers = DEMO_PIERCERS.filter(p => p.studio_id === studioId);
+    const jewels = (ls(KEYS.jewelry) || []).filter(j => j.studio_id === studioId);
+    const reviews = DEMO_REVIEWS.filter(r => r.studio_id === studioId);
+    const isFav = (ls(KEYS.favorites) || []).some(f => f.type === 'studio' && f.id === studioId);
+
+    let panel = document.querySelector('.pm-studio-detail');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.className = 'pm-studio-detail';
+      panel.addEventListener('click', e => {
+        if (e.target === panel) closeStudioDetail();
+      });
+      document.body.appendChild(panel);
+    }
+    panel.innerHTML = `
+      <div class="pm-studio-detail-card">
+        <div class="pm-studio-banner">
+          <button class="pm-close-x" data-pm-close-studio aria-label="Cerrar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          <button class="pm-fab-fav ${isFav?'is-on':''}" data-fav-toggle data-fav-type="studio" data-fav-id="${studio.id}" aria-label="Favorito"><svg viewBox="0 0 24 24" fill="${isFav?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg></button>
+        </div>
+        <div class="pm-studio-avatar">${studio.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()}</div>
+        <div class="pm-studio-meta">
+          <h2>${studio.name} ${studio.verified?'<span class="pm-verified">Verified</span>':''}</h2>
+          <p class="city">${studio.city} · ${studio.distance_km} km · ${studio.type}</p>
+          <div class="stats">
+            <span>★ <b>${studio.rating}</b> (${studio.reviews_count} reseñas)</span>
+            <span>🎓 <b>${studio.experience_years}</b> años</span>
+            <span>🕐 ${studio.hours}</span>
+          </div>
+          <p class="desc">${studio.description}</p>
+
+          <div class="pm-studio-section">
+            <h4>Especialidades</h4>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              ${studio.specialties.map(s=>`<span class="b2b-card-status">${s}</span>`).join('')}
+            </div>
+          </div>
+
+          <div class="pm-studio-section">
+            <h4>Piercers (${piercers.length})</h4>
+            ${piercers.map(p=>`
+              <div class="pm-piercer-row">
+                <div class="pm-avatar">${p.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+                <div class="info">
+                  <b>${p.name}</b>
+                  <small>${p.specialties.join(' · ')} · ${p.experience_years} años</small>
+                </div>
+                <span class="b2b-card-status">★ ${p.rating}</span>
+              </div>
+            `).join('') || '<p style="color:var(--text-mute);font-size:13px">Sin piercers registrados.</p>'}
+          </div>
+
+          <div class="pm-studio-section">
+            <h4>Catálogo (${jewels.length})</h4>
+            ${jewels.slice(0,5).map(j=>`
+              <div class="pm-jewel-row">
+                <div class="pm-avatar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l-2 4 8 8 8-8-2-4z"/></svg></div>
+                <div class="info"><b>${j.name}</b><small>${j.material} · ${j.area}</small></div>
+                <span class="price">${j.price ? '$' + j.price : '—'}</span>
+              </div>
+            `).join('') || '<p style="color:var(--text-mute);font-size:13px">Sin catálogo aún.</p>'}
+          </div>
+
+          <div class="pm-studio-section">
+            <h4>Reseñas (${reviews.length})</h4>
+            ${reviews.map(r=>`
+              <div class="pm-piercer-row">
+                <div class="pm-avatar">${r.user_name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+                <div class="info">
+                  <b>${r.title} · ★${r.rating}</b>
+                  <small>${r.body}</small>
+                </div>
+              </div>
+            `).join('') || '<p style="color:var(--text-mute);font-size:13px">Sin reseñas aún.</p>'}
+          </div>
+
+          <div class="pm-studio-section">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+              <button class="btn btn-primary" style="flex:1" data-pm-enter-studio="${studio.id}">Entrar al ecosistema</button>
+              <button class="btn" data-pm-contact="${studio.id}">Contactar</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    panel.classList.add('is-open');
+  }
+  function closeStudioDetail() {
+    const p = document.querySelector('.pm-studio-detail');
+    if (p) p.classList.remove('is-open');
+  }
+
+  // ────────── Generic prompt-modal helper ──────────
+  function openPromptModal(opts) {
+    let modal = document.getElementById('pm-prompt-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'pm-prompt-modal';
+      modal.className = 'pm-modal';
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+      <div class="pm-modal-card">
+        <h3>${opts.title}</h3>
+        ${opts.hint ? `<p class="hint">${opts.hint}</p>` : ''}
+        ${opts.fields.map(f => f.row ?
+          `<div class="pm-row">${f.row.map(rf => fieldHtml(rf)).join('')}</div>` :
+          fieldHtml(f)
+        ).join('')}
+        <div class="pm-actions">
+          <button class="btn" data-pm-cancel>Cancelar</button>
+          <button class="btn btn-primary" data-pm-save>${opts.saveLabel || 'Guardar'}</button>
+        </div>
+      </div>`;
+    modal.classList.add('is-open');
+    modal.querySelector('[data-pm-cancel]').onclick = () => modal.classList.remove('is-open');
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('is-open'); };
+    modal.querySelector('[data-pm-save]').onclick = () => {
+      const data = {};
+      modal.querySelectorAll('[data-pm-field]').forEach(el => {
+        data[el.dataset.pmField] = el.value;
+      });
+      try { opts.onSave(data); modal.classList.remove('is-open'); }
+      catch (err) { console.error(err); }
+    };
+    setTimeout(() => modal.querySelector('input,textarea,select')?.focus(), 100);
+  }
+  function fieldHtml(f) {
+    if (f.type === 'select') {
+      return `<div class="pm-field"><label>${f.label}</label><select data-pm-field="${f.name}">${(f.options||[]).map(o=>`<option value="${o}" ${o===f.value?'selected':''}>${o}</option>`).join('')}</select></div>`;
+    }
+    if (f.type === 'textarea') {
+      return `<div class="pm-field"><label>${f.label}</label><textarea data-pm-field="${f.name}" placeholder="${f.placeholder||''}">${f.value||''}</textarea></div>`;
+    }
+    return `<div class="pm-field"><label>${f.label}</label><input data-pm-field="${f.name}" type="${f.type||'text'}" value="${f.value||''}" placeholder="${f.placeholder||''}" /></div>`;
+  }
+
+  // ────────── Re-render Jewelry view with CRUD ──────────
+  function rerenderJewelry() {
+    const view = document.getElementById('view-jewelry');
+    if (!view) return;
+    const list = ls(KEYS.jewelry) || [];
+    const grid = view.querySelector('.b2b-grid');
+    if (!grid) return;
+    grid.innerHTML = list.map(j => {
+      const cls = j.status === 'available' ? '' : (j.status === 'on_order' ? 'danger' : 'warn');
+      const stockTxt = j.status === 'available' ? 'En stock' : (j.status === 'on_order' ? 'Pedido' : j.status);
+      const isFav = (ls(KEYS.favorites) || []).some(f => f.type === 'jewelry' && f.id === j.id);
+      return `
+        <article class="b2b-card">
+          <div class="b2b-card-head">
+            <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l-2 4 8 8 8-8-2-4z"/><path d="M6 9h12"/><path d="M10 9l2 12 2-12"/></svg></div>
+            <div class="b2b-card-title"><h3>${j.name}</h3><small>${j.material}${j.price?' · $'+j.price:''}</small></div>
+            <button class="b2b-fav-btn ${isFav?'is-on':''}" data-fav-toggle data-fav-type="jewelry" data-fav-id="${j.id}" aria-label="Favorito"><svg viewBox="0 0 24 24" fill="${isFav?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.35-7-11a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 6.65-7 11-7 11z"/></svg></button>
+          </div>
+          <div class="b2b-card-meta"><span class="b2b-card-status ${cls}">${stockTxt}</span><span>${j.area}</span></div>
+          <div class="b2b-card-actions">
+            <button data-use-in-planner="${j.id}">Usar en Planner</button>
+            <button data-jewel-delete="${j.id}">Eliminar</button>
+          </div>
+        </article>`;
+    }).join('');
+  }
+
+  // ────────── Re-render Clients view ──────────
+  function rerenderClients() {
+    const view = document.getElementById('view-clients');
+    if (!view) return;
+    const list = ls(KEYS.clients) || [];
+    const grid = view.querySelector('.b2b-grid');
+    if (!grid) return;
+    grid.innerHTML = list.map(c => {
+      const cls = c.status === 'Cerrado' ? '' : (c.status === 'En curación' ? 'warn' : '');
+      return `
+        <article class="b2b-card" data-open-client="${c.id}">
+          <div class="b2b-card-head">
+            <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></div>
+            <div class="b2b-card-title"><h3>${c.name}</h3><small>${c.interest}</small></div>
+            <span class="b2b-card-status ${cls}">${c.status}</span>
+          </div>
+          <div class="b2b-card-meta"><span><b>${c.visits||0}</b> visitas</span><span>${c.last||'—'}</span></div>
+          ${c.notes ? `<div style="font-size:12px;color:var(--text-soft);padding-top:6px;border-top:1px solid var(--line)">${c.notes}</div>` : ''}
+        </article>`;
+    }).join('');
+  }
+
+  // ────────── Re-render Studio view (with editable settings) ──────────
+  function rerenderStudio() {
+    const view = document.getElementById('view-studio');
+    if (!view) return;
+    const p = ls(KEYS.studioProfile) || {};
+    const settings = view.querySelector('.b2b-settings-stack');
+    if (settings) {
+      settings.innerHTML = [
+        ['Nombre del estudio', p.name || 'Sin configurar', 'name', 'text'],
+        ['Dirección', p.city || 'Sin configurar', 'city', 'text'],
+        ['Tipo de atención', p.type || 'Walk-in', 'type', 'select', ['Walk-in','Solo cita','Privado']],
+        ['Horario', p.hours || 'Sin configurar', 'hours', 'text'],
+        ['Especialidades', p.specialties || 'Sin configurar', 'specialties', 'text'],
+        ['Años de experiencia', p.experience_years || 0, 'experience_years', 'number'],
+        ['Descripción', p.description || 'Sin configurar', 'description', 'textarea'],
+        ['Código de invitación', p.code || 'Sin generar', 'code', 'text']
+      ].map(([label, val, key, type, opts]) => `
+        <div class="b2b-setting-row">
+          <div><strong>${label}</strong><small>Toca para editar.</small></div>
+          <button class="btn" data-pm-edit-studio="${key}" data-type="${type}" data-opts="${(opts||[]).join('|')}">${typeof val === 'string' && val.length > 22 ? val.slice(0,22)+'…' : val}</button>
+        </div>`).join('');
+    }
+  }
+
+  // ────────── Use in Planner flow ──────────
+  function useInPlanner(jewelId) {
+    const j = (ls(KEYS.jewelry) || []).find(x => x.id === jewelId);
+    if (!j) return;
+    lsSet(KEYS.plannerJewelry, j);
+    // Navigate to Planner
+    const nav = document.querySelector('[data-b2b-nav="planner"]') || document.querySelector('[data-nav="planner"]');
+    if (nav) nav.click();
+    // Toast-ish feedback
+    console.info('[PierceMap] joya enviada a planner:', j.name);
+    showInlineMsg(`✓ ${j.name} añadida al Planner`);
+  }
+
+  function showInlineMsg(text) {
+    let div = document.getElementById('pm-inline-toast');
+    if (!div) {
+      div = document.createElement('div');
+      div.id = 'pm-inline-toast';
+      div.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--graphite);border:1px solid var(--alicyn-blue);color:var(--alicyn-blue);padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;z-index:250;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none';
+      document.body.appendChild(div);
+    }
+    div.textContent = text;
+    requestAnimationFrame(() => {
+      div.style.opacity = '1';
+      div.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    clearTimeout(div._t);
+    div._t = setTimeout(() => {
+      div.style.opacity = '0';
+      div.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 1900);
+  }
+
+  // ────────── Global event delegation ──────────
+  document.addEventListener('click', (e) => {
+    // Open studio detail
+    const studioCard = e.target.closest('[data-open-studio]');
+    if (studioCard && !e.target.closest('button,a')) {
+      openStudioDetail(studioCard.dataset.openStudio);
+      return;
+    }
+    // Close studio detail
+    if (e.target.closest('[data-pm-close-studio]')) {
+      closeStudioDetail();
+      return;
+    }
+    // Fav toggle
+    const favBtn = e.target.closest('[data-fav-toggle]');
+    if (favBtn) {
+      e.stopPropagation();
+      const type = favBtn.dataset.favType;
+      const id = favBtn.dataset.favId;
+      const added = window.AlicynV07.toggleFav(type, id);
+      favBtn.classList.toggle('is-on', added);
+      const svg = favBtn.querySelector('svg');
+      if (svg) svg.setAttribute('fill', added ? 'currentColor' : 'none');
+      showInlineMsg(added ? '♥ Guardado en favoritos' : 'Quitado de favoritos');
+      // Refresh favorites view if active
+      if (document.getElementById('view-favorites')?.classList.contains('is-active')) renderFavorites();
+      return;
+    }
+    // Use in planner
+    const useBtn = e.target.closest('[data-use-in-planner]');
+    if (useBtn) {
+      e.stopPropagation();
+      useInPlanner(useBtn.dataset.useInPlanner);
+      return;
+    }
+    // Delete jewelry
+    const delBtn = e.target.closest('[data-jewel-delete]');
+    if (delBtn) {
+      e.stopPropagation();
+      if (!confirm('¿Eliminar esta pieza?')) return;
+      const list = (ls(KEYS.jewelry) || []).filter(j => j.id !== delBtn.dataset.jewelDelete);
+      lsSet(KEYS.jewelry, list);
+      rerenderJewelry();
+      showInlineMsg('Pieza eliminada');
+      return;
+    }
+    // Add jewelry
+    if (e.target.closest('[data-b2b-action="add-jewelry"]')) {
+      e.stopPropagation(); e.preventDefault();
+      openPromptModal({
+        title: 'Añadir pieza al catálogo',
+        hint: 'Datos básicos. Conectaremos a Supabase con upload de imagen en la próxima iteración.',
+        fields: [
+          { name:'name', label:'Nombre', placeholder:'Labret titanio · plana 3mm' },
+          { row: [
+            { name:'type', label:'Tipo', type:'select', options:['Labret','CBR','Barbell','Clicker','Surface bar','Microderma','Nostril','Otro'] },
+            { name:'material', label:'Material', placeholder:'Titanio implant grade' }
+          ]},
+          { row: [
+            { name:'color', label:'Color', placeholder:'Plata' },
+            { name:'area', label:'Zona', placeholder:'Oreja · Nariz' }
+          ]},
+          { row: [
+            { name:'status', label:'Estado', type:'select', options:['available','on_order'] },
+            { name:'price', label:'Precio (MXN)', type:'number' }
+          ]}
+        ],
+        saveLabel: 'Añadir',
+        onSave: (data) => {
+          window.AlicynV07.addJewelry({
+            ...data,
+            price: data.price ? Number(data.price) : null,
+            studio_id: 'local',
+            created_at: new Date().toISOString()
+          });
+          rerenderJewelry();
+          showInlineMsg('✓ Pieza añadida');
+        }
+      });
+      return;
+    }
+    // Add client
+    if (e.target.closest('[data-b2b-action="new-client"]')) {
+      e.stopPropagation(); e.preventDefault();
+      openPromptModal({
+        title: 'Nuevo cliente',
+        fields: [
+          { name:'name', label:'Nombre completo', placeholder:'Ana López' },
+          { name:'interest', label:'Interés principal', placeholder:'Helix · Conch' },
+          { name:'status', label:'Estado', type:'select', options:['Nuevo','Plan abierto','Cita próxima','En curación','Cerrado'] },
+          { name:'notes', label:'Notas', type:'textarea', placeholder:'Anatomía notable, preferencias…' }
+        ],
+        saveLabel: 'Crear cliente',
+        onSave: (data) => {
+          window.AlicynV07.addClient({
+            ...data,
+            visits: 0,
+            last: 'hoy',
+            created_at: new Date().toISOString()
+          });
+          rerenderClients();
+          showInlineMsg('✓ Cliente creado');
+        }
+      });
+      return;
+    }
+    // Edit studio profile field
+    const editStudio = e.target.closest('[data-pm-edit-studio]');
+    if (editStudio) {
+      e.stopPropagation(); e.preventDefault();
+      const key = editStudio.dataset.pmEditStudio;
+      const type = editStudio.dataset.type || 'text';
+      const opts = (editStudio.dataset.opts || '').split('|').filter(Boolean);
+      const profile = ls(KEYS.studioProfile) || {};
+      openPromptModal({
+        title: 'Editar campo',
+        fields: [
+          { name: key, label: editStudio.previousElementSibling?.querySelector('strong')?.textContent || key,
+            type, options: opts, value: profile[key] || '' }
+        ],
+        saveLabel: 'Guardar',
+        onSave: (data) => {
+          profile[key] = data[key];
+          lsSet(KEYS.studioProfile, profile);
+          rerenderStudio();
+          showInlineMsg('✓ Guardado');
+        }
+      });
+      return;
+    }
+    // Enter studio code
+    if (e.target.closest('[data-pm-enter-code]')) {
+      e.stopPropagation(); e.preventDefault();
+      openPromptModal({
+        title: 'Entrar a un estudio',
+        hint: 'Pega el código que tu estudio te compartió. Demo: NORTE24, ANATM, KINTS.',
+        fields: [{ name:'code', label:'Código', placeholder:'XXXXX' }],
+        saveLabel: 'Entrar',
+        onSave: (data) => {
+          const code = (data.code || '').trim().toUpperCase();
+          const studio = (ls(KEYS.studios) || []).find(s => s.code === code);
+          if (!studio) { showInlineMsg('Código no encontrado'); return; }
+          openStudioDetail(studio.id);
+          showInlineMsg(`✓ Bienvenido a ${studio.name}`);
+        }
+      });
+      return;
+    }
+    // Mode switch from profile
+    if (e.target.closest('[data-pm-switch-mode]')) {
+      e.stopPropagation(); e.preventDefault();
+      const isStudio = document.body.classList.contains('studio-mode');
+      applyMode(isStudio ? 'client' : 'studio');
+      setTimeout(renderProfilePM, 100);
+      return;
+    }
+    // Auth toggle
+    if (e.target.closest('[data-pm-auth-toggle]')) {
+      e.stopPropagation(); e.preventDefault();
+      const bridge = window.AlicynSupabase;
+      const user = bridge?.getUser?.();
+      if (user) {
+        bridge.signOut?.();
+        showInlineMsg('Sesión cerrada');
+      } else {
+        const loginBtn = document.querySelector('[data-google-login]') || document.getElementById('btn-login');
+        if (loginBtn) loginBtn.click();
+      }
+      return;
+    }
+    // Go to discover
+    const goBtn = e.target.closest('[data-pm-go]');
+    if (goBtn) {
+      const dest = document.querySelector(`[data-b2b-nav="${goBtn.dataset.pmGo}"]`);
+      if (dest) dest.click();
+      return;
+    }
+    // Enter ecosystem
+    const entStudio = e.target.closest('[data-pm-enter-studio]');
+    if (entStudio) {
+      e.stopPropagation();
+      showInlineMsg('Ecosistema cargado · perfil activo');
+      return;
+    }
+    // Contact studio
+    if (e.target.closest('[data-pm-contact]')) {
+      e.stopPropagation();
+      showInlineMsg('Chat próximamente');
+      return;
+    }
+  });
+
+  // ────────── Listen for nav clicks to refresh dynamic views ──────────
+  document.addEventListener('click', (e) => {
+    const navBtn = e.target.closest('[data-b2b-nav]');
+    if (!navBtn) return;
+    const v = navBtn.dataset.b2bNav;
+    lsSet(KEYS.lastView, v);
+    // Refresh dynamic views shortly after the click is handled by app.js
+    setTimeout(() => {
+      if (v === 'discover') enhanceDiscover();
+      if (v === 'jewelry') rerenderJewelry();
+      if (v === 'clients') rerenderClients();
+      if (v === 'studio') rerenderStudio();
+      if (v === 'favorites') renderFavorites();
+      if (v === 'profile-pm') renderProfilePM();
+    }, 80);
+  });
+
+  // ────────── Init ──────────
+  function init() {
+    injectExtraNav();
+    injectExtraViews();
+
+    // First-time mode picker
+    if (!ls(KEYS.onboarded)) {
+      setTimeout(showModePicker, 400);
+    } else {
+      // Re-apply saved mode
+      const cm = ls(KEYS.clientMode);
+      if (cm) {
+        document.body.classList.add('client-mode');
+        document.body.classList.remove('studio-mode');
+      }
+    }
+
+    // Run initial enhancement on already-active views
+    setTimeout(() => {
+      enhanceDiscover();
+      rerenderJewelry();
+      rerenderClients();
+      rerenderStudio();
+    }, 200);
+
+    console.info('[PierceMap v0.7] B2B-first ready · demo data + CRUD funcional · localStorage keys:', Object.values(KEYS));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 </body>
 </html>
