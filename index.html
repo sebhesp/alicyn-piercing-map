@@ -10637,5 +10637,645 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 })();
 </script>
 
+
+<!-- ============================================================================
+     v0.6 · PierceMap B2B layer · Studio Mode
+     Adds 4 new B2B views (Discover, Jewelry, Clients, Studio) and a new nav
+     that replaces consumer tabs when Studio Mode is on.
+     COEXISTS with existing consumer flow. Idempotent. No data destruction.
+     ============================================================================ -->
+<style id="alicyn-b2b-v06-styles">
+  /* Studio mode toggle in header */
+  .b2b-mode-toggle {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    border: 1px solid var(--line, rgba(255,255,255,.12));
+    background: rgba(255,255,255,.04);
+    color: var(--text-soft, #b9c4c0);
+    font: inherit; font-size: 11px; font-weight: 600;
+    letter-spacing: .08em; text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .b2b-mode-toggle:hover { color: var(--text); border-color: var(--alicyn-blue, #8FBFC3); }
+  .b2b-mode-toggle.is-on {
+    background: var(--alicyn-blue, #8FBFC3);
+    color: var(--graphite, #0a0d0c);
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(143,191,195,.35);
+  }
+  .b2b-mode-toggle .b2b-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--text-mute, #7d8a86);
+    transition: background .2s;
+  }
+  .b2b-mode-toggle.is-on .b2b-dot { background: var(--graphite); }
+
+  /* When studio mode is on, swap nav: hide consumer tabs, show B2B nav */
+  body.studio-mode .nav-tabs > button:not(.is-b2b) { display: none !important; }
+  body.studio-mode .nav-tabs .is-b2b { display: inline-flex; }
+  body:not(.studio-mode) .nav-tabs .is-b2b { display: none !important; }
+
+  /* B2B view shell */
+  .b2b-view {
+    padding: 32px 0 80px;
+  }
+  .b2b-hero {
+    padding: 16px 0 28px;
+    border-bottom: 1px solid var(--line, rgba(255,255,255,.08));
+    margin-bottom: 28px;
+  }
+  .b2b-hero .eyebrow {
+    color: var(--alicyn-blue, #8FBFC3);
+    font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .b2b-hero h1 {
+    margin: 0 0 8px;
+    font-size: clamp(26px, 3.4vw, 38px);
+    letter-spacing: -.02em;
+    color: var(--text, #eef3f1);
+    line-height: 1.1;
+  }
+  .b2b-hero p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-soft, #b9c4c0);
+    max-width: 64ch;
+  }
+  .b2b-hero-actions {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 18px;
+  }
+
+  /* B2B card grid */
+  .b2b-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .b2b-card {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--line, rgba(255,255,255,.08));
+    border-radius: 14px;
+    padding: 18px;
+    transition: border-color .25s ease, transform .25s ease;
+    cursor: pointer;
+    display: flex; flex-direction: column; gap: 10px;
+    min-height: 0;
+  }
+  .b2b-card:hover {
+    border-color: rgba(143,191,195,.5);
+    transform: translateY(-2px);
+  }
+  .b2b-card-head {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .b2b-card-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(143,191,195,.12);
+    border: 1px solid rgba(143,191,195,.22);
+    display: grid; place-items: center;
+    color: var(--alicyn-blue, #8FBFC3);
+    flex-shrink: 0;
+  }
+  .b2b-card-icon svg { width: 20px; height: 20px; }
+  .b2b-card-title { flex: 1; min-width: 0; }
+  .b2b-card-title h3 { margin: 0; font-size: 15px; color: var(--text); font-weight: 600; }
+  .b2b-card-title small { color: var(--text-mute, #7d8a86); font-size: 11px; display: block; margin-top: 2px; }
+  .b2b-card-status {
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 10px; font-weight: 600; letter-spacing: .04em;
+    text-transform: uppercase;
+    background: rgba(143,191,195,.14);
+    color: var(--alicyn-blue, #8FBFC3);
+  }
+  .b2b-card-status.warn  { background: rgba(230,197,96,.14); color: #e6c560; }
+  .b2b-card-status.danger{ background: rgba(224,122,122,.14); color: #e07a7a; }
+  .b2b-card-meta {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 12px; color: var(--text-soft);
+  }
+  .b2b-card-meta span b { color: var(--text); font-weight: 600; }
+
+  /* Section header within a B2B view */
+  .b2b-section-head {
+    display: flex; align-items: end; justify-content: space-between;
+    gap: 16px; margin: 28px 0 14px;
+    flex-wrap: wrap;
+  }
+  .b2b-section-head h2 {
+    margin: 0; font-size: 18px; color: var(--text);
+    font-weight: 600; letter-spacing: -.01em;
+  }
+  .b2b-section-head .b2b-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Filter chip row */
+  .b2b-filters {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 14px 0; margin-bottom: 8px;
+  }
+  .b2b-filter {
+    padding: 7px 14px; border-radius: 999px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--line, rgba(255,255,255,.08));
+    color: var(--text-soft);
+    font: inherit; font-size: 12px; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: all .15s ease;
+  }
+  .b2b-filter:hover { color: var(--text); border-color: rgba(143,191,195,.4); }
+  .b2b-filter.is-on {
+    background: var(--alicyn-blue, #8FBFC3);
+    color: var(--graphite, #0a0d0c);
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  /* Map placeholder (Leaflet-ready) */
+  .b2b-map-shell {
+    border: 1px solid var(--line, rgba(255,255,255,.08));
+    border-radius: 16px;
+    background:
+      radial-gradient(800px 600px at 50% 30%, rgba(143,191,195,.08), transparent 60%),
+      linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,.005));
+    height: clamp(280px, 40vh, 480px);
+    display: grid; place-items: center;
+    position: relative; overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .b2b-map-shell::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(143,191,195,.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(143,191,195,.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .b2b-map-placeholder {
+    text-align: center;
+    color: var(--text-soft);
+    z-index: 1;
+    padding: 24px;
+  }
+  .b2b-map-placeholder svg {
+    color: var(--alicyn-blue, #8FBFC3);
+    width: 36px; height: 36px;
+    margin-bottom: 12px;
+  }
+  .b2b-map-placeholder strong { color: var(--text); font-size: 14px; display: block; margin-bottom: 4px; }
+  .b2b-map-placeholder small { font-size: 12px; }
+
+  /* Empty state */
+  .b2b-empty {
+    text-align: center; padding: 48px 24px;
+    border: 1px dashed var(--line, rgba(255,255,255,.12));
+    border-radius: 14px;
+    background: rgba(255,255,255,.015);
+  }
+  .b2b-empty svg {
+    width: 36px; height: 36px;
+    color: var(--text-mute);
+    margin-bottom: 12px;
+  }
+  .b2b-empty h3 {
+    margin: 0 0 6px; font-size: 16px; color: var(--text);
+    font-weight: 600;
+  }
+  .b2b-empty p {
+    margin: 0 0 16px; font-size: 13px;
+    color: var(--text-soft); max-width: 44ch;
+    margin-left: auto; margin-right: auto;
+  }
+
+  /* Studio settings stack */
+  .b2b-settings-stack {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    max-width: 720px;
+  }
+  .b2b-setting-row {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--line, rgba(255,255,255,.08));
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .b2b-setting-row > div { flex: 1; min-width: 0; }
+  .b2b-setting-row strong { display: block; font-size: 14px; color: var(--text); margin-bottom: 2px; }
+  .b2b-setting-row small { display: block; font-size: 12px; color: var(--text-mute); }
+  .b2b-setting-row code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; background: rgba(0,0,0,.25);
+    padding: 2px 6px; border-radius: 4px;
+    color: var(--alicyn-blue, #8FBFC3);
+  }
+
+  /* Mobile */
+  @media (max-width: 720px) {
+    .b2b-hero { padding-top: 8px; }
+    .b2b-grid { grid-template-columns: 1fr; }
+    .b2b-mode-toggle { padding: 5px 10px; font-size: 10px; }
+    .b2b-mode-toggle span:not(.b2b-dot) { display: none; }
+  }
+
+  /* Hide language-switcher text on tight headers when toggle present */
+  body.studio-mode #btn-login { display: var(--btn-login-display, inline-flex); }
+</style>
+
+<script id="alicyn-b2b-v06-script">
+(function () {
+  'use strict';
+  if (window.__AlicynB2B_v06__) return;
+  window.__AlicynB2B_v06__ = true;
+
+  const STORAGE_KEY = 'alicyn.studioMode';
+  const VIEWS = ['discover', 'jewelry', 'clients', 'studio']; // planner reuses existing view
+
+  // ────────────────── 1. Inject Studio Mode toggle in header ──────────
+  function injectToggle() {
+    const headerUser = document.getElementById('header-user');
+    if (!headerUser || headerUser.querySelector('.b2b-mode-toggle')) return;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'b2b-mode-toggle';
+    btn.setAttribute('aria-pressed', 'false');
+    btn.innerHTML = '<i class="b2b-dot" aria-hidden="true"></i><span>Studio</span>';
+    btn.addEventListener('click', toggleMode);
+    // Insert before login button (or first child)
+    const login = document.getElementById('btn-login');
+    if (login) headerUser.insertBefore(btn, login);
+    else headerUser.appendChild(btn);
+  }
+
+  // ────────────────── 2. Inject B2B nav buttons into existing nav-tabs ──
+  const NAV_ICONS = {
+    discover: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M14 9l-2 5-5 2 2-5z"/></svg>',
+    planner:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/><circle cx="12" cy="12" r="2"/></svg>',
+    jewelry:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l-2 4 8 8 8-8-2-4z"/><path d="M6 9h12"/><path d="M10 9l2 12 2-12"/></svg>',
+    clients:  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="9" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="8" r="2.5"/><path d="M16 19a5 5 0 0 1 5-2"/></svg>',
+    studio:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>'
+  };
+
+  function injectB2BNav() {
+    const nav = document.querySelector('.nav-tabs');
+    if (!nav || nav.querySelector('[data-b2b-nav]')) return;
+    const items = [
+      { nav: 'discover', view: 'discover', label: 'Discover' },
+      { nav: 'planner',  view: 'planner',  label: 'Planner'  },
+      { nav: 'jewelry',  view: 'jewelry',  label: 'Jewelry'  },
+      { nav: 'clients',  view: 'clients',  label: 'Clients'  },
+      { nav: 'studio',   view: 'studio',   label: 'Studio'   }
+    ];
+    items.forEach(it => {
+      const b = document.createElement('button');
+      b.className = 'is-b2b';
+      b.setAttribute('data-b2b-nav', it.nav);
+      b.setAttribute('data-nav', it.nav);
+      b.setAttribute('data-view', it.view);
+      b.setAttribute('aria-label', it.label);
+      b.innerHTML = NAV_ICONS[it.nav] + '<span>' + it.label + '</span>';
+      nav.appendChild(b);
+    });
+  }
+
+  // ────────────────── 3. Inject 4 new view sections ───────────────────
+  function injectViews() {
+    const main = document.querySelector('main');
+    if (!main) return;
+    VIEWS.forEach(v => {
+      if (document.getElementById('view-' + v)) return;
+      const sec = document.createElement('section');
+      sec.className = 'view b2b-view';
+      sec.id = 'view-' + v;
+      sec.innerHTML = renderView(v);
+      main.appendChild(sec);
+    });
+  }
+
+  function renderView(v) {
+    if (v === 'discover') return discoverView();
+    if (v === 'jewelry')  return jewelryView();
+    if (v === 'clients')  return clientsView();
+    if (v === 'studio')   return studioView();
+    return '';
+  }
+
+  // ────────────────── 4. View templates (placeholders pro) ────────────
+  function discoverView() {
+    const studios = [
+      { name:'Estudio del Norte', city:'CDMX · Roma Norte', rating:'4.9', services:'Curation · Cartilage' , status:'Abierto' },
+      { name:'Anatómico MX',      city:'CDMX · Condesa',    rating:'4.8', services:'Surface · Microderma',  status:'Abierto' },
+      { name:'Kintsugi Piercing', city:'Guadalajara · Lafayette', rating:'4.9', services:'Ear curation',    status:'Cita req.' },
+      { name:'Casa Aguja',        city:'Monterrey · Centro', rating:'4.7', services:'Septum · Daith',       status:'Abierto' }
+    ];
+    return `
+      <div class="container">
+        <div class="b2b-hero">
+          <div class="eyebrow">Discover · Atlas profesional</div>
+          <h1>Estudios y perforadores certificados</h1>
+          <p>Encuentra estudios cercanos por anatomía, especialidad y técnica. Filtros B2B para que perforadores se conozcan entre sí y para que clientes lleguen al especialista correcto.</p>
+          <div class="b2b-hero-actions">
+            <button class="btn btn-primary" data-b2b-action="invite-studio">+ Invitar mi estudio</button>
+            <button class="btn" data-b2b-action="filter-toggle">Filtros</button>
+          </div>
+        </div>
+
+        <div class="b2b-filters">
+          <button class="b2b-filter is-on">Todos</button>
+          <button class="b2b-filter">Curación de oreja</button>
+          <button class="b2b-filter">Surface</button>
+          <button class="b2b-filter">Septum</button>
+          <button class="b2b-filter">Microderma</button>
+          <button class="b2b-filter">CDMX</button>
+          <button class="b2b-filter">Guadalajara</button>
+          <button class="b2b-filter">Monterrey</button>
+        </div>
+
+        <div class="b2b-map-shell" id="b2b-map-shell">
+          <div class="b2b-map-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M12 2C8 2 5 5 5 9c0 6 7 13 7 13s7-7 7-13c0-4-3-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            <strong>Mapa de estudios</strong>
+            <small>Slot reservado para Leaflet · OpenStreetMap. Sin Google Maps por ahora.</small>
+          </div>
+        </div>
+
+        <div class="b2b-section-head">
+          <h2>Cerca de ti</h2>
+          <div class="b2b-tools"><button class="b2b-filter">Más cercanos</button><button class="b2b-filter">Mejor calificados</button></div>
+        </div>
+        <div class="b2b-grid">
+          ${studios.map(s => `
+            <article class="b2b-card">
+              <div class="b2b-card-head">
+                <div class="b2b-card-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+                </div>
+                <div class="b2b-card-title">
+                  <h3>${s.name}</h3>
+                  <small>${s.city}</small>
+                </div>
+                <span class="b2b-card-status">${s.status}</span>
+              </div>
+              <div class="b2b-card-meta">
+                <span>★ <b>${s.rating}</b></span>
+                <span>${s.services}</span>
+              </div>
+            </article>
+          `).join('')}
+        </div>
+      </div>`;
+  }
+
+  function jewelryView() {
+    const items = [
+      { sku:'TI-LAB-12-FL3', name:'Labret titanio · flat 3mm',       material:'Titanio implant grade', gauge:'18g/1.0mm', stock:'En stock' },
+      { sku:'TI-CBR-16-OP',  name:'CBR titanio · ópalo blanco',      material:'Titanio · ópalo',       gauge:'16g/1.2mm', stock:'En stock' },
+      { sku:'AU-LAB-14-DI',  name:'Labret oro 14k · diamante 2.0',   material:'Oro 14k',               gauge:'18g/1.0mm', stock:'Bajo' },
+      { sku:'NB-CLI-16-MO',  name:'Clicker niobio · luna creciente', material:'Niobio',                gauge:'16g/1.2mm', stock:'Pedido' },
+      { sku:'TI-IND-14-PL',  name:'Industrial titanio · liso',       material:'Titanio',               gauge:'14g/1.6mm', stock:'En stock' },
+      { sku:'AU-NOS-20-EN',  name:'Nostril oro · engaste fino',      material:'Oro 14k',               gauge:'20g/0.8mm', stock:'En stock' }
+    ];
+    return `
+      <div class="container">
+        <div class="b2b-hero">
+          <div class="eyebrow">Jewelry · Catálogo del estudio</div>
+          <h1>Joyería curada por tu estudio</h1>
+          <p>Inventario, propuestas activas y disponibilidad. Conecta cada pieza con un cliente, un proyecto o el planeador para vender más en consulta.</p>
+          <div class="b2b-hero-actions">
+            <button class="btn btn-primary" data-b2b-action="add-jewelry">+ Añadir pieza</button>
+            <button class="btn" data-b2b-action="import-csv">Importar CSV</button>
+          </div>
+        </div>
+
+        <div class="b2b-filters">
+          <button class="b2b-filter is-on">Todo</button>
+          <button class="b2b-filter">Titanio</button>
+          <button class="b2b-filter">Oro 14k</button>
+          <button class="b2b-filter">Niobio</button>
+          <button class="b2b-filter">En stock</button>
+          <button class="b2b-filter">Pedido</button>
+        </div>
+
+        <div class="b2b-grid">
+          ${items.map(j => {
+            const cls = j.stock === 'En stock' ? '' : (j.stock === 'Bajo' ? 'warn' : 'danger');
+            return `
+              <article class="b2b-card">
+                <div class="b2b-card-head">
+                  <div class="b2b-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l-2 4 8 8 8-8-2-4z"/><path d="M6 9h12"/><path d="M10 9l2 12 2-12"/></svg>
+                  </div>
+                  <div class="b2b-card-title">
+                    <h3>${j.name}</h3>
+                    <small>${j.sku}</small>
+                  </div>
+                  <span class="b2b-card-status ${cls}">${j.stock}</span>
+                </div>
+                <div class="b2b-card-meta">
+                  <span>${j.material}</span>
+                  <span>${j.gauge}</span>
+                </div>
+              </article>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  function clientsView() {
+    const clients = [
+      { name:'Ana López',       last:'hace 3 días',  status:'En curación',  pier:'Helix · Conch',     visits:4 },
+      { name:'Daniel Ortiz',    last:'hace 1 semana',status:'Plan abierto', pier:'Industrial',         visits:2 },
+      { name:'María José Cruz', last:'hace 1 mes',   status:'Cerrado',      pier:'Lóbulo · Tragus',    visits:6 },
+      { name:'Sofía Rivera',    last:'hoy',          status:'Cita próxima', pier:'Daith',              visits:1 }
+    ];
+    return `
+      <div class="container">
+        <div class="b2b-hero">
+          <div class="eyebrow">Clients · Proyectos en curso</div>
+          <h1>Tus clientes y sus historias</h1>
+          <p>Ficha por persona: piercings hechos, joyería sugerida, fotos de seguimiento, recordatorios de revisión. Todo encadenado al planeador y al catálogo del estudio.</p>
+          <div class="b2b-hero-actions">
+            <button class="btn btn-primary" data-b2b-action="new-client">+ Nuevo cliente</button>
+            <button class="btn" data-b2b-action="search-client">Buscar</button>
+          </div>
+        </div>
+
+        <div class="b2b-filters">
+          <button class="b2b-filter is-on">Activos</button>
+          <button class="b2b-filter">En curación</button>
+          <button class="b2b-filter">Plan abierto</button>
+          <button class="b2b-filter">Cita próxima</button>
+          <button class="b2b-filter">Cerrados</button>
+        </div>
+
+        <div class="b2b-grid">
+          ${clients.map(c => {
+            const cls = c.status === 'Cerrado' ? '' : (c.status === 'En curación' ? 'warn' : '');
+            return `
+              <article class="b2b-card">
+                <div class="b2b-card-head">
+                  <div class="b2b-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg>
+                  </div>
+                  <div class="b2b-card-title">
+                    <h3>${c.name}</h3>
+                    <small>${c.pier}</small>
+                  </div>
+                  <span class="b2b-card-status ${cls}">${c.status}</span>
+                </div>
+                <div class="b2b-card-meta">
+                  <span><b>${c.visits}</b> visitas</span>
+                  <span>${c.last}</span>
+                </div>
+              </article>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }
+
+  function studioView() {
+    return `
+      <div class="container">
+        <div class="b2b-hero">
+          <div class="eyebrow">Studio · Configuración del estudio</div>
+          <h1>Tu estudio en PierceMap</h1>
+          <p>Datos públicos, equipo, servicios, catálogo conectado y reglas de moderación de contenido. Tu identidad como estudio profesional vive aquí.</p>
+        </div>
+
+        <div class="b2b-section-head"><h2>Identidad</h2></div>
+        <div class="b2b-settings-stack">
+          <div class="b2b-setting-row">
+            <div><strong>Nombre del estudio</strong><small>Visible en Discover y en compartibles.</small></div>
+            <code>Sin configurar</code>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Dirección</strong><small>Colonia, ciudad, estado.</small></div>
+            <code>Sin configurar</code>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Horario</strong><small>Días y horas de atención.</small></div>
+            <code>Sin configurar</code>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Servicios principales</strong><small>Curación, surface, septum, etc.</small></div>
+            <code>Sin configurar</code>
+          </div>
+        </div>
+
+        <div class="b2b-section-head"><h2>Equipo</h2><div class="b2b-tools"><button class="b2b-filter is-on">+ Invitar perforador</button></div></div>
+        <div class="b2b-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="8" r="2.5"/></svg>
+          <h3>Aún no agregaste perforadores</h3>
+          <p>Invita a los miembros de tu estudio para que cada uno tenga su agenda, su cartera de clientes y su catálogo conectado.</p>
+          <button class="btn btn-primary" data-b2b-action="invite-piercer">Invitar al primero</button>
+        </div>
+
+        <div class="b2b-section-head"><h2>Cuenta</h2></div>
+        <div class="b2b-settings-stack">
+          <div class="b2b-setting-row">
+            <div><strong>Plan</strong><small>Activo desde tu registro.</small></div>
+            <code>Studio Free</code>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Sincronización</strong><small>Datos guardados en Supabase tras login.</small></div>
+            <code id="b2b-sync-status">Modo invitado</code>
+          </div>
+          <div class="b2b-setting-row">
+            <div><strong>Idioma</strong><small>Selecciona idioma del estudio.</small></div>
+            <code>Auto</code>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // ────────────────── 5. Toggle / activate Studio Mode ────────────────
+  function toggleMode() {
+    const isOn = document.body.classList.toggle('studio-mode');
+    const btn = document.querySelector('.b2b-mode-toggle');
+    if (btn) {
+      btn.classList.toggle('is-on', isOn);
+      btn.setAttribute('aria-pressed', String(isOn));
+    }
+    try { localStorage.setItem(STORAGE_KEY, isOn ? 'on' : 'off'); } catch (_) {}
+    if (isOn) {
+      // Switch to Discover view automatically
+      const discBtn = document.querySelector('[data-b2b-nav="discover"]');
+      if (discBtn) discBtn.click();
+    } else {
+      // Back to Mapa
+      const homeBtn = document.querySelector('[data-nav="home"]:not(.is-b2b)');
+      if (homeBtn) homeBtn.click();
+    }
+  }
+
+  function applySavedMode() {
+    let saved = 'off';
+    try { saved = localStorage.getItem(STORAGE_KEY) || 'off'; } catch (_) {}
+    if (saved === 'on') {
+      document.body.classList.add('studio-mode');
+      const btn = document.querySelector('.b2b-mode-toggle');
+      if (btn) {
+        btn.classList.add('is-on');
+        btn.setAttribute('aria-pressed', 'true');
+      }
+    }
+  }
+
+  // ────────────────── 6. Sync Supabase status into Studio view ────────
+  function refreshSyncStatus() {
+    const el = document.getElementById('b2b-sync-status');
+    if (!el) return;
+    const bridge = window.AlicynSupabase;
+    if (bridge?.isSignedIn?.()) {
+      const u = bridge.getUser?.();
+      el.textContent = 'Conectado · ' + (u?.email || 'sesión activa');
+    } else if (bridge?.isConfigured?.()) {
+      el.textContent = 'Configurado · inicia sesión';
+    } else {
+      el.textContent = 'Modo invitado';
+    }
+  }
+  window.addEventListener('alicyn:supabase-auth', refreshSyncStatus);
+
+  // ────────────────── 7. Generic CTA placeholder handler ──────────────
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-b2b-action]');
+    if (!btn) return;
+    const action = btn.dataset.b2bAction;
+    console.info('[Alicyn B2B] action:', action);
+    // Lightweight feedback (no toast dependency)
+    const orig = btn.textContent;
+    btn.textContent = 'Próximamente';
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 1400);
+  });
+
+  // ────────────────── 8. Init ─────────────────────────────────────────
+  function init() {
+    injectToggle();
+    injectB2BNav();
+    injectViews();
+    applySavedMode();
+    refreshSyncStatus();
+    console.info('[Alicyn B2B v0.6] Studio Mode ready · toggle in header · views: discover, planner, jewelry, clients, studio');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
 </body>
 </html>
