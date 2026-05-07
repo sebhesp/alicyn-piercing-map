@@ -13,13 +13,12 @@
     try {
       var langSaved = !!(localStorage.getItem('piercemap_language') || localStorage.getItem('alicyn_lang'));
       var introSeen = sessionStorage.getItem('alicyn.intro.v1') === '1';
-      var personaSeen = sessionStorage.getItem('alicyn.mapPersona.v1') === '1';
       if (!langSaved) {
         document.documentElement.classList.add('alicyn-lang-pending');
       }
       if (!introSeen) {
         document.documentElement.classList.add('alicyn-intro-pending');
-      } else if (!personaSeen) {
+      } else {
         document.documentElement.classList.add('alicyn-profile-pending');
       }
     } catch (err) {
@@ -12446,6 +12445,85 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   .pm-mode-picker {
     z-index: 10001;
   }
+  .pm-mode-picker .pm-mode-card {
+    width: min(100%, 860px);
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    padding: clamp(24px, 5vw, 48px);
+  }
+  .pm-mode-picker .pm-mode-card h2 {
+    font-size: clamp(28px, 4vw, 44px);
+    letter-spacing: 0;
+  }
+  .pm-mode-picker .pm-mode-card > p {
+    max-width: 620px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .pm-mode-picker .pm-mode-grid {
+    gap: 16px;
+  }
+  .pm-mode-picker .pm-mode-opt {
+    min-height: 230px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: clamp(22px, 4vw, 32px);
+  }
+  .pm-mode-picker .pm-mode-opt h3 {
+    font-size: clamp(20px, 2.6vw, 28px);
+  }
+  .pm-mode-picker .pm-mode-opt p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-soft);
+  }
+  .pm-mode-picker .pm-mode-opt.is-suggested {
+    border-color: rgba(143,191,195,.55);
+    background: rgba(143,191,195,.10);
+    box-shadow: inset 0 0 0 1px rgba(143,191,195,.16);
+  }
+  .pm-mode-last {
+    width: fit-content;
+    border: 1px solid rgba(143,191,195,.35);
+    border-radius: 999px;
+    color: var(--accent);
+    padding: 4px 9px;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .pm-mode-cta {
+    margin-top: auto;
+    min-height: 44px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(238,243,241,.18);
+    color: var(--text);
+    padding: 0 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .pm-mode-opt:hover .pm-mode-cta,
+  .pm-mode-opt:focus-visible .pm-mode-cta,
+  .pm-mode-opt.is-suggested .pm-mode-cta {
+    border-color: rgba(143,191,195,.55);
+    color: var(--accent);
+  }
+  @media (max-width: 560px) {
+    .pm-mode-picker .pm-mode-card {
+      max-height: 100dvh;
+      border-radius: 0;
+    }
+    .pm-mode-picker .pm-mode-opt {
+      min-height: 190px;
+    }
+  }
   .pm-nav-btn {
     min-height: 44px;
   }
@@ -12720,10 +12798,13 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       'nav.home': 'Inicio',
       'nav.catalog': 'Catálogo',
       'nav.clients': 'Clientes',
-      'mode.title': 'Elige cómo quieres entrar',
-      'mode.copy': 'PierceMap adapta la experiencia para clientes o para estudios profesionales.',
-      'mode.studio.copy': 'Gestionar perfil, catálogo, clientes, revisiones previas y proyectos del estudio.',
-      'mode.client.copy': 'Descubrir estudios, guardar joyas y preparar tu próxima cita.',
+      'mode.title': 'Elegir modo',
+      'mode.copy': 'Selecciona el workspace para esta sesión. Guardamos tu último modo solo como sugerencia visual.',
+      'mode.lastUsed': 'Último modo usado',
+      'mode.studio.copy': 'Gestiona clientes, catálogo, revisiones previas y setups desde el ecosistema de tu estudio.',
+      'mode.client.copy': 'Explora estudios, guarda ideas, crea revisiones previas y prepara tus próximos piercings.',
+      'mode.studio.cta': 'Entrar como estudio',
+      'mode.client.cta': 'Entrar como cliente',
       'studios.eyebrow': 'Estudios · Discover',
       'studios.title': 'Encuentra el estudio correcto para cada piercing',
       'studios.copy': 'Directorio profesional con perfiles verificados, catálogo, piercers, reseñas y entrada al ecosistema del estudio por código.',
@@ -12828,10 +12909,13 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       'nav.home': 'Home',
       'nav.catalog': 'Catalog',
       'nav.clients': 'Clients',
-      'mode.title': 'Choose how you want to enter',
-      'mode.copy': 'PierceMap adapts the experience for clients or professional studios.',
-      'mode.studio.copy': 'Manage the studio profile, catalog, clients, pre-reviews and projects.',
-      'mode.client.copy': 'Discover studios, save jewelry and prepare your next appointment.',
+      'mode.title': 'Choose mode',
+      'mode.copy': 'Select the workspace for this session. Your last mode is saved only as a visual suggestion.',
+      'mode.lastUsed': 'Last used mode',
+      'mode.studio.copy': 'Manage clients, catalog, pre-reviews, and setups from your studio ecosystem.',
+      'mode.client.copy': 'Explore studios, save ideas, create pre-reviews, and prepare your next piercings.',
+      'mode.studio.cta': 'Continue as studio',
+      'mode.client.cta': 'Continue as client',
       'studios.eyebrow': 'Studios · Discover',
       'studios.title': 'Find the right studio for each piercing',
       'studios.copy': 'Professional directory with verified profiles, catalog, piercers, reviews and studio ecosystem access by code.',
@@ -13023,7 +13107,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     jewelryType: 'all',
     jewelryMaterial: 'all',
     jewelryStatus: 'all',
-    preReviewStatus: 'all'
+    preReviewStatus: 'all',
+    modeConfirmed: false
   };
 
   function read(key, fallback = null) {
@@ -13249,6 +13334,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function applyMode(mode, options = {}) {
     mode = mode === 'studio' ? 'studio' : 'client';
+    state.modeConfirmed = true;
     document.body.classList.toggle('studio-mode', mode === 'studio');
     document.body.classList.toggle('client-mode', mode === 'client');
     write(KEYS.mode, mode);
@@ -13271,6 +13357,9 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function ensureModePicker() {
     document.querySelector('.pm-mode-picker')?.remove();
+    const suggested = getMode();
+    const mark = mode => mode === suggested ? ' is-suggested' : '';
+    const last = mode => mode === suggested ? `<span class="pm-mode-last">${html(txt('mode.lastUsed'))}</span>` : '';
     const div = document.createElement('div');
     div.className = 'pm-mode-picker';
     div.innerHTML = `
@@ -13278,15 +13367,19 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         <h2>${html(txt('mode.title'))}</h2>
         <p>${html(txt('mode.copy'))}</p>
         <div class="pm-mode-grid">
-          <button class="pm-mode-opt" type="button" data-pm-mode="studio">
+          <button class="pm-mode-opt${mark('studio')}" type="button" data-pm-mode="studio" aria-pressed="${suggested === 'studio' ? 'true' : 'false'}">
             <div class="pm-mode-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg></div>
+            ${last('studio')}
             <h3>Studio</h3>
             <p>${html(txt('mode.studio.copy'))}</p>
+            <span class="pm-mode-cta">${html(txt('mode.studio.cta'))}</span>
           </button>
-          <button class="pm-mode-opt" type="button" data-pm-mode="client">
+          <button class="pm-mode-opt${mark('client')}" type="button" data-pm-mode="client" aria-pressed="${suggested === 'client' ? 'true' : 'false'}">
             <div class="pm-mode-opt-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></div>
-            <h3>Cliente</h3>
+            ${last('client')}
+            <h3>${currentLang() === 'en' ? 'Client' : 'Cliente'}</h3>
             <p>${html(txt('mode.client.copy'))}</p>
+            <span class="pm-mode-cta">${html(txt('mode.client.cta'))}</span>
           </button>
         </div>
       </div>`;
@@ -13325,11 +13418,11 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       return;
     }
     root.classList.remove('alicyn-lang-pending');
-    if (!mode) {
+    if (!state.modeConfirmed) {
       showModePicker();
       return;
     }
-    applyMode(mode, { showFirst: false });
+    applyMode(mode || 'client', { showFirst: false });
   }
 
   function statusText(status) {
@@ -14244,7 +14337,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       if (modeBtn) {
         event.preventDefault();
         event.stopPropagation();
-        applyMode(modeBtn.dataset.pmMode, { showFirst: true });
+        applyMode(modeBtn.dataset.pmMode, { showFirst: false });
         return;
       }
       const navBtn = event.target.closest('[data-pm-view], .pm-nav-btn');
