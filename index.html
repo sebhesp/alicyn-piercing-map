@@ -4104,6 +4104,7 @@ const i18n = {
           <button class="btn btn-primary" id="btn-export-plan" data-i18n="design.export">Generar plan</button>
           <button class="btn" id="btn-share-plan" data-i18n="design.share">Compartir</button>
           <button class="btn" id="btn-save-setup-side" type="button" data-i18n="design.saveSetup">Guardar setup</button>
+          <button class="btn" type="button" data-pm-create-setup-followup>Crear seguimiento</button>
           <button class="btn" type="button" data-design-layer="photo" data-i18n="design.uploadPhoto">Subir foto</button>
           <button class="btn btn-ghost" id="btn-clear-plan" data-i18n="design.clear">Limpiar</button>
         </div>
@@ -13172,6 +13173,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     clientNotes: 'piercemap_client_notes',
     visualSettings: 'piercemap_visual_settings',
     preReviews: 'piercemap_pre_reviews',
+    studioEvents: 'piercemap_studio_events',
+    reminders: 'piercemap_reminders',
     legacyActiveStudio: 'piercemap.activeStudio.v1'
   };
 
@@ -13186,7 +13189,9 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     'piercemap_pre_reviews',
     'piercemap_clients',
     'piercemap_jewelry',
-    'piercemap_visual_settings'
+    'piercemap_visual_settings',
+    'piercemap_studio_events',
+    'piercemap_reminders'
   ]);
 
   const UI_TEXT = {
@@ -13197,6 +13202,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       'nav.favorites': 'Favoritos',
       'nav.profile': 'Perfil',
       'nav.home': 'Inicio',
+      'nav.calendar': 'Calendario',
       'nav.catalog': 'Catálogo',
       'nav.clients': 'Clientes',
       'mode.title': 'Elegir modo',
@@ -13308,6 +13314,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       'nav.favorites': 'Favorites',
       'nav.profile': 'Profile',
       'nav.home': 'Home',
+      'nav.calendar': 'Calendar',
       'nav.catalog': 'Catalog',
       'nav.clients': 'Clients',
       'mode.title': 'Choose mode',
@@ -13604,6 +13611,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (!Array.isArray(read(KEYS.projects))) write(KEYS.projects, []);
     if (!Array.isArray(read(KEYS.selectedJewelry))) write(KEYS.selectedJewelry, []);
     if (!Array.isArray(read(KEYS.preReviews))) write(KEYS.preReviews, []);
+    if (!Array.isArray(read(KEYS.studioEvents))) write(KEYS.studioEvents, []);
+    if (!Array.isArray(read(KEYS.reminders))) write(KEYS.reminders, []);
     if (!read(KEYS.clientProfile)) {
       write(KEYS.clientProfile, {
         interests: [],
@@ -13641,6 +13650,10 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function reviews() { return read(KEYS.reviews, []); }
   function preReviews() { return read(KEYS.preReviews, []); }
   function writePreReviews(list) { write(KEYS.preReviews, Array.isArray(list) ? list : []); }
+  function studioEvents() { return read(KEYS.studioEvents, []); }
+  function reminders() { return read(KEYS.reminders, []); }
+  function writeStudioEvents(list) { write(KEYS.studioEvents, Array.isArray(list) ? list : []); }
+  function writeReminders(list) { write(KEYS.reminders, Array.isArray(list) ? list : []); }
 
   function getMode() {
     const direct = read(KEYS.mode);
@@ -13657,6 +13670,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (mode === 'studio') {
       return [
         { view:'studio', nav:'studio', label:txt('nav.home'), icon:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>' },
+        { view:'calendar', nav:'calendar', label:txt('nav.calendar'), icon:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/>' },
         { view:'jewelry', nav:'jewelry', label:txt('nav.catalog'), icon:'<path d="M6 9l-2 4 8 8 8-8-2-4z"/><path d="M6 9h12"/>' },
         { view:'clients', nav:'clients', label:txt('nav.clients'), icon:'<circle cx="9" cy="9" r="3"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="8" r="2.5"/>' },
         { view:'planner', nav:'planner', label:txt('nav.planner'), icon:'<circle cx="12" cy="12" r="8"/><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/>' },
@@ -13722,7 +13736,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   }
 
   function ensureViews() {
-    ['discover','jewelry','clients','studio','favorites','profile-pm'].forEach(ensureView);
+    ['discover','calendar','jewelry','clients','studio','favorites','profile-pm'].forEach(ensureView);
   }
 
   function syncNav(view) {
@@ -13735,6 +13749,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function renderActive(view) {
     if (view === 'discover') renderDiscover();
+    if (view === 'calendar') renderCalendar();
     if (view === 'jewelry') renderJewelry();
     if (view === 'clients') renderClients();
     if (view === 'studio') renderStudioHome();
@@ -14298,6 +14313,441 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       </div>`;
   }
 
+  /*
+    Calendar foundation. Supabase tables planned:
+    studio_events(id, studio_id, client_user_id, piercer_user_id, setup_id, title, type,
+    description, start_at, end_at, status, visibility, created_by, created_at, updated_at)
+    reminders(id, studio_id, event_id, client_user_id, setup_id, title, message,
+    reminder_type, remind_at, status, created_at, updated_at)
+    Future integrations: Google Calendar, Apple Calendar, push, email and WhatsApp reminders.
+  */
+  const CALENDAR_EVENT_TYPES = ['appointment','review','jewelry_change','follow_up','phase_next','care_reminder','custom'];
+  const CALENDAR_EVENT_STATUSES = ['scheduled','completed','cancelled','missed'];
+  const REMINDER_STATUSES = ['pending','completed','dismissed'];
+
+  function activeStudioId() {
+    const connected = read(KEYS.connectedStudio, '');
+    if (connected) return connected;
+    const profile = read(KEYS.studioProfile, {});
+    return profile.code || profile.id || 'local_studio';
+  }
+
+  function currentUserId() {
+    return window.AlicynSupabase?.getUser?.()?.id || 'local_user';
+  }
+
+  function calendarNow() {
+    return new Date();
+  }
+
+  function addDays(date, days) {
+    const next = new Date(date);
+    next.setDate(next.getDate() + days);
+    return next;
+  }
+
+  function startOfDay(date) {
+    const next = new Date(date);
+    next.setHours(0, 0, 0, 0);
+    return next;
+  }
+
+  function endOfDay(date) {
+    const next = new Date(date);
+    next.setHours(23, 59, 59, 999);
+    return next;
+  }
+
+  function localDateValue(value) {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) return new Date().toISOString().slice(0, 10);
+    return date.toISOString().slice(0, 10);
+  }
+
+  function localTimeValue(value) {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) return '10:00';
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+
+  function buildDateTime(date, time) {
+    const value = new Date(`${date || localDateValue()}T${time || '10:00'}`);
+    return Number.isNaN(value.getTime()) ? new Date().toISOString() : value.toISOString();
+  }
+
+  function formatDateTime(value) {
+    if (!value) return currentLang() === 'en' ? 'No date' : 'Sin fecha';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return currentLang() === 'en' ? 'Invalid date' : 'Fecha inválida';
+    return date.toLocaleString(currentLang() === 'en' ? 'en-US' : 'es-MX', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function calendarTypeLabel(type) {
+    const labels = {
+      es: {
+        appointment:'Cita',
+        review:'Revisión',
+        jewelry_change:'Cambio de joyería',
+        follow_up:'Seguimiento',
+        phase_next:'Siguiente fase',
+        care_reminder:'Recordatorio de cuidado',
+        custom:'Personalizado'
+      },
+      en: {
+        appointment:'Appointment',
+        review:'Review',
+        jewelry_change:'Jewelry change',
+        follow_up:'Follow-up',
+        phase_next:'Next phase',
+        care_reminder:'Care reminder',
+        custom:'Custom'
+      }
+    };
+    return labels[currentLang()]?.[type] || labels.es[type] || type;
+  }
+
+  function calendarStatusLabel(status) {
+    const labels = {
+      es: { scheduled:'Agendado', completed:'Completado', cancelled:'Cancelado', missed:'No asistió', pending:'Pendiente', dismissed:'Descartado' },
+      en: { scheduled:'Scheduled', completed:'Completed', cancelled:'Cancelled', missed:'Missed', pending:'Pending', dismissed:'Dismissed' }
+    };
+    return labels[currentLang()]?.[status] || labels.es[status] || status;
+  }
+
+  function visibilityLabel(value) {
+    if (value === 'client_visible') return currentLang() === 'en' ? 'Client visible' : 'Visible para cliente';
+    return currentLang() === 'en' ? 'Studio only' : 'Solo estudio';
+  }
+
+  function reminderTypeLabel(value) {
+    if (value === 'client') return currentLang() === 'en' ? 'Client' : 'Cliente';
+    return currentLang() === 'en' ? 'Internal' : 'Interno';
+  }
+
+  function clientLabel(clientId) {
+    if (!clientId) return currentLang() === 'en' ? 'No client' : 'Sin cliente';
+    return byId(clients(), clientId)?.name || clientId;
+  }
+
+  function projectOptions() {
+    return (read(KEYS.projects, []) || []).map(project => ({ value: project.id, label: project.title || project.id }));
+  }
+
+  function clientOptions() {
+    return [{ value:'', label: currentLang() === 'en' ? 'No client' : 'Sin cliente' }]
+      .concat(clients().map(client => ({ value: client.id, label: client.name })));
+  }
+
+  function calendarEventsForStudio() {
+    const studioId = activeStudioId();
+    return studioEvents()
+      .filter(event => !event.studio_id || event.studio_id === studioId)
+      .sort((a, b) => new Date(a.start_at || 0) - new Date(b.start_at || 0));
+  }
+
+  function remindersForStudio() {
+    const studioId = activeStudioId();
+    return reminders()
+      .filter(reminder => !reminder.studio_id || reminder.studio_id === studioId)
+      .sort((a, b) => new Date(a.remind_at || 0) - new Date(b.remind_at || 0));
+  }
+
+  function clientVisibleFollowups() {
+    const studioId = read(KEYS.connectedStudio, '');
+    const user = window.AlicynSupabase?.getUser?.();
+    const hasAuth = Boolean(user?.id);
+    const ids = new Set(['', 'local_user', user?.id].filter(Boolean));
+    const events = studioEvents().filter(event =>
+      event.visibility === 'client_visible' &&
+      (!studioId || !event.studio_id || event.studio_id === studioId) &&
+      (!event.client_user_id || ids.has(event.client_user_id) || (!hasAuth && String(event.client_user_id).startsWith('c_')))
+    );
+    const clientReminders = reminders().filter(reminder =>
+      reminder.reminder_type === 'client' &&
+      reminder.status !== 'dismissed' &&
+      (!studioId || !reminder.studio_id || reminder.studio_id === studioId) &&
+      (!reminder.client_user_id || ids.has(reminder.client_user_id) || (!hasAuth && String(reminder.client_user_id).startsWith('c_')))
+    );
+    return { events, reminders: clientReminders };
+  }
+
+  function calendarError(message) {
+    return `<div class="pm-empty-note">${html(message || (currentLang() === 'en' ? 'We could not load the calendar. Try again.' : 'No pudimos cargar el calendario. Intenta de nuevo.'))}</div>`;
+  }
+
+  function renderCalendar() {
+    const view = ensureView('calendar');
+    if (!view) return;
+    try {
+      const now = calendarNow();
+      const todayStart = startOfDay(now);
+      const todayEnd = endOfDay(now);
+      const weekEnd = endOfDay(addDays(now, 7));
+      const events = calendarEventsForStudio();
+      const today = events.filter(event => {
+        const start = new Date(event.start_at || 0);
+        return start >= todayStart && start <= todayEnd;
+      });
+      const nextWeek = events.filter(event => {
+        const start = new Date(event.start_at || 0);
+        return start > todayEnd && start <= weekEnd;
+      });
+      const pending = remindersForStudio().filter(reminder => reminder.status === 'pending');
+      view.innerHTML = `
+        <div class="container">
+          <div class="b2b-hero">
+            <div class="eyebrow">${html(txt('nav.calendar'))}</div>
+            <h1>${html(currentLang() === 'en' ? 'Calendar and reminders' : 'Calendario y recordatorios')}</h1>
+            <p>${html(currentLang() === 'en'
+              ? 'Plan appointments, reviews, jewelry changes and follow-up tasks for your studio.'
+              : 'Planea citas, revisiones, cambios de joyería y tareas de seguimiento para tu estudio.')}</p>
+            <div class="b2b-hero-actions">
+              <button class="btn btn-primary" type="button" data-pm-create-event>${html(currentLang() === 'en' ? 'Create event' : 'Crear evento')}</button>
+              <button class="btn" type="button" data-pm-create-reminder>${html(currentLang() === 'en' ? 'Create reminder' : 'Crear recordatorio')}</button>
+            </div>
+          </div>
+          <div class="b2b-grid pm-calendar-summary">
+            <article class="b2b-card"><strong>${html(currentLang() === 'en' ? 'Today' : 'Hoy')}</strong><p class="pm-big-number">${today.length}</p><small>${html(currentLang() === 'en' ? 'scheduled events' : 'eventos agendados')}</small></article>
+            <article class="b2b-card"><strong>${html(currentLang() === 'en' ? 'Next 7 days' : 'Próximos 7 días')}</strong><p class="pm-big-number">${nextWeek.length}</p><small>${html(currentLang() === 'en' ? 'upcoming events' : 'eventos próximos')}</small></article>
+            <article class="b2b-card"><strong>${html(currentLang() === 'en' ? 'Pending reminders' : 'Recordatorios pendientes')}</strong><p class="pm-big-number">${pending.length}</p><small>${html(currentLang() === 'en' ? 'follow-up tasks' : 'tareas de seguimiento')}</small></article>
+          </div>
+          <div class="b2b-section-head"><h2>${html(currentLang() === 'en' ? 'Today' : 'Eventos de hoy')}</h2></div>
+          ${today.length ? `<div class="b2b-grid">${today.map(calendarEventCard).join('')}</div>` : `<div class="pm-empty-note">${html(currentLang() === 'en' ? 'No events today.' : 'No hay eventos para hoy.')}</div>`}
+          <div class="b2b-section-head"><h2>${html(currentLang() === 'en' ? 'Next 7 days' : 'Próximos 7 días')}</h2></div>
+          ${nextWeek.length ? `<div class="b2b-grid">${nextWeek.map(calendarEventCard).join('')}</div>` : `<div class="pm-empty-note">${html(currentLang() === 'en' ? 'No upcoming events in the next week.' : 'No hay eventos próximos esta semana.')}</div>`}
+          <div class="b2b-section-head"><h2>${html(currentLang() === 'en' ? 'Pending reminders' : 'Recordatorios pendientes')}</h2></div>
+          ${pending.length ? `<div class="b2b-grid">${pending.map(reminderCard).join('')}</div>` : `<div class="pm-empty-note">${html(currentLang() === 'en' ? 'No pending reminders.' : 'No hay recordatorios pendientes.')}</div>`}
+        </div>`;
+    } catch (err) {
+      console.error('[PierceMap calendar] renderCalendar failed.', err);
+      view.innerHTML = `<div class="container">${calendarError()}</div>`;
+    }
+  }
+
+  function calendarEventCard(event) {
+    return `
+      <article class="b2b-card pm-calendar-card">
+        <div class="b2b-card-head">
+          <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg></div>
+          <div class="b2b-card-title">
+            <h3>${html(event.title || calendarTypeLabel(event.type))}</h3>
+            <small>${html(calendarTypeLabel(event.type))} · ${html(formatDateTime(event.start_at))}</small>
+          </div>
+          <span class="b2b-card-status ${event.status === 'cancelled' || event.status === 'missed' ? 'danger' : ''}">${html(calendarStatusLabel(event.status))}</span>
+        </div>
+        <p class="pm-section-subtitle">${html(event.description || (currentLang() === 'en' ? 'No description.' : 'Sin descripción.'))}</p>
+        <div class="b2b-card-meta">
+          <span>${html(clientLabel(event.client_user_id))}</span>
+          <span>${html(visibilityLabel(event.visibility))}</span>
+        </div>
+        <div class="pm-card-actions">
+          <button class="btn btn-primary" type="button" data-pm-event-status="${html(event.id)}" data-status="completed">${html(currentLang() === 'en' ? 'Complete' : 'Completar')}</button>
+          <button class="btn" type="button" data-pm-edit-event="${html(event.id)}">${html(currentLang() === 'en' ? 'Edit' : 'Editar')}</button>
+          <button class="btn" type="button" data-pm-event-status="${html(event.id)}" data-status="cancelled">${html(currentLang() === 'en' ? 'Cancel' : 'Cancelar')}</button>
+          <button class="btn" type="button" data-pm-event-status="${html(event.id)}" data-status="missed">${html(currentLang() === 'en' ? 'Missed' : 'No asistió')}</button>
+        </div>
+      </article>`;
+  }
+
+  function reminderCard(reminder) {
+    return `
+      <article class="b2b-card pm-calendar-card">
+        <div class="b2b-card-head">
+          <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg></div>
+          <div class="b2b-card-title">
+            <h3>${html(reminder.title || calendarTypeLabel('follow_up'))}</h3>
+            <small>${html(reminderTypeLabel(reminder.reminder_type))} · ${html(formatDateTime(reminder.remind_at))}</small>
+          </div>
+          <span class="b2b-card-status">${html(calendarStatusLabel(reminder.status))}</span>
+        </div>
+        <p class="pm-section-subtitle">${html(reminder.message || '')}</p>
+        <div class="b2b-card-meta">
+          <span>${html(clientLabel(reminder.client_user_id))}</span>
+          <span>${html(reminder.setup_id || (currentLang() === 'en' ? 'No setup' : 'Sin setup'))}</span>
+        </div>
+        <div class="pm-card-actions">
+          <button class="btn btn-primary" type="button" data-pm-reminder-status="${html(reminder.id)}" data-status="completed">${html(currentLang() === 'en' ? 'Complete' : 'Completar')}</button>
+          <button class="btn" type="button" data-pm-edit-reminder="${html(reminder.id)}">${html(currentLang() === 'en' ? 'Edit' : 'Editar')}</button>
+          <button class="btn" type="button" data-pm-reminder-status="${html(reminder.id)}" data-status="dismissed">${html(currentLang() === 'en' ? 'Dismiss' : 'Descartar')}</button>
+        </div>
+      </article>`;
+  }
+
+  function eventTypeOptions(selected) {
+    return CALENDAR_EVENT_TYPES.map(type => `<option value="${html(type)}" ${type === selected ? 'selected' : ''}>${html(calendarTypeLabel(type))}</option>`).join('');
+  }
+
+  function clientSelectOptions(selected) {
+    return clientOptions().map(item => `<option value="${html(item.value)}" ${String(item.value) === String(selected || '') ? 'selected' : ''}>${html(item.label)}</option>`).join('');
+  }
+
+  function setupSelectOptions(selected) {
+    const options = [{ value:'', label: currentLang() === 'en' ? 'No setup' : 'Sin setup' }].concat(projectOptions());
+    return options.map(item => `<option value="${html(item.value)}" ${String(item.value) === String(selected || '') ? 'selected' : ''}>${html(item.label)}</option>`).join('');
+  }
+
+  function openEventModal(eventId) {
+    const existing = eventId ? byId(studioEvents(), eventId) : null;
+    const startAt = existing?.start_at || addDays(new Date(), 1).toISOString();
+    const duration = existing?.end_at ? Math.max(15, Math.round((new Date(existing.end_at) - new Date(startAt)) / 60000)) : 60;
+    let modal = document.getElementById('pm-calendar-event-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'pm-calendar-event-modal';
+      modal.className = 'pm-modal';
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+      <div class="pm-modal-card">
+        <h3>${html(existing ? (currentLang() === 'en' ? 'Edit event' : 'Editar evento') : (currentLang() === 'en' ? 'Create event' : 'Crear evento'))}</h3>
+        <p class="hint">${html(currentLang() === 'en' ? 'Internal calendar structure. External calendar sync is prepared for later.' : 'Estructura interna de calendario. La sincronización externa queda preparada para después.')}</p>
+        <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Title' : 'Título')}</label><input data-calendar-field="title" value="${html(existing?.title || '')}" placeholder="${html(currentLang() === 'en' ? 'Review inflammation' : 'Revisar inflamación')}"></div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Type' : 'Tipo')}</label><select data-calendar-field="type">${eventTypeOptions(existing?.type || 'appointment')}</select></div>
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Client' : 'Cliente')}</label><select data-calendar-field="client_user_id">${clientSelectOptions(existing?.client_user_id)}</select></div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-field"><label>Setup</label><select data-calendar-field="setup_id">${setupSelectOptions(existing?.setup_id)}</select></div>
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Visibility' : 'Visibilidad')}</label><select data-calendar-field="visibility">
+            <option value="studio_only" ${existing?.visibility !== 'client_visible' ? 'selected' : ''}>${html(currentLang() === 'en' ? 'Studio only' : 'Solo estudio')}</option>
+            <option value="client_visible" ${existing?.visibility === 'client_visible' ? 'selected' : ''}>${html(currentLang() === 'en' ? 'Visible to client' : 'Visible para cliente')}</option>
+          </select></div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Date' : 'Fecha')}</label><input type="date" data-calendar-field="date" value="${html(localDateValue(startAt))}"></div>
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Time' : 'Hora')}</label><input type="time" data-calendar-field="time" value="${html(localTimeValue(startAt))}"></div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Duration (minutes)' : 'Duración (minutos)')}</label><input type="number" min="0" step="15" data-calendar-field="duration" value="${html(duration)}"></div>
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Status' : 'Estado')}</label><select data-calendar-field="status">${CALENDAR_EVENT_STATUSES.map(status => `<option value="${status}" ${status === (existing?.status || 'scheduled') ? 'selected' : ''}>${html(calendarStatusLabel(status))}</option>`).join('')}</select></div>
+        </div>
+        <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Description' : 'Descripción')}</label><textarea data-calendar-field="description">${html(existing?.description || '')}</textarea></div>
+        <div class="pm-actions"><button class="btn" type="button" data-pm-calendar-close>${html(txt('common.cancel'))}</button><button class="btn btn-primary" type="button" data-pm-save-event="${html(existing?.id || '')}">${html(txt('common.save'))}</button></div>
+      </div>`;
+    modal.classList.add('is-open');
+    modal.onclick = event => { if (event.target === modal) modal.classList.remove('is-open'); };
+    modal.querySelector('[data-pm-calendar-close]')?.addEventListener('click', () => modal.classList.remove('is-open'));
+  }
+
+  function saveEventFromModal(eventId) {
+    const modal = document.getElementById('pm-calendar-event-modal');
+    if (!modal) return;
+    const data = {};
+    modal.querySelectorAll('[data-calendar-field]').forEach(field => { data[field.dataset.calendarField] = field.value; });
+    const start_at = buildDateTime(data.date, data.time);
+    const duration = Math.max(0, Number(data.duration) || 0);
+    const end_at = duration ? new Date(new Date(start_at).getTime() + duration * 60000).toISOString() : null;
+    const list = studioEvents();
+    const existing = eventId ? byId(list, eventId) : null;
+    const event = {
+      id: eventId || 'ev_' + Date.now(),
+      studio_id: existing?.studio_id || activeStudioId(),
+      client_user_id: data.client_user_id || null,
+      piercer_user_id: existing?.piercer_user_id || null,
+      setup_id: data.setup_id || null,
+      title: data.title || calendarTypeLabel(data.type || 'appointment'),
+      type: data.type || 'appointment',
+      description: data.description || '',
+      start_at,
+      end_at,
+      status: data.status || 'scheduled',
+      visibility: data.visibility || 'studio_only',
+      created_by: existing?.created_by || currentUserId(),
+      created_at: existing?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    const next = existing ? list.map(item => item.id === event.id ? event : item) : [event].concat(list);
+    writeStudioEvents(next);
+    modal.classList.remove('is-open');
+    showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Event saved' : 'Evento guardado'));
+    renderCalendar();
+  }
+
+  function openReminderModal(reminderId, seed = {}) {
+    const existing = reminderId ? byId(reminders(), reminderId) : null;
+    const remindAt = existing?.remind_at || seed.remind_at || addDays(new Date(), 14).toISOString();
+    let modal = document.getElementById('pm-calendar-reminder-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'pm-calendar-reminder-modal';
+      modal.className = 'pm-modal';
+      document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+      <div class="pm-modal-card">
+        <h3>${html(existing ? (currentLang() === 'en' ? 'Edit reminder' : 'Editar recordatorio') : (currentLang() === 'en' ? 'Create reminder' : 'Crear recordatorio'))}</h3>
+        <p class="hint">${html(currentLang() === 'en' ? 'Prepared for future push, email, WhatsApp and calendar notifications.' : 'Preparado para futuras notificaciones push, email, WhatsApp y calendario.')}</p>
+        <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Title' : 'Título')}</label><input data-reminder-field="title" value="${html(existing?.title || seed.title || '')}" placeholder="${html(currentLang() === 'en' ? 'Healing follow-up' : 'Seguimiento de cicatrización')}"></div>
+        <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Message' : 'Mensaje')}</label><textarea data-reminder-field="message">${html(existing?.message || seed.message || '')}</textarea></div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Client' : 'Cliente')}</label><select data-reminder-field="client_user_id">${clientSelectOptions(existing?.client_user_id || seed.client_user_id)}</select></div>
+          <div class="pm-field"><label>Setup</label><select data-reminder-field="setup_id">${setupSelectOptions(existing?.setup_id || seed.setup_id)}</select></div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Date' : 'Fecha')}</label><input type="date" data-reminder-field="date" value="${html(localDateValue(remindAt))}"></div>
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Time' : 'Hora')}</label><input type="time" data-reminder-field="time" value="${html(localTimeValue(remindAt))}"></div>
+        </div>
+        <div class="pm-row">
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Type' : 'Tipo')}</label><select data-reminder-field="reminder_type">
+            <option value="internal" ${(existing?.reminder_type || seed.reminder_type) !== 'client' ? 'selected' : ''}>${html(currentLang() === 'en' ? 'Internal' : 'Interno')}</option>
+            <option value="client" ${(existing?.reminder_type || seed.reminder_type) === 'client' ? 'selected' : ''}>${html(currentLang() === 'en' ? 'Client' : 'Cliente')}</option>
+          </select></div>
+          <div class="pm-field"><label>${html(currentLang() === 'en' ? 'Status' : 'Estado')}</label><select data-reminder-field="status">${REMINDER_STATUSES.map(status => `<option value="${status}" ${status === (existing?.status || seed.status || 'pending') ? 'selected' : ''}>${html(calendarStatusLabel(status))}</option>`).join('')}</select></div>
+        </div>
+        <div class="pm-actions"><button class="btn" type="button" data-pm-reminder-close>${html(txt('common.cancel'))}</button><button class="btn btn-primary" type="button" data-pm-save-reminder="${html(existing?.id || '')}">${html(txt('common.save'))}</button></div>
+      </div>`;
+    modal.classList.add('is-open');
+    modal.onclick = event => { if (event.target === modal) modal.classList.remove('is-open'); };
+    modal.querySelector('[data-pm-reminder-close]')?.addEventListener('click', () => modal.classList.remove('is-open'));
+  }
+
+  function saveReminderFromModal(reminderId) {
+    const modal = document.getElementById('pm-calendar-reminder-modal');
+    if (!modal) return;
+    const data = {};
+    modal.querySelectorAll('[data-reminder-field]').forEach(field => { data[field.dataset.reminderField] = field.value; });
+    const list = reminders();
+    const existing = reminderId ? byId(list, reminderId) : null;
+    const reminder = {
+      id: reminderId || 'rem_' + Date.now(),
+      studio_id: existing?.studio_id || activeStudioId(),
+      event_id: existing?.event_id || null,
+      client_user_id: data.client_user_id || null,
+      setup_id: data.setup_id || null,
+      title: data.title || (currentLang() === 'en' ? 'Follow-up reminder' : 'Recordatorio de seguimiento'),
+      message: data.message || '',
+      reminder_type: data.reminder_type || 'internal',
+      remind_at: buildDateTime(data.date, data.time),
+      status: data.status || 'pending',
+      created_at: existing?.created_at || new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    const next = existing ? list.map(item => item.id === reminder.id ? reminder : item) : [reminder].concat(list);
+    writeReminders(next);
+    modal.classList.remove('is-open');
+    showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Reminder saved' : 'Recordatorio guardado'));
+    renderCalendar();
+  }
+
+  function setEventStatus(id, status) {
+    writeStudioEvents(studioEvents().map(event => event.id === id ? { ...event, status, updated_at:new Date().toISOString() } : event));
+    renderCalendar();
+    showInlineMsg('✓ ' + calendarStatusLabel(status));
+  }
+
+  function setReminderStatus(id, status) {
+    writeReminders(reminders().map(reminder => reminder.id === id ? { ...reminder, status, updated_at:new Date().toISOString() } : reminder));
+    renderCalendar();
+    renderProfile();
+    showInlineMsg('✓ ' + calendarStatusLabel(status));
+  }
+
   function renderFavorites() {
     const view = ensureView('favorites');
     const list = favs();
@@ -14343,6 +14793,31 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       </article>`;
   }
 
+  function clientFollowupsBlock() {
+    const followups = clientVisibleFollowups();
+    const items = []
+      .concat(followups.events.map(event => ({ kind:'event', date:event.start_at, title:event.title, meta:`${calendarTypeLabel(event.type)} · ${calendarStatusLabel(event.status)}`, body:event.description || '' })))
+      .concat(followups.reminders.map(reminder => ({ kind:'reminder', date:reminder.remind_at, title:reminder.title, meta:`${reminderTypeLabel(reminder.reminder_type)} · ${calendarStatusLabel(reminder.status)}`, body:reminder.message || '' })))
+      .sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
+    const heading = currentLang() === 'en' ? 'My follow-ups' : 'Mis seguimientos';
+    const empty = currentLang() === 'en'
+      ? 'No visible appointments or care reminders yet. When your studio shares one, it will appear here.'
+      : 'Aún no hay citas o recordatorios visibles. Cuando tu estudio comparta uno, aparecerá aquí.';
+    return `
+      <div class="b2b-section-head"><h2>${html(heading)}</h2></div>
+      ${items.length ? `<div class="b2b-grid">${items.map(item => `
+        <article class="b2b-card pm-client-followup-card">
+          <div class="b2b-card-head">
+            <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M8 7V3M16 7V3"/><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 11h16"/></svg></div>
+            <div class="b2b-card-title"><h3>${html(item.title)}</h3><small>${html(formatDateTime(item.date))}</small></div>
+            <span class="b2b-card-status">${html(item.kind === 'event' ? (currentLang() === 'en' ? 'Event' : 'Evento') : (currentLang() === 'en' ? 'Reminder' : 'Recordatorio'))}</span>
+          </div>
+          <div class="b2b-card-meta"><span>${html(item.meta)}</span></div>
+          <p class="pm-section-subtitle">${html(item.body || (currentLang() === 'en' ? 'No private piercer notes are shown.' : 'No se muestran notas privadas del piercer.'))}</p>
+        </article>`).join('')}</div>` : `<div class="pm-empty-note">${html(empty)}</div>`}
+    `;
+  }
+
   function renderProfile() {
     const view = ensureView('profile-pm');
     const mode = getMode() || 'client';
@@ -14371,6 +14846,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         </div>
         <div class="b2b-section-head"><h2>${html(txt('profile.preReviews'))}</h2></div>
         ${myPreReviews.length ? `<div class="b2b-grid">${myPreReviews.map(preReviewCard).join('')}</div>` : `<div class="pm-empty-note">${html(mode === 'studio' ? txt('preReview.studioEmpty') : txt('preReview.empty'))}</div>`}
+        ${mode === 'client' ? clientFollowupsBlock() : ''}
       </div>`;
   }
 
@@ -14414,6 +14890,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       </div>
       <div class="pm-card-actions">
         <button class="btn btn-primary" type="button" data-pm-save-project ${selected.length ? '' : 'disabled'}>${html(txt('planner.save'))}</button>
+        <button class="btn" type="button" data-pm-create-setup-followup ${selected.length ? '' : 'disabled'}>${html(currentLang() === 'en' ? 'Create follow-up for this setup' : 'Crear seguimiento para este setup')}</button>
         <button class="btn" type="button" data-pm-planner-to-review>${html(txt('planner.toReview'))}</button>
         <button class="btn" type="button" data-pm-clear-planner ${selected.length ? '' : 'disabled'}>${html(txt('planner.clear'))}</button>
       </div>`;
@@ -14441,6 +14918,24 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     }
     showInlineMsg('✓ ' + (currentLang() === 'en' ? 'Project saved' : 'Proyecto guardado'));
     renderPlannerBridge();
+  }
+
+  function openSetupFollowupModal() {
+    const selected = plannerJewelryList();
+    const projects = read(KEYS.projects, []);
+    const setup = projects[0] || null;
+    const title = currentLang() === 'en' ? 'Phase 1 follow-up' : 'Seguimiento Fase 1';
+    const message = currentLang() === 'en'
+      ? 'Suggested review two weeks after saving this setup. Adjust the date if needed.'
+      : 'Revisión sugerida dos semanas después de guardar este setup. Ajusta la fecha si lo necesitas.';
+    openReminderModal(null, {
+      setup_id: setup?.id || selected[0]?.id || '',
+      title,
+      message,
+      reminder_type: 'internal',
+      remind_at: addDays(new Date(), 14).toISOString(),
+      status: 'pending'
+    });
   }
 
   function openPromptModal(opts) {
@@ -14782,6 +15277,66 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
           return;
         }
       }
+      if (event.target.closest('[data-pm-create-event]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        openEventModal();
+        return;
+      }
+      if (event.target.closest('[data-pm-create-reminder]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        openReminderModal();
+        return;
+      }
+      const editEvent = event.target.closest('[data-pm-edit-event]');
+      if (editEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+        openEventModal(editEvent.dataset.pmEditEvent);
+        return;
+      }
+      const eventStatus = event.target.closest('[data-pm-event-status]');
+      if (eventStatus) {
+        event.preventDefault();
+        event.stopPropagation();
+        setEventStatus(eventStatus.dataset.pmEventStatus, eventStatus.dataset.status || 'scheduled');
+        return;
+      }
+      const saveEventBtn = event.target.closest('[data-pm-save-event]');
+      if (saveEventBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        saveEventFromModal(saveEventBtn.dataset.pmSaveEvent || '');
+        return;
+      }
+      const editReminder = event.target.closest('[data-pm-edit-reminder]');
+      if (editReminder) {
+        event.preventDefault();
+        event.stopPropagation();
+        openReminderModal(editReminder.dataset.pmEditReminder);
+        return;
+      }
+      const reminderStatus = event.target.closest('[data-pm-reminder-status]');
+      if (reminderStatus) {
+        event.preventDefault();
+        event.stopPropagation();
+        setReminderStatus(reminderStatus.dataset.pmReminderStatus, reminderStatus.dataset.status || 'pending');
+        return;
+      }
+      const saveReminderBtn = event.target.closest('[data-pm-save-reminder]');
+      if (saveReminderBtn) {
+        event.preventDefault();
+        event.stopPropagation();
+        saveReminderFromModal(saveReminderBtn.dataset.pmSaveReminder || '');
+        return;
+      }
+      if (event.target.closest('[data-pm-create-setup-followup]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        openSetupFollowupModal();
+        return;
+      }
       const openStudio = event.target.closest('[data-open-studio-button], [data-open-studio]');
       if (openStudio && !event.target.closest('[data-pm-favorite]')) {
         event.preventDefault();
@@ -15086,6 +15641,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       seedData();
       if (document.getElementById('view-profile-pm')?.classList.contains('is-active')) renderProfile();
       if (document.getElementById('view-favorites')?.classList.contains('is-active')) renderFavorites();
+      if (document.getElementById('view-calendar')?.classList.contains('is-active')) renderCalendar();
       if (document.getElementById('view-clients')?.classList.contains('is-active')) renderClients();
       if (document.getElementById('view-jewelry')?.classList.contains('is-active')) renderJewelry();
     });
@@ -15111,12 +15667,16 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       clients,
       reviews,
       preReviews,
+      studioEvents,
+      reminders,
       favorites: favs,
       toggleFavorite,
       addJewelryToPlanner,
       openPreReviewModal,
       upsertPreReview,
-      saveProject
+      saveProject,
+      openEventModal,
+      openReminderModal
     };
     syncFlow();
     console.info('[PierceMap B2B stabilizer] ready · controlled mode/nav/views active');
