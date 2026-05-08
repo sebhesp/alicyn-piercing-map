@@ -16175,7 +16175,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (!actions) return;
     const existing = actions.querySelector('[data-pm-replay-onboarding]');
     if (existing) {
-      existing.textContent = copy('Ver tutorial otra vez', 'View tutorial again');
+      const nextLabel = copy('Ver tutorial otra vez', 'View tutorial again');
+      if (existing.textContent !== nextLabel) existing.textContent = nextLabel;
       return;
     }
     const button = document.createElement('button');
@@ -16804,25 +16805,54 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function renderCodeStep() {
     return `
       <div class="pm-ecosystem-step" data-ecosystem-step="code">
-        <h2>${html(t('Código de estudio', 'Studio code'))}</h2>
-        <p>${html(t('Escribe el código, escanea el QR o abre un link como piercemap.com/s/anoomalia.', 'Enter the code, scan the QR or open a link like piercemap.com/s/anoomalia.'))}</p>
+        <h2>${html(t('Ingresa el código de tu estudio', 'Enter your studio code'))}</h2>
+        <p>${html(t('Tu estudio puede compartirte un código, QR o link personalizado.', 'Your studio can share a code, QR or personalized link with you.'))}</p>
         <div class="pm-studio-code-box">
           <div class="pm-studio-code-row">
             <input data-pm-studio-code-input value="" placeholder="ANOOMALIA" autocomplete="off" inputmode="text" />
-            <button class="btn btn-primary" type="button" data-pm-studio-code-submit>${html(t('Entrar', 'Enter'))}</button>
+            <button class="btn btn-primary" type="button" data-pm-studio-code-submit>${html(t('Entrar al estudio', 'Enter studio'))}</button>
           </div>
           <div class="pm-code-hints">${PRIVATE_STUDIOS.map(studio => `<button type="button" data-pm-code-hint="${html(studio.code)}">${html(studio.code)}</button>`).join('')}</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
             <button class="btn" type="button" data-pm-scan-qr>${html(t('Escanear QR', 'Scan QR'))}</button>
-            <button class="btn" type="button" data-pm-ecosystem-back-client>${html(t('Atrás', 'Back'))}</button>
+            <button class="btn" type="button" data-pm-ecosystem-back-client>${html(t('Volver', 'Back'))}</button>
           </div>
         </div>
       </div>`;
   }
 
+  function renderStudioCodeScreen() {
+    try {
+      localStorage.setItem(KEYS.role, 'client');
+      localStorage.setItem(KEYS.clientMode, 'hasStudio');
+      const card = document.querySelector('.pm-mode-picker .pm-mode-card');
+      if (!card) {
+        console.error('[PierceMap ecosystem] Cannot render studio code screen: mode card not found.');
+        showToast(t('No se pudo abrir la pantalla de código. Intenta de nuevo.', 'Could not open the code screen. Try again.'));
+        return false;
+      }
+      // Bugfix: if the client chooses "already have a studio" but no studioContext
+      // exists yet, render the code form immediately instead of trying to load an
+      // incomplete private ecosystem state.
+      card.dataset.ecosystem = 'true';
+      card.innerHTML = renderCodeStep();
+      setTimeout(() => document.querySelector('[data-pm-studio-code-input]')?.focus(), 40);
+      return true;
+    } catch (err) {
+      console.error('[PierceMap ecosystem] Failed to render studio code screen.', err);
+      showToast(t('Ocurrió un error abriendo el código de estudio.', 'There was an error opening the studio code screen.'));
+      return false;
+    }
+  }
+
   function enhanceModePicker(step = 'role') {
     const card = document.querySelector('.pm-mode-picker .pm-mode-card');
-    if (!card || card.dataset.ecosystem === 'true') return;
+    if (!card) return;
+    if (localStorage.getItem(KEYS.clientMode) === 'hasStudio' && !currentStudioContext()) {
+      if (!card.querySelector('[data-ecosystem-step="code"]')) renderStudioCodeScreen();
+      return;
+    }
+    if (card.dataset.ecosystem === 'true') return;
     card.dataset.ecosystem = 'true';
     card.innerHTML = step === 'client-path' ? renderClientPathStep() : step === 'code' ? renderCodeStep() : renderRoleStep();
   }
@@ -16833,7 +16863,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     document.body.classList.toggle('has-private-studio-context', hasPrivate);
     if (context?.accent) document.documentElement.style.setProperty('--studio-accent', context.accent);
     document.querySelectorAll('[data-pm-view="discover"] span, [data-view="discover"] .bn-label').forEach(label => {
-      label.textContent = hasPrivate ? t('Mi estudio', 'My studio') : t('Estudios', 'Studios');
+      const nextLabel = hasPrivate ? t('Mi estudio', 'My studio') : t('Estudios', 'Studios');
+      if (label.textContent !== nextLabel) label.textContent = nextLabel;
     });
   }
 
@@ -17096,6 +17127,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (event.target.closest('[data-pm-ecosystem-back]')) {
       event.preventDefault();
       event.stopPropagation();
+      localStorage.removeItem(KEYS.clientMode);
       const card = document.querySelector('.pm-mode-picker .pm-mode-card');
       if (card) card.innerHTML = renderRoleStep();
       return;
@@ -17103,6 +17135,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     if (event.target.closest('[data-pm-ecosystem-back-client]')) {
       event.preventDefault();
       event.stopPropagation();
+      localStorage.removeItem(KEYS.clientMode);
       const card = document.querySelector('.pm-mode-picker .pm-mode-card');
       if (card) card.innerHTML = renderClientPathStep();
       return;
@@ -17118,9 +17151,12 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       event.preventDefault();
       event.stopPropagation();
       haptic();
-      const card = document.querySelector('.pm-mode-picker .pm-mode-card');
-      if (card) card.innerHTML = renderCodeStep();
-      setTimeout(() => document.querySelector('[data-pm-studio-code-input]')?.focus(), 40);
+      try {
+        renderStudioCodeScreen();
+      } catch (err) {
+        console.error('[PierceMap ecosystem] Navigation failed after hasStudio click.', err);
+        showToast(t('No se pudo abrir el formulario de código.', 'Could not open the code form.'));
+      }
       return;
     }
     if (event.target.closest('[data-pm-studio-code-submit]')) {
