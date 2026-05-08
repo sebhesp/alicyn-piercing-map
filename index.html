@@ -6198,6 +6198,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     }
     const selected = state.planner.selected.has(point.id);
     const status = plannerPointStatus(point);
+    const detectedX = state.planner.side === 'right' ? visualXFromBase(point.x) : point.x;
+    const detected = window.PierceMapEarDetection?.detectPiercingZone?.(detectedX, point.y, state.planner.side);
     const warnings = [
       ...(piercing.alertas || []).slice(0, 2),
       point.note
@@ -6206,6 +6208,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       <button class="pm-ear-detail-close" type="button" data-ear-detail-close aria-label="Cerrar">&times;</button>
       <div class="pm-ear-detail-status is-${status}">${escapePlannerHtml(status === 'selected' ? 'Seleccionado' : status === 'warning' ? 'Precaución' : status === 'danger' ? 'No recomendado sin evaluación' : status === 'disabled' ? 'Desactivado' : 'Disponible')}</div>
       <h3>${escapePlannerHtml(piercing.nombre || point.label)}</h3>
+      ${detected ? `<div class="pm-ear-detection-pill">Detectado: ${escapePlannerHtml(detected.suggestedPiercing)} · ${Math.round(detected.confidence * 100)}%</div>` : ''}
       <p>${escapePlannerHtml(piercing.descripcion || point.note || 'Punto anatómico del Ear Planner.')}</p>
       <div class="pm-ear-detail-grid">
         <div><span>Dolor estimado</span><div class="pm-pain-dots" aria-label="${Number(piercing.dolor) || Number(point.complexity) || 1} de 10">${plannerPainDots(piercing.dolor || point.complexity)}</div></div>
@@ -6213,6 +6216,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         <div><span>Compatibilidad</span><strong>${escapePlannerHtml(plannerCompatibilityText(piercing))}</strong></div>
         <div><span>Joyería inicial</span><strong>${escapePlannerHtml(piercing.joyeria || 'Labret de titanio implant grade según anatomía.')}</strong></div>
       </div>
+      ${detected && detected.confidence < .72 ? `<div class="pm-ear-caution"><strong>Confianza baja</strong><p>Alternativas: ${detected.alternatives.map(item => escapePlannerHtml(item.suggestedPiercing)).join(', ')}. Puedes editar manualmente antes de guardar.</p></div>` : ''}
       ${warnings.length ? `<div class="pm-ear-caution"><strong>Precauciones</strong><ul>${warnings.map(item => `<li>${escapePlannerHtml(item)}</li>`).join('')}</ul></div>` : ''}
       <button class="btn btn-primary pm-ear-add" type="button" data-ear-add-setup="${escapePlannerHtml(point.id)}">${selected ? 'Quitar del setup' : 'Agregar al setup'}</button>
     `;
@@ -6221,6 +6225,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function toggleEarPointInSetup(id) {
     if (state.planner.selected.has(id)) state.planner.selected.delete(id);
     else state.planner.selected.add(id);
+    window.PierceMapHaptics?.light?.();
+    window.PierceMapEarDetection?.savePoint?.(getEarPoint(id), state.planner.side, state.planner.selected.has(id));
     renderPlanner();
     openEarPointSheet(id);
   }
@@ -15780,7 +15786,9 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function onboardingKey() {
     const user = activeUser();
-    return user?.id ? `${BASE_KEY}:user:${user.id}` : `${BASE_KEY}:guest`;
+    const flow = getOnboardingFlow();
+    const profile = user?.id ? `:user:${user.id}` : '';
+    return `${flow.key}${profile}`;
   }
 
   function completed() {
@@ -15804,7 +15812,59 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     return lang() === 'en' ? en : es;
   }
 
+  function storedRole() {
+    const role = localStorage.getItem('piercemap_user_role') || localStorage.getItem('piercemap_mode');
+    return role === 'studio' ? 'studio' : role === 'client' ? 'client' : '';
+  }
+
+  function storedClientMode() {
+    const mode = localStorage.getItem('piercemap_client_mode');
+    return mode === 'hasStudio' ? 'hasStudio' : 'lookingForStudio';
+  }
+
+  function storedStudioContext() {
+    try {
+      return JSON.parse(localStorage.getItem('piercemap_studio_context') || 'null');
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function studioName(context) {
+    return context?.name || context?.studioName || 'tu estudio';
+  }
+
+  function getOnboardingFlow() {
+    const userRole = storedRole();
+    const clientMode = storedClientMode();
+    const studioContext = storedStudioContext();
+    if (userRole === 'studio') {
+      return {
+        key: 'onboardingCompleted_studio',
+        finalLabel: copy('Configurar mi estudio', 'Set up my studio'),
+        slides: studioOnboardingSlides()
+      };
+    }
+    if (userRole === 'client' && clientMode === 'hasStudio' && studioContext) {
+      const slug = studioContext.slug || studioContext.id || 'studio';
+      return {
+        key: `onboardingCompleted_client_${slug}`,
+        finalLabel: copy(`Entrar a ${studioName(studioContext)}`, `Enter ${studioName(studioContext)}`),
+        slides: clientStudioSlides(studioContext)
+      };
+    }
+    return {
+      key: 'onboardingCompleted_client_looking',
+      finalLabel: copy('Entrar a PierceMap', 'Enter PierceMap'),
+      slides: clientLookingSlides()
+    };
+  }
+
   function slides() {
+    return getOnboardingFlow().slides;
+  }
+
+  function clientLookingSlides() {
     return [
       {
         title: 'Map your anatomy.',
@@ -15816,7 +15876,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         visual: 'map'
       },
       {
-        title: copy('Mapa anatómico', 'Anatomical map'),
+        title: copy('Explora zonas del cuerpo.', 'Explore body areas.'),
         text: copy(
           'Explora zonas como oreja, nariz, labio, ombligo y otras áreas con dolor estimado, cuidados, compatibilidad anatómica y tiempos aproximados.',
           'Explore areas such as ear, nose, lip, navel and more with estimated pain, care, anatomical compatibility and approximate timelines.'
@@ -15825,7 +15885,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         visual: 'nodes'
       },
       {
-        title: 'Ear Planner',
+        title: copy('Diseña tu próximo setup.', 'Design your next setup.'),
         text: copy(
           'Marca puntos sobre una oreja interactiva, combina perforaciones y diseña un setup antes de perforarte.',
           'Mark points on an interactive ear, combine piercings and design a setup before getting pierced.'
@@ -15834,48 +15894,176 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         visual: 'ear'
       },
       {
-        title: copy('Compatibilidad anatómica', 'Anatomical compatibility'),
+        title: copy('Compara estilos y opciones.', 'Compare styles and options.'),
         text: copy(
-          'No todas las anatomías son aptas para todas las perforaciones. PierceMap ayuda a visualizar posibilidades, pero no reemplaza la evaluación profesional.',
-          'Not every anatomy fits every piercing. PierceMap helps visualize possibilities, but it does not replace professional evaluation.'
+          'Usa referencias, zonas y compatibilidad como guía para separar una buena idea de una tendencia poco viable.',
+          'Use references, areas and compatibility as guidance to separate a strong idea from a trend that may not be viable.'
         ),
-        tags: ['Responsible', 'Professional', 'Visual'],
+        tags: ['Styles', 'Options', 'Viability'],
         visual: 'compat'
       },
       {
-        title: copy('Fases de perforación', 'Piercing phases'),
+        title: copy('Encuentra un estudio.', 'Find a studio.'),
         text: copy(
-          'Organiza perforaciones por etapas para evitar saturar el cuerpo y preparar un plan más cómodo de cicatrización.',
-          'Organize piercings by stages to avoid overloading the body and prepare a calmer healing plan.'
+          'Explora perfiles profesionales, especialidades y catálogos para preparar mejor tu consulta.',
+          'Explore professional profiles, specialties and catalogs to prepare your consultation better.'
         ),
-        tags: ['Fase 1', 'Fase 2', 'Fase 3'],
-        visual: 'phases'
-      },
-      {
-        title: copy('Guía de cuidados', 'Care guide'),
-        text: copy(
-          'Revisa cuidados, tiempos aproximados de cicatrización, señales de alerta y errores comunes antes de tomar decisiones.',
-          'Review care, approximate healing timelines, warning signs and common mistakes before making decisions.'
-        ),
-        tags: ['Care', 'Alerts', 'Healing'],
-        visual: 'care'
-      },
-      {
-        title: copy('Para estudios', 'For studios'),
-        text: copy(
-          'Piercers y estudios pueden explicar mejor, guardar configuraciones, crear perfiles de clientes y profesionalizar la consulta.',
-          'Piercers and studios can explain more clearly, save setups, create client profiles and professionalize consultations.'
-        ),
-        tags: ['Studio', 'Clients', 'Catalog'],
+        tags: ['Studios', 'Piercers', 'Catalog'],
         visual: 'studio'
       },
       {
-        title: copy('PierceMap no reemplaza a tu piercer.', 'PierceMap does not replace your piercer.'),
+        title: copy('Guarda tus ideas.', 'Save your ideas.'),
+        text: copy(
+          'Guarda estudios, joyería, setups y notas para encontrarlos rápido cuando estés listo para avanzar.',
+          'Save studios, jewelry, setups and notes so you can find them quickly when you are ready to move forward.'
+        ),
+        tags: ['Favorites', 'Setups', 'Notes'],
+        visual: 'phases'
+      },
+      {
+        title: copy('Consulta siempre con un profesional.', 'Always consult a professional.'),
         text: copy(
           'Esta app es una guía visual y educativa. La anatomía real debe evaluarse presencialmente por un piercer profesional capacitado.',
           'This app is a visual and educational guide. Real anatomy must be evaluated in person by a trained professional piercer.'
         ),
         tags: ['Guidance only', 'In-person evaluation'],
+        visual: 'warning'
+      }
+    ];
+  }
+
+  function clientStudioSlides(context) {
+    const name = studioName(context);
+    return [
+      {
+        title: copy(`Bienvenido a ${name}.`, `Welcome to ${name}.`),
+        text: copy(
+          `Este es tu espacio para explorar ideas, planear tu setup y preparar tu próxima consulta con ${name}.`,
+          `This is your space to explore ideas, plan your setup and prepare your next consultation with ${name}.`
+        ),
+        tags: [name, 'Private space'],
+        visual: 'studio'
+      },
+      {
+        title: copy('Planea con tu estudio.', 'Plan with your studio.'),
+        text: copy(
+          `Tus ideas se guardan dentro del ecosistema de ${name}, para que el equipo pueda revisarlas contigo.`,
+          `Your ideas stay inside ${name}'s ecosystem so the team can review them with you.`
+        ),
+        tags: ['Planner', 'Setup', name],
+        visual: 'ear'
+      },
+      {
+        title: copy('Explora setups recomendados.', 'Explore recommended setups.'),
+        text: copy(
+          `Consulta estilos, zonas y combinaciones sugeridas por ${name}.`,
+          `Browse styles, areas and combinations suggested by ${name}.`
+        ),
+        tags: ['Setups', 'Catalog', 'Curated'],
+        visual: 'nodes'
+      },
+      {
+        title: copy('Prepara tu consulta.', 'Prepare your consultation.'),
+        text: copy(
+          'Marca puntos sobre tu oreja, agrega observaciones y comparte tu setup antes de tu cita.',
+          'Mark points on your ear, add notes and share your setup before your appointment.'
+        ),
+        tags: ['Pre-review', 'Notes'],
+        visual: 'compat'
+      },
+      {
+        title: copy('Cuidados alineados al estudio.', 'Care aligned with the studio.'),
+        text: copy(
+          `Revisa recomendaciones educativas y cuidados generales definidos por ${name}.`,
+          `Review educational recommendations and general care guidance defined by ${name}.`
+        ),
+        tags: ['Care', name],
+        visual: 'care'
+      },
+      {
+        title: copy('Tu privacidad importa.', 'Your privacy matters.'),
+        text: copy(
+          'Tus imágenes y configuraciones se usan únicamente para apoyar tu experiencia dentro del ecosistema del estudio.',
+          'Your images and configurations are used only to support your experience inside the studio ecosystem.'
+        ),
+        tags: ['Private', 'Local-first'],
+        visual: 'map'
+      },
+      {
+        title: copy('PierceMap no reemplaza a tu piercer.', 'PierceMap does not replace your piercer.'),
+        text: copy(
+          `La app es una guía visual. La evaluación final siempre debe hacerla un profesional de ${name}.`,
+          `The app is a visual guide. Final evaluation must always be made by a ${name} professional.`
+        ),
+        tags: ['Professional', 'In-person'],
+        visual: 'warning'
+      }
+    ];
+  }
+
+  function studioOnboardingSlides() {
+    return [
+      {
+        title: copy('Tu estudio, mejor explicado.', 'Your studio, explained better.'),
+        text: copy(
+          'PierceMap te ayuda a visualizar anatomía, explicar opciones y profesionalizar la consulta.',
+          'PierceMap helps you visualize anatomy, explain options and professionalize consultation.'
+        ),
+        tags: ['Consultation', 'Anatomy'],
+        visual: 'studio'
+      },
+      {
+        title: copy('Crea tu ecosistema privado.', 'Create your private ecosystem.'),
+        text: copy(
+          'Invita clientes con código, QR o link personalizado para que entren directo a tu espacio.',
+          'Invite clients with a code, QR or personalized link so they enter directly into your space.'
+        ),
+        tags: ['Code', 'QR', 'Private'],
+        visual: 'map'
+      },
+      {
+        title: copy('Evita mandar clientes a la competencia.', 'Avoid sending clients to competitors.'),
+        text: copy(
+          'Los clientes invitados por tu estudio ven tu ecosistema, no un marketplace abierto.',
+          'Clients invited by your studio see your ecosystem, not an open marketplace.'
+        ),
+        tags: ['Exclusive', 'Studio-first'],
+        visual: 'nodes'
+      },
+      {
+        title: copy('Planea setups con precisión.', 'Plan setups with precision.'),
+        text: copy(
+          'Marca puntos, registra observaciones anatómicas y organiza fases de perforación.',
+          'Mark points, record anatomical notes and organize piercing phases.'
+        ),
+        tags: ['Planner', 'Phases'],
+        visual: 'ear'
+      },
+      {
+        title: copy('Guarda perfiles de clientes.', 'Save client profiles.'),
+        text: copy(
+          'Conserva setups, notas y preferencias para futuras consultas.',
+          'Keep setups, notes and preferences for future consultations.'
+        ),
+        tags: ['Clients', 'CRM'],
+        visual: 'compat'
+      },
+      {
+        title: copy('Comparte links personalizados.', 'Share personalized links.'),
+        text: copy(
+          'Usa enlaces como piercemap.com/s/{studioSlug} para abrir directamente tu espacio.',
+          'Use links like piercemap.com/s/{studioSlug} to open your space directly.'
+        ),
+        tags: ['Deep link', 'Share'],
+        visual: 'phases'
+      },
+      {
+        title: 'Professional culture.',
+        text: copy(
+          'PierceMap es una herramienta educativa y visual. La decisión final siempre depende del piercer.',
+          'PierceMap is an educational and visual tool. The final decision always depends on the piercer.'
+        ),
+        tags: ['Education', 'Professional'],
         visual: 'warning'
       }
     ];
@@ -15912,6 +16100,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
   function render() {
     const data = slides();
+    const flow = getOnboardingFlow();
     const slide = data[index] || data[0];
     const isFirst = index === 0;
     const isLast = index === data.length - 1;
@@ -15932,7 +16121,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         <div class="pm-onboarding-actions">
           <button class="btn" type="button" data-pm-onboarding-back ${isFirst ? 'disabled' : ''}>${escapeHtml(copy('Atrás', 'Back'))}</button>
           <div class="pm-onboarding-progress" aria-hidden="true">${data.map((_, dotIndex) => `<span class="pm-onboarding-dot${dotIndex === index ? ' is-active' : ''}"></span>`).join('')}</div>
-          <button class="btn btn-primary" type="button" data-pm-onboarding-next>${escapeHtml(isFirst ? copy('Empezar', 'Start') : isLast ? copy('Entrar a PierceMap', 'Enter PierceMap') : copy('Siguiente', 'Next'))}</button>
+          <button class="btn btn-primary" type="button" data-pm-onboarding-next>${escapeHtml(isFirst ? copy('Empezar', 'Start') : isLast ? flow.finalLabel : copy('Siguiente', 'Next'))}</button>
         </div>
       </div>
     `;
@@ -15946,7 +16135,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   }
 
   function show(force) {
-    if (!force && (!isSignedIn() || completed())) return;
+    if (!force && (!storedRole() || completed())) return;
     index = 0;
     if (!overlay) {
       overlay = document.createElement('div');
@@ -16022,7 +16211,1025 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     setTimeout(() => show(false), 1000);
   }
 
-  window.PierceMapOnboarding = { show: () => show(true), reset: () => { localStorage.removeItem(onboardingKey()); show(true); } };
+  window.PierceMapOnboarding = {
+    show: (force = true) => show(force),
+    maybeShow: () => show(false),
+    reset: () => { localStorage.removeItem(onboardingKey()); show(true); }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
+
+<style id="piercemap-private-ecosystem-layer">
+  .pm-mode-card[data-ecosystem="true"] {
+    max-width: min(1060px, calc(100vw - 28px));
+  }
+
+  .pm-ecosystem-step {
+    display: grid;
+    gap: 20px;
+  }
+
+  .pm-ecosystem-step h2 {
+    margin-bottom: 4px !important;
+  }
+
+  .pm-ecosystem-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .pm-ecosystem-option {
+    min-height: 210px;
+    text-align: left;
+    border: 1px solid var(--pm-border, #1D2422);
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at 24% 20%, rgba(95,218,168,.12), transparent 28%),
+      rgba(17, 22, 21, .88);
+    color: var(--pm-text, #EEF3F1);
+    padding: 22px;
+    cursor: pointer;
+    transition: transform .2s ease, border-color .2s ease, background .2s ease;
+  }
+
+  .pm-ecosystem-option:hover,
+  .pm-ecosystem-option.is-suggested {
+    transform: translateY(-2px);
+    border-color: rgba(95,218,168,.48);
+    background:
+      radial-gradient(circle at 24% 20%, rgba(95,218,168,.18), transparent 34%),
+      rgba(17, 22, 21, .96);
+  }
+
+  .pm-ecosystem-option small {
+    display: inline-flex;
+    margin-bottom: 18px;
+    color: var(--pm-mint, #5FDAA8);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .pm-ecosystem-option h3 {
+    margin: 0 0 10px;
+    font-size: clamp(24px, 4vw, 40px);
+    line-height: .98;
+  }
+
+  .pm-ecosystem-option p {
+    margin: 0;
+    color: var(--pm-muted, #93A19B);
+    font-size: 14px;
+  }
+
+  .pm-studio-code-box {
+    border: 1px solid rgba(95,218,168,.22);
+    border-radius: 26px;
+    background: rgba(10,13,12,.58);
+    padding: 18px;
+  }
+
+  .pm-studio-code-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+  }
+
+  .pm-studio-code-row input {
+    min-height: 54px;
+    border-radius: 18px;
+    border: 1px solid var(--pm-border, #1D2422);
+    background: #050706;
+    color: var(--pm-text, #EEF3F1);
+    padding: 0 16px;
+    font: inherit;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .pm-code-hints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .pm-code-hints button {
+    border: 1px solid rgba(95,218,168,.22);
+    border-radius: 999px;
+    background: rgba(95,218,168,.08);
+    color: var(--pm-mint, #5FDAA8);
+    min-height: 38px;
+    padding: 0 12px;
+    cursor: pointer;
+  }
+
+  .pm-studio-space {
+    --context-accent: var(--studio-accent, #5FDAA8);
+  }
+
+  .pm-studio-space .b2b-hero {
+    background:
+      radial-gradient(circle at 18% 12%, color-mix(in srgb, var(--context-accent) 22%, transparent), transparent 34%),
+      rgba(17,22,21,.86);
+    border-color: color-mix(in srgb, var(--context-accent) 30%, #1D2422);
+  }
+
+  .pm-studio-lockup {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .pm-studio-logo {
+    width: 62px;
+    height: 62px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--context-accent) 18%, #050706);
+    border: 1px solid color-mix(in srgb, var(--context-accent) 36%, #1D2422);
+    color: var(--context-accent);
+    font-weight: 900;
+    letter-spacing: .08em;
+  }
+
+  .pm-private-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--context-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--context-accent) 32%, #1D2422);
+    color: var(--context-accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+  }
+
+  .pm-context-card {
+    border: 1px solid var(--pm-border, #1D2422);
+    border-radius: 22px;
+    background: rgba(17,22,21,.78);
+    padding: 18px;
+  }
+
+  .pm-context-card h3 {
+    margin: 0 0 8px;
+    color: var(--pm-text, #EEF3F1);
+  }
+
+  .pm-context-card p,
+  .pm-context-card small {
+    color: var(--pm-muted, #93A19B);
+  }
+
+  .pm-ear-detection-pill {
+    display: inline-flex;
+    width: fit-content;
+    margin: 0 0 8px;
+    min-height: 30px;
+    align-items: center;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(95,218,168,.24);
+    background: rgba(95,218,168,.09);
+    color: var(--pm-mint, #5FDAA8);
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .pm-ear-calibration-panel {
+    position: fixed;
+    inset: auto 14px calc(88px + env(safe-area-inset-bottom)) auto;
+    z-index: 630;
+    width: min(360px, calc(100vw - 28px));
+    border: 1px solid rgba(95,218,168,.24);
+    border-radius: 22px;
+    background: rgba(10,13,12,.96);
+    color: var(--pm-text, #EEF3F1);
+    padding: 16px;
+    box-shadow: 0 26px 80px rgba(0,0,0,.52);
+    display: none;
+  }
+
+  .pm-ear-calibration-panel.is-open {
+    display: block;
+  }
+
+  .pm-ear-calibration-panel h3 {
+    margin: 0 0 6px;
+  }
+
+  .pm-ear-calibration-panel p {
+    margin: 0 0 12px;
+    color: var(--pm-muted, #93A19B);
+    font-size: 13px;
+  }
+
+  .pm-calibration-steps {
+    display: grid;
+    gap: 6px;
+    margin: 12px 0;
+  }
+
+  .pm-calibration-step {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 10px;
+    border: 1px solid var(--pm-border, #1D2422);
+    border-radius: 12px;
+    color: var(--pm-muted, #93A19B);
+  }
+
+  .pm-calibration-step.is-active {
+    border-color: rgba(95,218,168,.5);
+    color: var(--pm-mint, #5FDAA8);
+  }
+
+  .pm-calibration-step.is-done {
+    color: var(--pm-text, #EEF3F1);
+  }
+
+  @media (max-width: 720px) {
+    .pm-ecosystem-grid {
+      grid-template-columns: 1fr;
+    }
+    .pm-studio-code-row {
+      grid-template-columns: 1fr;
+    }
+    .pm-ear-calibration-panel {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      border-radius: 24px 24px 0 0;
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 0;
+      padding-bottom: calc(18px + env(safe-area-inset-bottom));
+    }
+  }
+</style>
+
+<script id="piercemap-private-ecosystem-and-ear-detection">
+(function () {
+  'use strict';
+  if (window.__PierceMapPrivateEcosystem__) return;
+  window.__PierceMapPrivateEcosystem__ = true;
+
+  const PRIVATE_STUDIOS = [
+    {
+      id: 'anoomalia',
+      slug: 'anoomalia',
+      code: 'ANOOMALIA',
+      name: 'Anoomalia Studio',
+      logo: 'AN',
+      accent: '#5FDAA8',
+      description: 'Ecosistema privado para consulta, setups curados, revisión previa y seguimiento educativo.',
+      links: { instagram: '@anoomalia', booking: 'https://piercemap.com/s/anoomalia' },
+      piercers: ['Ana M.', 'Noel R.'],
+      recommendedSetups: ['Minimal helix stack', 'Conch + lobe balance', 'Soft nostril curation'],
+      careGuide: 'Limpieza con suero fisiológico, cero manipulación y seguimiento presencial si aparece dolor progresivo.',
+      jewelry: [
+        { id:'ano_labret_mint', name:'Titanium labret · mint top', material:'Titanio', area:'Ear', status:'available' },
+        { id:'ano_conch_orbit', name:'Conch orbit stud', material:'Titanio', area:'Conch', status:'on_order' }
+      ]
+    },
+    {
+      id: 'void',
+      slug: 'void',
+      code: 'VOID',
+      name: 'VOID Piercing Lab',
+      logo: 'VD',
+      accent: '#8FBFC3',
+      description: 'Laboratorio privado para proyectos anatómicos, surface conservador y joyería inicial segura.',
+      links: { instagram: '@voidpiercing', booking: 'https://piercemap.com/s/void' },
+      piercers: ['Vera K.', 'Iker S.'],
+      recommendedSetups: ['Industrial assessment', 'Surface consult', 'Septum alignment'],
+      careGuide: 'Evaluación presencial obligatoria para surface, industrial y zonas con alta movilidad.',
+      jewelry: [
+        { id:'void_barbell', name:'Implant grade barbell', material:'Titanio', area:'Industrial', status:'available' },
+        { id:'void_clicker', name:'Soft edge clicker', material:'Titanio', area:'Septum', status:'available' }
+      ]
+    },
+    {
+      id: 'nox',
+      slug: 'nox',
+      code: 'NOX',
+      name: 'NOX Piercing House',
+      logo: 'NX',
+      accent: '#F4B860',
+      description: 'Estudio boutique enfocado en ear curation, oro 14k y citas con planeación por fases.',
+      links: { instagram: '@noxpiercing', booking: 'https://piercemap.com/s/nox' },
+      piercers: ['Nadia O.', 'Omar X.'],
+      recommendedSetups: ['Gold lobe ladder', 'Flat constellation', 'Daith + conch care plan'],
+      careGuide: 'Evitar dormir sobre cartílago reciente y planear máximo dos o tres perforaciones por fase.',
+      jewelry: [
+        { id:'nox_gold_flat', name:'14k flat cluster', material:'Oro 14k', area:'Flat', status:'on_order' },
+        { id:'nox_lobe_stack', name:'Gold lobe stack stud', material:'Oro 14k', area:'Lobe', status:'available' }
+      ]
+    },
+    {
+      id: 'aura',
+      slug: 'aura',
+      code: 'AURA',
+      name: 'AURA Body Studio',
+      logo: 'AU',
+      accent: '#5FDAA8',
+      description: 'Espacio privado de piercing responsable con recomendaciones educativas y revisión previa.',
+      links: { instagram: '@aurabodystudio', booking: 'https://piercemap.com/s/aura' },
+      piercers: ['Aura Team'],
+      recommendedSetups: ['Clean nostril', 'Upper lobe pair', 'Curated ear intro'],
+      careGuide: 'La app prepara la cita; la decisión final se toma presencialmente con el piercer.',
+      jewelry: [
+        { id:'aura_nostril', name:'Nostril titanium stud', material:'Titanio', area:'Nose', status:'available' },
+        { id:'aura_upper_lobe', name:'Upper lobe micro top', material:'Titanio', area:'Upper Lobe', status:'available' }
+      ]
+    }
+  ];
+
+  const KEYS = {
+    role: 'piercemap_user_role',
+    mode: 'piercemap_mode',
+    clientMode: 'piercemap_client_mode',
+    studioContext: 'piercemap_studio_context',
+    connectedStudio: 'piercemap_connected_studio',
+    jewelry: 'piercemap_jewelry',
+    landmarks: 'piercemap_ear_landmarks_v1',
+    detectedPoints: 'piercemap_ear_detected_points'
+  };
+
+  function lang() {
+    const saved = localStorage.getItem('piercemap_language') || localStorage.getItem('alicyn_lang');
+    return saved === 'en' ? 'en' : 'es';
+  }
+
+  function t(es, en) {
+    return lang() === 'en' ? en : es;
+  }
+
+  function html(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
+  }
+
+  function normalize(value) {
+    return String(value || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9_-]/g, '');
+  }
+
+  function readJson(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw == null ? fallback : JSON.parse(raw);
+    } catch (err) {
+      return fallback;
+    }
+  }
+
+  function writeJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function authUserId() {
+    return window.AlicynSupabase?.getUser?.()?.id || window.alicynAuth?.user?.id || '';
+  }
+
+  function scopedKey(key) {
+    const userId = authUserId();
+    return userId ? `${key}:user:${userId}` : key;
+  }
+
+  function readScopedJson(key, fallback = null) {
+    return readJson(scopedKey(key), readJson(key, fallback));
+  }
+
+  function writeScopedJson(key, value) {
+    writeJson(key, value);
+    const userKey = scopedKey(key);
+    if (userKey !== key) writeJson(userKey, value);
+  }
+
+  function studioBy(value) {
+    const normalized = normalize(value);
+    const upper = String(value || '').trim().toUpperCase();
+    return PRIVATE_STUDIOS.find(studio =>
+      studio.slug === normalized || studio.id === normalized || studio.code === upper
+    ) || null;
+  }
+
+  function resolveStudioContext(input) {
+    const source = String(input || window.location.href);
+    const nativeMatch = source.match(/piercemap:\/\/studio\/([a-z0-9_-]+)/i);
+    if (nativeMatch && studioBy(nativeMatch[1])) return studioBy(nativeMatch[1]);
+    if (input) return studioBy(source);
+    const params = new URLSearchParams(window.location.search);
+    const fromQuery = params.get('studio') || params.get('s') || params.get('code') || params.get('deep_link');
+    if (fromQuery && studioBy(fromQuery)) return studioBy(fromQuery);
+    const nested = fromQuery ? resolveStudioContext(fromQuery) : null;
+    if (nested) return nested;
+    const hash = window.location.hash.match(/studio\/([a-z0-9_-]+)/i);
+    if (hash && studioBy(hash[1])) return studioBy(hash[1]);
+    const parts = window.location.pathname.split('/').filter(Boolean);
+    const sIndex = parts.findIndex(part => part.toLowerCase() === 's');
+    if (sIndex >= 0 && parts[sIndex + 1] && studioBy(parts[sIndex + 1])) return studioBy(parts[sIndex + 1]);
+    return readJson(KEYS.studioContext, null);
+  }
+
+  function currentStudioContext() {
+    return readJson(KEYS.studioContext, null);
+  }
+
+  function writeStudioContext(studio) {
+    const context = {
+      id: studio.id,
+      slug: studio.slug,
+      code: studio.code,
+      name: studio.name,
+      logo: studio.logo,
+      accent: studio.accent,
+      description: studio.description,
+      links: studio.links,
+      piercers: studio.piercers,
+      recommendedSetups: studio.recommendedSetups,
+      careGuide: studio.careGuide,
+      jewelry: studio.jewelry,
+      saved_at: new Date().toISOString()
+    };
+    writeJson(KEYS.studioContext, context);
+    writeScopedJson(KEYS.connectedStudio, context.id);
+    document.documentElement.style.setProperty('--studio-accent', context.accent || '#5FDAA8');
+    document.body.classList.add('has-private-studio-context');
+    return context;
+  }
+
+  function clearStudioContext() {
+    localStorage.removeItem(KEYS.studioContext);
+    localStorage.removeItem(KEYS.connectedStudio);
+    const scoped = scopedKey(KEYS.connectedStudio);
+    if (scoped !== KEYS.connectedStudio) localStorage.removeItem(scoped);
+    document.body.classList.remove('has-private-studio-context');
+    document.documentElement.style.removeProperty('--studio-accent');
+  }
+
+  function showToast(message) {
+    if (typeof window.showToast === 'function') window.showToast(message);
+    else {
+      let div = document.getElementById('pm-inline-toast');
+      if (!div) {
+        div = document.createElement('div');
+        div.id = 'pm-inline-toast';
+        div.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:7000;background:#111615;color:#EEF3F1;border:1px solid #5FDAA8;border-radius:999px;padding:10px 16px;font-weight:700';
+        document.body.appendChild(div);
+      }
+      div.textContent = message;
+      clearTimeout(div._t);
+      div._t = setTimeout(() => div.remove(), 2200);
+    }
+  }
+
+  function haptic(style = 'light') {
+    try {
+      if (navigator.vibrate) navigator.vibrate(style === 'strong' ? 18 : 8);
+      window.webkit?.messageHandlers?.piercemapHaptic?.postMessage?.(style);
+    } catch (err) {}
+  }
+
+  function mergePrivateJewelry(studio) {
+    const existing = readScopedJson(KEYS.jewelry, []);
+    const list = Array.isArray(existing) ? existing : [];
+    const map = new Map(list.map(item => [item.id, item]));
+    (studio.jewelry || []).forEach(item => {
+      map.set(item.id, {
+        ...item,
+        studio_id: studio.id,
+        compatible_area: item.area,
+        color: item.color || 'Titanio',
+        type: item.type || 'Labret',
+        price: item.price || '',
+        image_url: item.image_url || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
+    });
+    writeScopedJson(KEYS.jewelry, Array.from(map.values()));
+  }
+
+  function activateStudioContext(studio, options = {}) {
+    const context = writeStudioContext(studio);
+    mergePrivateJewelry(studio);
+    localStorage.setItem(KEYS.role, 'client');
+    localStorage.setItem(KEYS.clientMode, 'hasStudio');
+    writeJson(KEYS.mode, 'client');
+    window.PierceMapB2B?.setMode?.('client', { view: 'discover', showFirst: true });
+    setTimeout(() => {
+      renderPrivateStudioSpace();
+      updatePrivateNav();
+      window.PierceMapOnboarding?.maybeShow?.();
+    }, 80);
+    if (!options.silent) showToast(t(`Ecosistema de ${context.name} activo`, `${context.name} ecosystem active`));
+  }
+
+  function enterLookingMode() {
+    clearStudioContext();
+    localStorage.setItem(KEYS.role, 'client');
+    localStorage.setItem(KEYS.clientMode, 'lookingForStudio');
+    writeJson(KEYS.mode, 'client');
+    window.PierceMapB2B?.setMode?.('client', { view: 'discover', showFirst: true });
+    setTimeout(() => window.PierceMapOnboarding?.maybeShow?.(), 90);
+  }
+
+  function enterStudioMode() {
+    localStorage.setItem(KEYS.role, 'studio');
+    localStorage.removeItem(KEYS.clientMode);
+    writeJson(KEYS.mode, 'studio');
+    window.PierceMapB2B?.setMode?.('studio', { view: 'studio', showFirst: true });
+    setTimeout(() => window.PierceMapOnboarding?.maybeShow?.(), 90);
+  }
+
+  function renderRoleStep() {
+    const lastRole = localStorage.getItem(KEYS.role);
+    return `
+      <div class="pm-ecosystem-step" data-ecosystem-step="role">
+        <h2>${html(t('¿Cómo quieres usar PierceMap?', 'How do you want to use PierceMap?'))}</h2>
+        <p>${html(t('Elige el espacio de trabajo para esta sesión.', 'Choose the workspace for this session.'))}</p>
+        <div class="pm-ecosystem-grid">
+          <button class="pm-ecosystem-option ${lastRole === 'client' ? 'is-suggested' : ''}" type="button" data-pm-ecosystem-role="client">
+            <small>${html(t('Cliente', 'Client'))}</small>
+            <h3>${html(t('Soy cliente', 'I am a client'))}</h3>
+            <p>${html(t('Explora estudios, entra al ecosistema privado de tu estudio o planea tu próximo setup.', 'Explore studios, enter your studio private ecosystem or plan your next setup.'))}</p>
+          </button>
+          <button class="pm-ecosystem-option ${lastRole === 'studio' ? 'is-suggested' : ''}" type="button" data-pm-ecosystem-role="studio">
+            <small>Studio</small>
+            <h3>${html(t('Soy piercer / estudio', 'I am a piercer / studio'))}</h3>
+            <p>${html(t('Gestiona clientes, catálogo, revisiones previas y setups dentro de tu ecosistema.', 'Manage clients, catalog, pre-reviews and setups inside your ecosystem.'))}</p>
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function renderClientPathStep() {
+    return `
+      <div class="pm-ecosystem-step" data-ecosystem-step="client-path">
+        <h2>${html(t('¿Ya tienes estudio?', 'Do you already have a studio?'))}</h2>
+        <p>${html(t('Puedes entrar a un ecosistema privado por código o buscar un estudio en PierceMap.', 'You can enter a private ecosystem by code or search for a studio on PierceMap.'))}</p>
+        <div class="pm-ecosystem-grid">
+          <button class="pm-ecosystem-option" type="button" data-pm-client-path="hasStudio">
+            <small>${html(t('Código / QR', 'Code / QR'))}</small>
+            <h3>${html(t('Sí, ya tengo estudio', 'Yes, I have a studio'))}</h3>
+            <p>${html(t('Entra directo al espacio de tu estudio. No verás competencia ni marketplace abierto.', 'Enter your studio space directly. You will not see competitors or an open marketplace.'))}</p>
+          </button>
+          <button class="pm-ecosystem-option" type="button" data-pm-client-path="lookingForStudio">
+            <small>Discover</small>
+            <h3>${html(t('Estoy buscando estudio', 'I am looking for a studio'))}</h3>
+            <p>${html(t('Explora estudios, filtros y perfiles profesionales antes de elegir.', 'Explore studios, filters and professional profiles before choosing.'))}</p>
+          </button>
+        </div>
+        <button class="btn" type="button" data-pm-ecosystem-back>${html(t('Atrás', 'Back'))}</button>
+      </div>`;
+  }
+
+  function renderCodeStep() {
+    return `
+      <div class="pm-ecosystem-step" data-ecosystem-step="code">
+        <h2>${html(t('Código de estudio', 'Studio code'))}</h2>
+        <p>${html(t('Escribe el código, escanea el QR o abre un link como piercemap.com/s/anoomalia.', 'Enter the code, scan the QR or open a link like piercemap.com/s/anoomalia.'))}</p>
+        <div class="pm-studio-code-box">
+          <div class="pm-studio-code-row">
+            <input data-pm-studio-code-input value="" placeholder="ANOOMALIA" autocomplete="off" inputmode="text" />
+            <button class="btn btn-primary" type="button" data-pm-studio-code-submit>${html(t('Entrar', 'Enter'))}</button>
+          </div>
+          <div class="pm-code-hints">${PRIVATE_STUDIOS.map(studio => `<button type="button" data-pm-code-hint="${html(studio.code)}">${html(studio.code)}</button>`).join('')}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+            <button class="btn" type="button" data-pm-scan-qr>${html(t('Escanear QR', 'Scan QR'))}</button>
+            <button class="btn" type="button" data-pm-ecosystem-back-client>${html(t('Atrás', 'Back'))}</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function enhanceModePicker(step = 'role') {
+    const card = document.querySelector('.pm-mode-picker .pm-mode-card');
+    if (!card || card.dataset.ecosystem === 'true') return;
+    card.dataset.ecosystem = 'true';
+    card.innerHTML = step === 'client-path' ? renderClientPathStep() : step === 'code' ? renderCodeStep() : renderRoleStep();
+  }
+
+  function updatePrivateNav() {
+    const context = currentStudioContext();
+    const hasPrivate = Boolean(context && localStorage.getItem(KEYS.clientMode) === 'hasStudio');
+    document.body.classList.toggle('has-private-studio-context', hasPrivate);
+    if (context?.accent) document.documentElement.style.setProperty('--studio-accent', context.accent);
+    document.querySelectorAll('[data-pm-view="discover"] span, [data-view="discover"] .bn-label').forEach(label => {
+      label.textContent = hasPrivate ? t('Mi estudio', 'My studio') : t('Estudios', 'Studios');
+    });
+  }
+
+  function renderPrivateStudioSpace() {
+    const context = currentStudioContext();
+    if (!context || localStorage.getItem(KEYS.clientMode) !== 'hasStudio') return;
+    const view = document.getElementById('view-discover');
+    if (!view || !view.classList.contains('is-active')) return;
+    const piercers = context.piercers || [];
+    const jewelry = context.jewelry || [];
+    const setups = context.recommendedSetups || [];
+    view.innerHTML = `
+      <div class="container pm-studio-space">
+        <div class="b2b-hero">
+          <div class="pm-studio-lockup">
+            <div class="pm-studio-logo">${html(context.logo || context.name.slice(0, 2))}</div>
+            <div>
+              <div class="pm-private-badge">${html(t('Ecosistema privado', 'Private ecosystem'))}</div>
+              <h1>${html(context.name)}</h1>
+            </div>
+          </div>
+          <p>${html(context.description)}</p>
+          <div class="b2b-hero-actions">
+            <button class="btn btn-primary" type="button" data-pm-view="planner">${html(t('Planear setup', 'Plan setup'))}</button>
+            <button class="btn" type="button" data-pm-new-pre-review>${html(t('Enviar revisión previa', 'Send pre-review'))}</button>
+            <button class="btn" type="button" data-pm-placeholder>${html(t('Agendar', 'Book'))}</button>
+          </div>
+        </div>
+        <div class="b2b-grid">
+          <article class="pm-context-card">
+            <h3>${html(t('Piercers', 'Piercers'))}</h3>
+            ${piercers.map(name => `<p>${html(name)}</p>`).join('') || `<p>${html(t('Equipo pendiente de cargar.', 'Team pending.'))}</p>`}
+          </article>
+          <article class="pm-context-card">
+            <h3>${html(t('Setups recomendados', 'Recommended setups'))}</h3>
+            ${setups.map(item => `<p>${html(item)}</p>`).join('') || `<p>${html(t('Sin setups recomendados todavía.', 'No recommended setups yet.'))}</p>`}
+          </article>
+          <article class="pm-context-card">
+            <h3>${html(t('Cuidados del estudio', 'Studio care guide'))}</h3>
+            <p>${html(context.careGuide || t('Recomendaciones educativas pendientes.', 'Educational recommendations pending.'))}</p>
+          </article>
+          <article class="pm-context-card">
+            <h3>${html(t('Links', 'Links'))}</h3>
+            <p>${html(context.links?.instagram || '')}</p>
+            <p>${html(context.links?.booking || `piercemap.com/s/${context.slug}`)}</p>
+          </article>
+        </div>
+        <div class="b2b-section-head"><h2>${html(t('Joyería destacada', 'Featured jewelry'))}</h2></div>
+        <div class="b2b-grid">
+          ${jewelry.map(item => `
+            <article class="b2b-card">
+              <div class="b2b-card-head">
+                <div class="b2b-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 9l-2 4 8 8 8-8-2-4z"/></svg></div>
+                <div class="b2b-card-title"><h3>${html(item.name)}</h3><small>${html(item.material)} · ${html(item.area)}</small></div>
+                <span class="b2b-card-status">${html(item.status === 'on_order' ? t('Sobre pedido', 'On order') : t('Disponible', 'Available'))}</span>
+              </div>
+              <div class="pm-card-actions">
+                <button class="btn btn-primary" type="button" data-private-jewelry="${html(item.id)}">${html(t('Usar en Planner', 'Use in Planner'))}</button>
+              </div>
+            </article>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  const EAR_ZONE_REGIONS = {
+    left: [
+      { zone:'tragus', suggestedPiercing:'Tragus', x:60, y:51, radius:16, defaultObservation:'Zona frontal del canal auditivo. Revisar volumen y ángulo.' },
+      { zone:'forward_helix', suggestedPiercing:'Forward Helix', x:32, y:23, radius:15, defaultObservation:'Pliegue frontal del helix. Depende del tejido disponible.' },
+      { zone:'helix_superior', suggestedPiercing:'Helix superior', x:40, y:13, radius:15, defaultObservation:'Borde superior del helix. Evitar presión al dormir.' },
+      { zone:'helix', suggestedPiercing:'Helix', x:38, y:28, radius:16, defaultObservation:'Borde externo de cartílago. Planear joyería inicial conservadora.' },
+      { zone:'flat', suggestedPiercing:'Flat', x:47, y:22, radius:14, defaultObservation:'Zona plana superior para tops decorativos.' },
+      { zone:'rook', suggestedPiercing:'Rook', x:47, y:32, radius:13, defaultObservation:'Pliegue interno superior. Requiere anatomía clara.' },
+      { zone:'daith', suggestedPiercing:'Daith', x:51, y:44, radius:14, defaultObservation:'Pliegue interno profundo. Evaluación presencial necesaria.' },
+      { zone:'conch', suggestedPiercing:'Conch', x:53, y:53, radius:18, defaultObservation:'Centro visual de la oreja. Revisar audífonos y presión.' },
+      { zone:'antitragus', suggestedPiercing:'Anti-Tragus', x:53, y:65, radius:13, defaultObservation:'Cartílago sobre el lóbulo. Requiere volumen suficiente.' },
+      { zone:'upper_lobe', suggestedPiercing:'Upper Lobe', x:53, y:73, radius:15, defaultObservation:'Zona superior del lóbulo para stacks.' },
+      { zone:'lobe', suggestedPiercing:'Lobe', x:53, y:82, radius:16, defaultObservation:'Base del setup de oreja.' }
+    ]
+  };
+  EAR_ZONE_REGIONS.right = EAR_ZONE_REGIONS.left.map(region => ({ ...region, x: 100 - region.x }));
+
+  function calibrationLandmarks() {
+    return readJson(KEYS.landmarks, {});
+  }
+
+  function normalizeByLandmarks(x, y, side) {
+    const landmarks = calibrationLandmarks();
+    const top = landmarks.top;
+    const bottom = landmarks.bottom;
+    const helix = landmarks.helix_edge;
+    const tragus = landmarks.tragus;
+    let nx = Number(x);
+    let ny = Number(y);
+    if (top && bottom && Math.abs(bottom.y - top.y) > 10) {
+      ny = 10 + ((ny - top.y) / (bottom.y - top.y)) * 76;
+    }
+    if (helix && tragus && Math.abs(tragus.x - helix.x) > 10) {
+      const minCanonical = side === 'right' ? 40 : 38;
+      const maxCanonical = side === 'right' ? 68 : 60;
+      nx = minCanonical + ((nx - helix.x) / (tragus.x - helix.x)) * (maxCanonical - minCanonical);
+    }
+    return { x: Math.max(0, Math.min(100, nx)), y: Math.max(0, Math.min(100, ny)) };
+  }
+
+  function detectPiercingZone(xPercent, yPercent, earSide = 'left') {
+    const side = earSide === 'right' ? 'right' : 'left';
+    const rawX = side === 'right' ? 100 - Number(xPercent) : Number(xPercent);
+    const rawY = Number(yPercent);
+    const normalized = normalizeByLandmarks(rawX, rawY, 'left');
+    const ranked = EAR_ZONE_REGIONS.left.map(region => {
+      const dist = Math.hypot(normalized.x - region.x, normalized.y - region.y);
+      const confidence = Math.max(.32, Math.min(.96, 1 - (dist / Math.max(region.radius * 2.2, 22))));
+      return { ...region, confidence, distance: dist };
+    }).sort((a, b) => b.confidence - a.confidence);
+    const best = ranked[0];
+    return {
+      zone: best.zone,
+      suggestedPiercing: best.suggestedPiercing,
+      confidence: best.confidence,
+      alternatives: ranked.slice(1, 4).map(item => ({
+        zone: item.zone,
+        suggestedPiercing: item.suggestedPiercing,
+        confidence: item.confidence
+      })),
+      defaultObservation: best.defaultObservation
+    };
+  }
+
+  function saveDetectedPoint(point, side, selected) {
+    if (!point || !selected) return;
+    const detection = detectPiercingZone(point.x, point.y, side);
+    const list = readJson(KEYS.detectedPoints, []);
+    const next = Array.isArray(list) ? list.filter(item => item.id !== point.id) : [];
+    next.push({
+      id: point.id,
+      xPercent: point.x,
+      yPercent: point.y,
+      zone: detection.zone,
+      piercing: detection.suggestedPiercing,
+      confidence: detection.confidence,
+      observation: detection.defaultObservation,
+      phase: 'draft',
+      status: point.enabled === false ? 'disabled' : 'selected',
+      updated_at: new Date().toISOString()
+    });
+    writeJson(KEYS.detectedPoints, next);
+  }
+
+  const CALIBRATION_STEPS = [
+    ['top', 'Parte superior'],
+    ['bottom', 'Parte inferior'],
+    ['tragus', 'Tragus'],
+    ['conch_center', 'Centro concha'],
+    ['helix_edge', 'Borde helix']
+  ];
+  let calibrationIndex = 0;
+  let calibrationActive = false;
+
+  function ensureCalibrationPanel() {
+    let panel = document.getElementById('pm-ear-calibration-panel');
+    if (panel) return panel;
+    panel = document.createElement('div');
+    panel.id = 'pm-ear-calibration-panel';
+    panel.className = 'pm-ear-calibration-panel';
+    document.body.appendChild(panel);
+    panel.addEventListener('click', event => {
+      if (event.target.closest('[data-calibration-close]')) closeCalibration();
+      if (event.target.closest('[data-calibration-reset]')) {
+        localStorage.removeItem(KEYS.landmarks);
+        calibrationIndex = 0;
+        renderCalibrationPanel();
+      }
+    });
+    return panel;
+  }
+
+  function renderCalibrationPanel() {
+    const panel = ensureCalibrationPanel();
+    const landmarks = calibrationLandmarks();
+    const current = CALIBRATION_STEPS[calibrationIndex] || CALIBRATION_STEPS[CALIBRATION_STEPS.length - 1];
+    panel.innerHTML = `
+      <h3>${html(t('Calibrar oreja', 'Calibrate ear'))}</h3>
+      <p>${html(t(`Toca en la imagen: ${current[1]}. Estos landmarks mejoran la detección local.`, `Tap the image: ${current[1]}. These landmarks improve local detection.`))}</p>
+      <div class="pm-calibration-steps">
+        ${CALIBRATION_STEPS.map(([key, label], i) => `<div class="pm-calibration-step ${i === calibrationIndex ? 'is-active' : ''} ${landmarks[key] ? 'is-done' : ''}"><span>${html(label)}</span><span>${landmarks[key] ? `${Math.round(landmarks[key].x)}%, ${Math.round(landmarks[key].y)}%` : '—'}</span></div>`).join('')}
+      </div>
+      <div class="pm-card-actions">
+        <button class="btn" type="button" data-calibration-reset>${html(t('Resetear', 'Reset'))}</button>
+        <button class="btn btn-primary" type="button" data-calibration-close>${html(t('Cerrar', 'Close'))}</button>
+      </div>`;
+  }
+
+  function openCalibration() {
+    calibrationActive = true;
+    calibrationIndex = Math.min(calibrationIndex, CALIBRATION_STEPS.length - 1);
+    ensureCalibrationPanel().classList.add('is-open');
+    document.getElementById('ear-photo')?.classList.add('debug');
+    renderCalibrationPanel();
+  }
+
+  function closeCalibration() {
+    calibrationActive = false;
+    ensureCalibrationPanel().classList.remove('is-open');
+    document.getElementById('ear-photo')?.classList.remove('debug');
+  }
+
+  function captureCalibration(event) {
+    if (!calibrationActive || event.target.closest('.ear-point-btn')) return;
+    const photo = document.getElementById('ear-photo');
+    if (!photo || !photo.contains(event.target)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = photo.getBoundingClientRect();
+    const point = {
+      x: Math.max(0, Math.min(100, ((event.clientX - rect.left) / rect.width) * 100)),
+      y: Math.max(0, Math.min(100, ((event.clientY - rect.top) / rect.height) * 100))
+    };
+    const key = CALIBRATION_STEPS[calibrationIndex]?.[0];
+    const landmarks = calibrationLandmarks();
+    landmarks[key] = point;
+    writeJson(KEYS.landmarks, landmarks);
+    calibrationIndex = Math.min(calibrationIndex + 1, CALIBRATION_STEPS.length - 1);
+    renderCalibrationPanel();
+    showToast(t('Landmark guardado', 'Landmark saved'));
+  }
+
+  function injectPlannerCalibrationButton() {
+    const actions = document.getElementById('btn-clear-plan')?.parentElement;
+    if (!actions || actions.querySelector('[data-open-ear-calibration]')) return;
+    const button = document.createElement('button');
+    button.className = 'btn';
+    button.type = 'button';
+    button.dataset.openEarCalibration = '1';
+    button.textContent = t('Calibrar oreja', 'Calibrate ear');
+    actions.appendChild(button);
+  }
+
+  document.addEventListener('click', event => {
+    const hint = event.target.closest('[data-pm-code-hint]');
+    if (hint) {
+      const input = document.querySelector('[data-pm-studio-code-input]');
+      if (input) input.value = hint.dataset.pmCodeHint;
+      return;
+    }
+    if (event.target.closest('[data-pm-ecosystem-role="client"]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      haptic();
+      const card = document.querySelector('.pm-mode-picker .pm-mode-card');
+      if (card) card.innerHTML = renderClientPathStep();
+      return;
+    }
+    if (event.target.closest('[data-pm-ecosystem-role="studio"]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      haptic();
+      enterStudioMode();
+      return;
+    }
+    if (event.target.closest('[data-pm-ecosystem-back]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      const card = document.querySelector('.pm-mode-picker .pm-mode-card');
+      if (card) card.innerHTML = renderRoleStep();
+      return;
+    }
+    if (event.target.closest('[data-pm-ecosystem-back-client]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      const card = document.querySelector('.pm-mode-picker .pm-mode-card');
+      if (card) card.innerHTML = renderClientPathStep();
+      return;
+    }
+    if (event.target.closest('[data-pm-client-path="lookingForStudio"]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      haptic();
+      enterLookingMode();
+      return;
+    }
+    if (event.target.closest('[data-pm-client-path="hasStudio"]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      haptic();
+      const card = document.querySelector('.pm-mode-picker .pm-mode-card');
+      if (card) card.innerHTML = renderCodeStep();
+      setTimeout(() => document.querySelector('[data-pm-studio-code-input]')?.focus(), 40);
+      return;
+    }
+    if (event.target.closest('[data-pm-studio-code-submit]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      haptic('strong');
+      const input = document.querySelector('[data-pm-studio-code-input]');
+      const studio = studioBy(input?.value);
+      if (!studio) {
+        showToast(t('Código no encontrado. Prueba ANOOMALIA, VOID, NOX o AURA.', 'Code not found. Try ANOOMALIA, VOID, NOX or AURA.'));
+        return;
+      }
+      activateStudioContext(studio);
+      return;
+    }
+    if (event.target.closest('[data-pm-scan-qr]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      showToast(t('Escaneo QR preparado para app nativa.', 'QR scanning is prepared for the native app.'));
+      return;
+    }
+    const privateJewelry = event.target.closest('[data-private-jewelry]');
+    if (privateJewelry) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.PierceMapB2B?.addJewelryToPlanner?.(privateJewelry.dataset.privateJewelry);
+      return;
+    }
+    if (event.target.closest('[data-open-ear-calibration]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      openCalibration();
+      return;
+    }
+  }, true);
+
+  document.addEventListener('click', captureCalibration, true);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Enter' && event.target.matches('[data-pm-studio-code-input]')) {
+      event.preventDefault();
+      document.querySelector('[data-pm-studio-code-submit]')?.click();
+    }
+  });
+
+  const pickerObserver = new MutationObserver(() => {
+    enhanceModePicker();
+    injectPlannerCalibrationButton();
+    updatePrivateNav();
+  });
+
+  function tryDeepLink() {
+    const context = resolveStudioContext();
+    const pathHasStudio = /\/s\/|[?&](studio|s|code)=|#studio\//i.test(window.location.href);
+    if (!context || !pathHasStudio) return;
+    const root = document.documentElement;
+    if (root.classList.contains('alicyn-intro-pending') || root.classList.contains('alicyn-lang-pending')) return;
+    activateStudioContext(context, { silent: true });
+  }
+
+  function init() {
+    pickerObserver.observe(document.body, { childList: true, subtree: true });
+    const existing = resolveStudioContext();
+    if (existing && localStorage.getItem(KEYS.clientMode) === 'hasStudio') {
+      writeStudioContext(existing);
+    }
+    enhanceModePicker();
+    updatePrivateNav();
+    injectPlannerCalibrationButton();
+    tryDeepLink();
+  }
+
+  window.addEventListener('alicyn:intro-finished', () => setTimeout(tryDeepLink, 80));
+  window.addEventListener('alicyn:language-changed', () => {
+    setTimeout(() => {
+      enhanceModePicker();
+      renderPrivateStudioSpace();
+      updatePrivateNav();
+      tryDeepLink();
+    }, 80);
+  });
+  window.addEventListener('piercemap:view-changed', event => {
+    setTimeout(() => {
+      injectPlannerCalibrationButton();
+      updatePrivateNav();
+      if (event.detail?.view === 'discover') renderPrivateStudioSpace();
+    }, 80);
+  });
+
+  window.resolveStudioContext = resolveStudioContext;
+  window.PierceMapStudioContext = {
+    studios: PRIVATE_STUDIOS,
+    resolveStudioContext,
+    activate: activateStudioContext,
+    clear: clearStudioContext,
+    current: currentStudioContext
+  };
+  window.PierceMapSessionContext = {
+    get userRole() { return localStorage.getItem(KEYS.role) || ''; },
+    get clientMode() { return localStorage.getItem(KEYS.clientMode) || ''; },
+    get studioContext() { return currentStudioContext(); }
+  };
+  window.PierceMapHaptics = { light: () => haptic('light'), strong: () => haptic('strong') };
+  window.PierceMapEarDetection = {
+    EAR_ZONE_REGIONS,
+    detectPiercingZone,
+    savePoint: saveDetectedPoint,
+    openCalibration,
+    landmarks: calibrationLandmarks
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
