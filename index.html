@@ -3017,8 +3017,9 @@ const i18n = {
     'design.selectedPoints': 'Puntos seleccionados',
     'design.emptySelected': 'Aún no has seleccionado piercings.',
     'design.healingLoad': 'Carga de cicatrización',
-    'design.export': 'Exportar plan',
-    'design.share': 'Compartir con mi piercer',
+    'design.export': 'Generar plan',
+    'design.share': 'Compartir',
+    'design.saveSetup': 'Guardar setup',
     'design.uploadPhoto': 'Subir foto',
     'design.clear': 'Limpiar',
     'design.disclaimer': 'Esta composición es una guía visual. La viabilidad de cada piercing depende de tu anatomía, historial y el criterio de tu perforador. Nada aquí determina un resultado.',
@@ -3259,8 +3260,9 @@ const i18n = {
     'design.selectedPoints': 'Selected points',
     'design.emptySelected': 'You have not selected piercings yet.',
     'design.healingLoad': 'Healing load',
-    'design.export': 'Export plan',
-    'design.share': 'Share with my piercer',
+    'design.export': 'Generate plan',
+    'design.share': 'Share',
+    'design.saveSetup': 'Save setup',
     'design.uploadPhoto': 'Upload photo',
     'design.clear': 'Clear',
     'design.disclaimer': 'This composition is a visual guide. Each piercing depends on your anatomy, history and your piercer’s criteria. Nothing here determines a result.',
@@ -3802,6 +3804,23 @@ const i18n = {
 <!-- ============================== VIEW: PLANNER ============================== -->
 <section class="view" id="view-planner">
   <div class="container section" style="border-top:0;padding-top:48px">
+    <div class="pm-ear-app-header" aria-label="Ear Planner">
+      <button class="pm-ear-back" type="button" data-pm-view="discover" aria-label="Regresar">
+        <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div>
+        <span class="pm-ear-kicker">PierceMap</span>
+        <h2 id="pm-ear-title">Ear · Left</h2>
+      </div>
+      <div class="pm-ear-header-actions">
+        <button class="pm-ear-icon-btn" id="btn-share-plan-top" type="button" aria-label="Compartir">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.6l6.8-4.2M8.6 13.4l6.8 4.2"/></svg>
+        </button>
+        <button class="pm-ear-icon-btn" id="btn-save-setup" type="button" aria-label="Guardar setup">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+        </button>
+      </div>
+    </div>
     <div class="section-head">
       <div>
         <span class="eyebrow" data-i18n="design.eyebrow">Diseñar</span>
@@ -4082,8 +4101,9 @@ const i18n = {
         <div class="divider"></div>
 
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-primary" id="btn-export-plan" data-i18n="design.export">Exportar plan</button>
-          <button class="btn" id="btn-share-plan" data-i18n="design.share">Compartir con mi piercer</button>
+          <button class="btn btn-primary" id="btn-export-plan" data-i18n="design.export">Generar plan</button>
+          <button class="btn" id="btn-share-plan" data-i18n="design.share">Compartir</button>
+          <button class="btn" id="btn-save-setup-side" type="button" data-i18n="design.saveSetup">Guardar setup</button>
           <button class="btn" type="button" data-design-layer="photo" data-i18n="design.uploadPhoto">Subir foto</button>
           <button class="btn btn-ghost" id="btn-clear-plan" data-i18n="design.clear">Limpiar</button>
         </div>
@@ -5847,10 +5867,8 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
   function exportPlan() {
     const sel = [...state.planner.selected];
     if (!sel.length) { showToast('Selecciona al menos un piercing para exportar.'); return; }
-    const piercings = sel.map(id => AlicynData.byId(id)).filter(Boolean);
-    const p1 = piercings.filter(p => p.dolor <= 3);
-    const p2 = piercings.filter(p => p.dolor === 4 || p.dolor === 5);
-    const p3 = piercings.filter(p => p.dolor >= 6);
+    const piercings = sel.map(id => getPlannerPiercing(id)).filter(Boolean);
+    const [p1, p2, p3] = distributePlannerPhases(piercings);
     const load = AlicynData.getHealingLoad(piercings.length);
     const dateStr = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -5889,18 +5907,18 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
       '',
       AlicynData.ALICYN_DISCLAIMER
     ];
-    downloadText(lines.join('\n'), 'plan-oreja-alicyn.txt');
+    downloadText(lines.join('\n'), 'piercemap-ear-plan.txt');
   }
 
   function sharePlan() {
     const sel = [...state.planner.selected];
     if (!sel.length) { showToast('Selecciona al menos un piercing.'); return; }
-    const text = 'Mi plan de oreja Alicyn: ' + sel.map(id => {
-      const p = AlicynData.byId(id);
+    const text = 'Mi setup de oreja en PierceMap: ' + sel.map(id => {
+      const p = getPlannerPiercing(id);
       return p ? p.nombre : id;
     }).join(', ');
     if (navigator.share) {
-      navigator.share({ title: 'Mi plan Alicyn', text });
+      navigator.share({ title: 'Mi setup PierceMap', text });
     } else if (navigator.clipboard?.writeText) {
       navigator.clipboard.writeText(text).then(() => showToast('Plan copiado al portapapeles.'));
     } else {
@@ -5921,6 +5939,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     selectedId: '',
     drag: null
   };
+  let activePlannerPointId = '';
 
   function hasUrlFlag(name) {
     return new URLSearchParams(window.location.search).get(name) === '1';
@@ -6096,6 +6115,152 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     return 'p3';
   }
 
+  function plannerPointStatus(point) {
+    if (!point || point.enabled === false) return 'disabled';
+    if (state.planner.selected.has(point.id)) return 'selected';
+    const complexity = Number(point.complexity) || 4;
+    if (complexity >= 8) return 'danger';
+    if (complexity >= 6) return 'warning';
+    return 'available';
+  }
+
+  function plannerStatusClass(status) {
+    return status ? ' is-' + status : '';
+  }
+
+  function plannerPainDots(value) {
+    const pain = Math.max(1, Math.min(10, Number(value) || 1));
+    return Array.from({ length: 10 }, (_, index) =>
+      `<span class="${index < pain ? 'is-on' : ''}" aria-hidden="true"></span>`
+    ).join('');
+  }
+
+  function plannerCompatibilityText(piercing) {
+    if (!piercing) return '';
+    if (piercing.compatibilidad && piercing.compatibilidad.length) {
+      return 'Compatible con ' + piercing.compatibilidad.slice(0, 3).join(', ') + '.';
+    }
+    return piercing.recomendacion || 'Requiere evaluación presencial de anatomía, ángulo y tejido disponible.';
+  }
+
+  function distributePlannerPhases(piercings) {
+    const sorted = [...piercings].sort((a, b) => (a.dolor || 0) - (b.dolor || 0));
+    const phases = [[], [], []];
+    sorted.forEach((piercing, index) => {
+      phases[index % phases.length].push(piercing);
+    });
+    return phases;
+  }
+
+  function updateEarPlannerTitle() {
+    const title = document.getElementById('pm-ear-title');
+    if (title) title.textContent = state.planner.side === 'right' ? 'Ear · Right' : 'Ear · Left';
+  }
+
+  function ensureEarDetailSheet() {
+    let sheet = document.getElementById('pm-ear-detail-sheet');
+    if (sheet) return sheet;
+    sheet = document.createElement('aside');
+    sheet.id = 'pm-ear-detail-sheet';
+    sheet.className = 'pm-ear-detail-sheet';
+    sheet.setAttribute('aria-hidden', 'true');
+    const side = document.getElementById('planner-side');
+    if (side) side.insertBefore(sheet, side.firstChild);
+    else (document.getElementById('view-planner') || document.body).appendChild(sheet);
+    return sheet;
+  }
+
+  function closeEarPointSheet() {
+    activePlannerPointId = '';
+    const sheet = document.getElementById('pm-ear-detail-sheet');
+    if (sheet) {
+      sheet.classList.remove('is-open');
+      sheet.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function openEarPointSheet(id) {
+    activePlannerPointId = id;
+    renderEarPointSheet();
+    const sheet = ensureEarDetailSheet();
+    sheet.classList.add('is-open');
+    sheet.setAttribute('aria-hidden', 'false');
+  }
+
+  function renderEarPointSheet() {
+    const sheet = ensureEarDetailSheet();
+    const point = getEarPoint(activePlannerPointId);
+    const piercing = getPlannerPiercing(activePlannerPointId);
+    if (!point || !piercing) {
+      sheet.classList.remove('is-open');
+      sheet.setAttribute('aria-hidden', 'true');
+      return;
+    }
+    const selected = state.planner.selected.has(point.id);
+    const status = plannerPointStatus(point);
+    const warnings = [
+      ...(piercing.alertas || []).slice(0, 2),
+      point.note
+    ].filter(Boolean);
+    sheet.innerHTML = `
+      <button class="pm-ear-detail-close" type="button" data-ear-detail-close aria-label="Cerrar">&times;</button>
+      <div class="pm-ear-detail-status is-${status}">${escapePlannerHtml(status === 'selected' ? 'Seleccionado' : status === 'warning' ? 'Precaución' : status === 'danger' ? 'No recomendado sin evaluación' : status === 'disabled' ? 'Desactivado' : 'Disponible')}</div>
+      <h3>${escapePlannerHtml(piercing.nombre || point.label)}</h3>
+      <p>${escapePlannerHtml(piercing.descripcion || point.note || 'Punto anatómico del Ear Planner.')}</p>
+      <div class="pm-ear-detail-grid">
+        <div><span>Dolor estimado</span><div class="pm-pain-dots" aria-label="${Number(piercing.dolor) || Number(point.complexity) || 1} de 10">${plannerPainDots(piercing.dolor || point.complexity)}</div></div>
+        <div><span>Curación</span><strong>${escapePlannerHtml(piercing.cicatrizacion || point.healing)}</strong></div>
+        <div><span>Compatibilidad</span><strong>${escapePlannerHtml(plannerCompatibilityText(piercing))}</strong></div>
+        <div><span>Joyería inicial</span><strong>${escapePlannerHtml(piercing.joyeria || 'Labret de titanio implant grade según anatomía.')}</strong></div>
+      </div>
+      ${warnings.length ? `<div class="pm-ear-caution"><strong>Precauciones</strong><ul>${warnings.map(item => `<li>${escapePlannerHtml(item)}</li>`).join('')}</ul></div>` : ''}
+      <button class="btn btn-primary pm-ear-add" type="button" data-ear-add-setup="${escapePlannerHtml(point.id)}">${selected ? 'Quitar del setup' : 'Agregar al setup'}</button>
+    `;
+  }
+
+  function toggleEarPointInSetup(id) {
+    if (state.planner.selected.has(id)) state.planner.selected.delete(id);
+    else state.planner.selected.add(id);
+    renderPlanner();
+    openEarPointSheet(id);
+  }
+
+  function plannerProjectsStorageKey() {
+    const user = window.AlicynSupabase?.getUser?.() || window.alicynAuth?.user || null;
+    return user?.id ? `piercemap_projects:user:${user.id}` : 'piercemap_projects';
+  }
+
+  function saveEarSetup() {
+    if (!state.planner.selected.size) {
+      showToast('Selecciona al menos un punto para guardar el setup.');
+      return;
+    }
+    const payload = buildDesignProjectPayload('ear_planner');
+    const key = plannerProjectsStorageKey();
+    let projects = [];
+    try {
+      projects = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!Array.isArray(projects)) projects = [];
+    } catch (err) {
+      projects = [];
+    }
+    const project = {
+      id: 'ear_' + Date.now(),
+      ...payload,
+      title: payload.selected.length + (payload.selected.length === 1 ? ' piercing seleccionado' : ' piercings seleccionados'),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    projects.unshift(project);
+    localStorage.setItem(key, JSON.stringify(projects));
+    const bridge = window.AlicynSupabase;
+    if (bridge?.isSignedIn?.() && bridge?.saveDesignProject) {
+      bridge.saveDesignProject(project).catch(() => {});
+    }
+    window.dispatchEvent(new CustomEvent('piercemap:planner-saved', { detail: { project } }));
+    showToast('Setup guardado.');
+  }
+
   function visualXFromBase(x) {
     return state.planner.side === 'right' ? roundPercent(100 - Number(x)) : roundPercent(x);
   }
@@ -6130,11 +6295,12 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const points = visibleEarPlannerPoints();
     layer.innerHTML = points.map(point => `
       <button type="button"
-        class="ear-point-btn${state.planner.selected.has(point.id) ? ' is-selected' : ''}${point.enabled ? '' : ' is-disabled'}"
+        class="ear-point-btn${state.planner.selected.has(point.id) ? ' is-selected' : ''}${point.enabled ? '' : ' is-disabled'}${plannerStatusClass(plannerPointStatus(point))}"
         data-piercing="${escapePlannerHtml(point.id)}"
+        data-status="${escapePlannerHtml(plannerPointStatus(point))}"
         aria-pressed="${state.planner.selected.has(point.id) ? 'true' : 'false'}"
         aria-label="${escapePlannerHtml(point.label)}">
-        <span>${escapePlannerHtml(point.label)}</span>
+        <span class="ear-point-label">${escapePlannerHtml(point.label)}</span>
         <em class="ear-point-coords">${roundPercent(point.x)}%, ${roundPercent(point.y)}%</em>
       </button>
     `).join('');
@@ -6152,12 +6318,9 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
           selectAdminPoint(id);
           return;
         }
-        if (state.planner.selected.has(id)) {
-          state.planner.selected.delete(id);
-        } else {
-          state.planner.selected.add(id);
-        }
-        renderPlanner();
+        e.preventDefault();
+        e.stopPropagation();
+        openEarPointSheet(id);
       });
     });
 
@@ -6192,15 +6355,29 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
         btn.classList.add('is-active');
         state.planner.side = btn.dataset.side;
         applyEarSide();
+        updateEarPlannerTitle();
       });
     });
 
     document.getElementById('btn-clear-plan')?.addEventListener('click', () => {
       state.planner.selected.clear();
+      closeEarPointSheet();
       renderPlanner();
     });
     document.getElementById('btn-export-plan')?.addEventListener('click', exportPlan);
     document.getElementById('btn-share-plan')?.addEventListener('click', sharePlan);
+    document.getElementById('btn-share-plan-top')?.addEventListener('click', sharePlan);
+    document.getElementById('btn-save-setup')?.addEventListener('click', saveEarSetup);
+    document.getElementById('btn-save-setup-side')?.addEventListener('click', saveEarSetup);
+    ensureEarDetailSheet();
+    document.getElementById('pm-ear-detail-sheet')?.addEventListener('click', event => {
+      if (event.target.closest('[data-ear-detail-close]')) {
+        closeEarPointSheet();
+        return;
+      }
+      const add = event.target.closest('[data-ear-add-setup]');
+      if (add) toggleEarPointInSetup(add.dataset.earAddSetup);
+    });
     document.getElementById('selected-piercings-output')?.addEventListener('click', event => {
       const remove = event.target.closest('[data-remove-piercing]');
       if (!remove) return;
@@ -6244,8 +6421,15 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const piercings = sel.map(id => getPlannerPiercing(id)).filter(Boolean);
 
     document.querySelectorAll('.ear-point-btn').forEach(pt => {
+      const point = getEarPoint(pt.dataset.piercing);
       const selected = state.planner.selected.has(pt.dataset.piercing);
+      const status = plannerPointStatus(point);
       pt.classList.toggle('is-selected', selected);
+      pt.classList.toggle('is-available', status === 'available');
+      pt.classList.toggle('is-warning', status === 'warning');
+      pt.classList.toggle('is-danger', status === 'danger');
+      pt.classList.toggle('is-disabled', status === 'disabled');
+      pt.dataset.status = status;
       pt.setAttribute('aria-pressed', selected ? 'true' : 'false');
       if (selected) pt.dataset.phase = plannerPointPhase(pt.dataset.piercing);
       else delete pt.dataset.phase;
@@ -6260,7 +6444,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const enabledCount = Math.max(enabledEarPlannerPoints().length, 1);
     const pct = Math.min((count / enabledCount) * 100, 100);
     if (fill) fill.style.width = pct + '%';
-    if (cnt) cnt.textContent = count + (count === 1 ? ' piercing' : ' piercings');
+    if (cnt) cnt.textContent = count + (count === 1 ? ' piercing seleccionado' : ' piercings seleccionados');
 
     if (label && fill) {
       if (count === 0) {
@@ -6275,15 +6459,15 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
 
     const output = document.getElementById('phases-output');
     renderSelectedPiercingsSummary(piercings);
+    renderEarPointSheet();
+    updateEarPlannerTitle();
     if (!output) return;
     if (!count) {
       output.innerHTML = `<p style="color:var(--text-mute);font-size:13px;margin:0">${tr('design.emptySelected')}</p>`;
       return;
     }
 
-    const p1 = piercings.filter(p => p.dolor <= 3);
-    const p2 = piercings.filter(p => p.dolor === 4 || p.dolor === 5);
-    const p3 = piercings.filter(p => p.dolor >= 6);
+    const [p1, p2, p3] = distributePlannerPhases(piercings);
 
     const phaseBlock = (phaseLabel, desc, items, color) => {
       if (!items.length) return '';
@@ -6306,7 +6490,7 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     const load = AlicynData.getHealingLoad(count);
     let html = '';
     html += phaseBlock('Fase 1 - Base', AlicynData.PROJECT_PHASES[0].desc, p1, 'var(--accent)');
-    html += phaseBlock('Fase 2 - Construccion', AlicynData.PROJECT_PHASES[1].desc, p2, 'var(--warn)');
+    html += phaseBlock('Fase 2 - Construcción', AlicynData.PROJECT_PHASES[1].desc, p2, 'var(--warn)');
     html += phaseBlock('Fase 3 - Cierre', AlicynData.PROJECT_PHASES[2].desc, p3, 'var(--danger)');
     html += `<div class="disclaimer-box" style="margin-top:8px;font-size:12px">
       <strong style="color:${load.color}">Carga ${load.label}:</strong> ${load.advice}
@@ -14931,6 +15115,914 @@ if (typeof window !== 'undefined') window.AlicynData = Data;
     syncFlow();
     console.info('[PierceMap B2B stabilizer] ready · controlled mode/nav/views active');
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+})();
+</script>
+
+<style id="piercemap-premium-onboarding-ear">
+  :root {
+    --pm-graphite: #0A0D0C;
+    --pm-surface: #111615;
+    --pm-border: #1D2422;
+    --pm-text: #EEF3F1;
+    --pm-muted: #93A19B;
+    --pm-mint: #5FDAA8;
+    --pm-warning: #F4B860;
+    --pm-danger: #FF6868;
+  }
+
+  #view-planner {
+    min-height: 100dvh;
+    background:
+      radial-gradient(circle at 50% 10%, rgba(95, 218, 168, .12), transparent 30%),
+      linear-gradient(rgba(238, 243, 241, .024) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(238, 243, 241, .024) 1px, transparent 1px),
+      var(--pm-graphite);
+    background-size: auto, 28px 28px, 28px 28px, auto;
+  }
+
+  #view-planner > .container {
+    max-width: 1180px;
+    padding-top: max(18px, env(safe-area-inset-top)) !important;
+    padding-bottom: calc(92px + env(safe-area-inset-bottom));
+  }
+
+  #view-planner .section-head {
+    display: none;
+  }
+
+  .pm-ear-app-header {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 18px;
+  }
+
+  .pm-ear-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pm-ear-app-header h2 {
+    margin: 0;
+    color: var(--pm-text);
+    font-size: clamp(20px, 5vw, 30px);
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .pm-ear-kicker {
+    display: block;
+    color: var(--pm-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .pm-ear-back,
+  .pm-ear-icon-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    border: 1px solid var(--pm-border);
+    background: rgba(17, 22, 21, .82);
+    color: var(--pm-text);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    box-shadow: 0 12px 32px rgba(0,0,0,.24);
+  }
+
+  .pm-ear-back svg,
+  .pm-ear-icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  #view-planner .planner-grid.design-workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+    gap: 18px;
+    align-items: stretch;
+  }
+
+  #view-planner .ear-canvas,
+  #view-planner .planner-side {
+    border: 1px solid var(--pm-border);
+    background: rgba(17, 22, 21, .82);
+    border-radius: 28px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, .36);
+  }
+
+  #view-planner .ear-canvas {
+    min-height: min(760px, calc(100dvh - 170px));
+    display: grid;
+    align-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  #view-planner .ear-canvas::before {
+    content: '';
+    position: absolute;
+    inset: 18px;
+    border-radius: 24px;
+    background:
+      radial-gradient(circle at 50% 44%, rgba(95,218,168,.14), transparent 34%),
+      radial-gradient(circle at 50% 54%, rgba(238,243,241,.08), transparent 42%);
+    pointer-events: none;
+  }
+
+  #view-planner .ear-photo {
+    max-width: min(620px, 72dvh, 96vw);
+    z-index: 1;
+  }
+
+  #view-planner .ear-photo img {
+    filter:
+      drop-shadow(0 24px 42px rgba(0,0,0,.72))
+      drop-shadow(0 0 34px rgba(95,218,168,.08))
+      saturate(.92) contrast(1.05);
+  }
+
+  #view-planner .planner-side {
+    padding: 20px;
+    max-height: calc(100dvh - 150px);
+    overflow: auto;
+  }
+
+  #view-planner .load-meter {
+    border: 1px solid rgba(95,218,168,.16);
+    background: rgba(10, 13, 12, .56);
+    border-radius: 20px;
+    padding: 14px;
+  }
+
+  #view-planner .load-meter-fill {
+    background: var(--pm-mint);
+    box-shadow: 0 0 22px rgba(95,218,168,.38);
+  }
+
+  #view-planner .design-selected-item,
+  #view-planner #phases-output > div {
+    background: rgba(10, 13, 12, .48) !important;
+    border-color: var(--pm-border) !important;
+  }
+
+  #view-planner .ear-photo .ear-point-btn {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  #view-planner .ear-photo .ear-point-btn::before {
+    width: 12px;
+    height: 12px;
+    background: var(--pm-mint);
+    border: 2px solid rgba(10, 13, 12, .95);
+    box-shadow: 0 0 0 2px rgba(95,218,168,.22), 0 0 18px rgba(95,218,168,.26);
+  }
+
+  #view-planner .ear-photo .ear-point-btn::after {
+    border-color: rgba(95,218,168,.34);
+  }
+
+  #view-planner .ear-photo .ear-point-btn.is-warning::before {
+    background: var(--pm-warning);
+    box-shadow: 0 0 0 2px rgba(244,184,96,.24), 0 0 18px rgba(244,184,96,.26);
+  }
+
+  #view-planner .ear-photo .ear-point-btn.is-danger::before {
+    background: var(--pm-danger);
+    box-shadow: 0 0 0 2px rgba(255,104,104,.22), 0 0 18px rgba(255,104,104,.24);
+  }
+
+  #view-planner .ear-photo .ear-point-btn.is-disabled::before {
+    background: #59615d;
+    box-shadow: 0 0 0 2px rgba(147,161,155,.12);
+  }
+
+  #view-planner .ear-photo .ear-point-btn.is-selected::before {
+    width: 16px;
+    height: 16px;
+    background: var(--pm-mint);
+    box-shadow: 0 0 0 6px rgba(95,218,168,.22), 0 0 34px rgba(95,218,168,.78);
+  }
+
+  #view-planner .ear-photo .ear-point-label {
+    top: 50%;
+    left: calc(100% + 12px);
+    opacity: .86;
+    color: var(--pm-text);
+    background: rgba(10,13,12,.78);
+    border-color: rgba(95,218,168,.18);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    padding: 6px 9px;
+    transform: translateY(-50%);
+  }
+
+  #view-planner .ear-photo .ear-point-label::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 100%;
+    width: 18px;
+    height: 1px;
+    background: rgba(95,218,168,.52);
+  }
+
+  #view-planner .ear-photo .ear-point-btn[data-piercing="helix"] .ear-point-label,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="forward_helix"] .ear-point-label,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="industrial"] .ear-point-label,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="flat"] .ear-point-label,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="rook"] .ear-point-label {
+    left: auto;
+    right: calc(100% + 12px);
+  }
+
+  #view-planner .ear-photo .ear-point-btn[data-piercing="helix"] .ear-point-label::before,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="forward_helix"] .ear-point-label::before,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="industrial"] .ear-point-label::before,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="flat"] .ear-point-label::before,
+  #view-planner .ear-photo .ear-point-btn[data-piercing="rook"] .ear-point-label::before {
+    right: auto;
+    left: 100%;
+  }
+
+  .pm-ear-detail-sheet {
+    margin: 0 0 18px;
+    padding: 18px;
+    border: 1px solid rgba(95,218,168,.18);
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(17,22,21,.96), rgba(10,13,12,.96));
+    box-shadow: 0 24px 70px rgba(0,0,0,.38);
+    display: none;
+    position: relative;
+  }
+
+  .pm-ear-detail-sheet.is-open {
+    display: block;
+    animation: pmSheetIn .24s cubic-bezier(.2,.7,.2,1) both;
+  }
+
+  .pm-ear-detail-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid var(--pm-border);
+    background: #050706;
+    color: var(--pm-text);
+    cursor: pointer;
+    font-size: 20px;
+  }
+
+  .pm-ear-detail-status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(95,218,168,.10);
+    border: 1px solid rgba(95,218,168,.22);
+    color: var(--pm-mint);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .pm-ear-detail-status.is-warning { color: var(--pm-warning); border-color: rgba(244,184,96,.32); background: rgba(244,184,96,.10); }
+  .pm-ear-detail-status.is-danger { color: var(--pm-danger); border-color: rgba(255,104,104,.32); background: rgba(255,104,104,.10); }
+  .pm-ear-detail-status.is-disabled { color: var(--pm-muted); border-color: rgba(147,161,155,.22); background: rgba(147,161,155,.08); }
+
+  .pm-ear-detail-sheet h3 {
+    margin: 14px 42px 8px 0;
+    color: var(--pm-text);
+    font-size: 24px;
+    line-height: 1.05;
+  }
+
+  .pm-ear-detail-sheet p,
+  .pm-ear-detail-sheet li {
+    color: var(--pm-muted);
+    font-size: 13px;
+  }
+
+  .pm-ear-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .pm-ear-detail-grid > div {
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--pm-border);
+    background: rgba(255,255,255,.025);
+  }
+
+  .pm-ear-detail-grid span {
+    display: block;
+    color: var(--pm-muted);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .pm-ear-detail-grid strong {
+    color: var(--pm-text);
+    font-size: 13px;
+    line-height: 1.35;
+    font-weight: 650;
+  }
+
+  .pm-pain-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .pm-pain-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(147,161,155,.28);
+    margin: 0;
+  }
+
+  .pm-pain-dots span.is-on {
+    background: var(--pm-mint);
+    box-shadow: 0 0 12px rgba(95,218,168,.45);
+  }
+
+  .pm-ear-caution {
+    margin: 14px 0;
+    padding: 12px;
+    border: 1px solid rgba(244,184,96,.22);
+    border-radius: 16px;
+    background: rgba(244,184,96,.07);
+  }
+
+  .pm-ear-caution strong {
+    color: var(--pm-warning);
+  }
+
+  .pm-ear-caution ul {
+    margin: 8px 0 0 18px;
+    padding: 0;
+  }
+
+  .pm-ear-add {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 999px;
+  }
+
+  .pm-onboarding {
+    position: fixed;
+    inset: 0;
+    z-index: 6000;
+    display: grid;
+    place-items: center;
+    padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 50% 18%, rgba(95,218,168,.16), transparent 26%),
+      linear-gradient(rgba(238,243,241,.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(238,243,241,.028) 1px, transparent 1px),
+      rgba(10,13,12,.98);
+    background-size: auto, 30px 30px, 30px 30px, auto;
+  }
+
+  .pm-onboarding-card {
+    width: min(100%, 920px);
+    min-height: min(720px, calc(100dvh - 36px));
+    border: 1px solid rgba(95,218,168,.18);
+    border-radius: 30px;
+    background: linear-gradient(180deg, rgba(17,22,21,.96), rgba(10,13,12,.96));
+    box-shadow: 0 30px 90px rgba(0,0,0,.55);
+    padding: clamp(22px, 4vw, 42px);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 22px;
+    overflow: hidden;
+  }
+
+  .pm-onboarding-top,
+  .pm-onboarding-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .pm-onboarding-brand {
+    color: var(--pm-text);
+    font-weight: 850;
+    letter-spacing: .01em;
+    font-size: 18px;
+  }
+
+  .pm-onboarding-skip {
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--pm-border);
+    background: rgba(255,255,255,.03);
+    color: var(--pm-muted);
+    cursor: pointer;
+  }
+
+  .pm-onboarding-slide {
+    display: grid;
+    grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+    align-items: center;
+    gap: clamp(20px, 5vw, 56px);
+    animation: pmSlideIn .28s cubic-bezier(.2,.7,.2,1) both;
+  }
+
+  .pm-onboarding-visual {
+    min-height: 280px;
+    border-radius: 28px;
+    border: 1px solid var(--pm-border);
+    background:
+      radial-gradient(circle at 50% 50%, rgba(95,218,168,.15), transparent 34%),
+      rgba(255,255,255,.025);
+    position: relative;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+  }
+
+  .pm-onboarding-visual svg {
+    width: min(74%, 340px);
+    height: auto;
+    color: var(--pm-mint);
+    filter: drop-shadow(0 0 26px rgba(95,218,168,.20));
+  }
+
+  .pm-onboarding-copy h2 {
+    margin: 0 0 14px;
+    color: var(--pm-text);
+    font-size: clamp(34px, 7vw, 72px);
+    line-height: .96;
+    letter-spacing: 0;
+  }
+
+  .pm-onboarding-copy p {
+    margin: 0;
+    color: var(--pm-muted);
+    font-size: clamp(15px, 2vw, 18px);
+    line-height: 1.6;
+    max-width: 620px;
+  }
+
+  .pm-onboarding-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+
+  .pm-onboarding-tags span {
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(95,218,168,.2);
+    background: rgba(95,218,168,.08);
+    color: var(--pm-mint);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .pm-onboarding-progress {
+    display: flex;
+    gap: 7px;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+  }
+
+  .pm-onboarding-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: rgba(147,161,155,.32);
+    transition: width .2s ease, background .2s ease;
+  }
+
+  .pm-onboarding-dot.is-active {
+    width: 24px;
+    background: var(--pm-mint);
+  }
+
+  .pm-onboarding-actions .btn {
+    min-height: 48px;
+    border-radius: 999px;
+  }
+
+  .pm-onboarding-reset {
+    border-color: rgba(95,218,168,.25) !important;
+  }
+
+  @keyframes pmSheetIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pmSlideIn {
+    from { opacity: 0; filter: blur(10px); transform: translateY(12px); }
+    to { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+
+  @media (max-width: 900px) {
+    #view-planner .planner-grid.design-workspace {
+      grid-template-columns: 1fr;
+    }
+
+    #view-planner .planner-side {
+      max-height: none;
+    }
+
+    .pm-onboarding-slide {
+      grid-template-columns: 1fr;
+      align-content: center;
+      text-align: center;
+    }
+  }
+
+  @media (max-width: 640px) {
+    #view-planner > .container {
+      padding-left: 12px;
+      padding-right: 12px;
+      padding-bottom: calc(104px + env(safe-area-inset-bottom));
+    }
+
+    .pm-ear-app-header {
+      grid-template-columns: 48px minmax(0, 1fr) auto;
+    }
+
+    #view-planner .ear-canvas {
+      min-height: min(620px, calc(100dvh - 168px));
+      border-radius: 24px;
+    }
+
+    #view-planner .ear-photo .ear-point-label {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #view-planner .ear-photo .ear-point-btn.is-selected .ear-point-label,
+    #view-planner .ear-photo.is-admin .ear-point-label {
+      opacity: 1;
+    }
+
+    .pm-ear-detail-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 620;
+      max-height: min(82dvh, 620px);
+      overflow: auto;
+      margin: 0;
+      border-radius: 28px 28px 0 0;
+      border-left: 0;
+      border-right: 0;
+      border-bottom: 0;
+      padding: 20px 18px calc(24px + env(safe-area-inset-bottom));
+      transform: translateY(110%);
+      transition: transform .26s cubic-bezier(.2,.7,.2,1);
+    }
+
+    .pm-ear-detail-sheet.is-open {
+      display: block;
+      transform: translateY(0);
+      animation: none;
+    }
+
+    .pm-onboarding-card {
+      min-height: calc(100dvh - 28px);
+      border-radius: 26px;
+      padding: 20px;
+    }
+
+    .pm-onboarding-visual {
+      min-height: 210px;
+      border-radius: 24px;
+    }
+
+    .pm-onboarding-copy h2 {
+      font-size: clamp(34px, 11vw, 54px);
+    }
+
+    .pm-onboarding-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pm-onboarding-actions .btn-primary {
+      grid-column: 1 / -1;
+      order: -1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pm-onboarding-slide,
+    .pm-ear-detail-sheet.is-open,
+    #view-planner .ear-photo .ear-point-btn::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>
+
+<script id="piercemap-post-login-onboarding">
+(function () {
+  'use strict';
+  if (window.__PierceMapPostLoginOnboarding__) return;
+  window.__PierceMapPostLoginOnboarding__ = true;
+
+  const BASE_KEY = 'piercemap_app_onboarding_v1';
+  let index = 0;
+  let overlay = null;
+
+  function lang() {
+    const saved = localStorage.getItem('piercemap_language') || localStorage.getItem('alicyn_lang');
+    return saved === 'en' ? 'en' : 'es';
+  }
+
+  function bridge() {
+    return window.AlicynSupabase || window.alicynSupabase || null;
+  }
+
+  function activeUser() {
+    return bridge()?.getUser?.() || window.alicynAuth?.user || null;
+  }
+
+  function isSignedIn() {
+    return Boolean(bridge()?.isSignedIn?.() || window.alicynAuth?.isLoggedIn);
+  }
+
+  function onboardingKey() {
+    const user = activeUser();
+    return user?.id ? `${BASE_KEY}:user:${user.id}` : `${BASE_KEY}:guest`;
+  }
+
+  function completed() {
+    return localStorage.getItem(onboardingKey()) === '1';
+  }
+
+  function markCompleted() {
+    localStorage.setItem(onboardingKey(), '1');
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function copy(es, en) {
+    return lang() === 'en' ? en : es;
+  }
+
+  function slides() {
+    return [
+      {
+        title: 'Map your anatomy.',
+        text: copy(
+          'PierceMap te ayuda a visualizar, planear y entender perforaciones según anatomía, compatibilidad y cuidados.',
+          'PierceMap helps you visualize, plan and understand piercings through anatomy, compatibility and care.'
+        ),
+        tags: ['Anatomy', 'Planning', 'Care'],
+        visual: 'map'
+      },
+      {
+        title: copy('Mapa anatómico', 'Anatomical map'),
+        text: copy(
+          'Explora zonas como oreja, nariz, labio, ombligo y otras áreas con dolor estimado, cuidados, compatibilidad anatómica y tiempos aproximados.',
+          'Explore areas such as ear, nose, lip, navel and more with estimated pain, care, anatomical compatibility and approximate timelines.'
+        ),
+        tags: ['Body zones', 'Pain', 'Healing'],
+        visual: 'nodes'
+      },
+      {
+        title: 'Ear Planner',
+        text: copy(
+          'Marca puntos sobre una oreja interactiva, combina perforaciones y diseña un setup antes de perforarte.',
+          'Mark points on an interactive ear, combine piercings and design a setup before getting pierced.'
+        ),
+        tags: ['Helix', 'Conch', 'Lobe'],
+        visual: 'ear'
+      },
+      {
+        title: copy('Compatibilidad anatómica', 'Anatomical compatibility'),
+        text: copy(
+          'No todas las anatomías son aptas para todas las perforaciones. PierceMap ayuda a visualizar posibilidades, pero no reemplaza la evaluación profesional.',
+          'Not every anatomy fits every piercing. PierceMap helps visualize possibilities, but it does not replace professional evaluation.'
+        ),
+        tags: ['Responsible', 'Professional', 'Visual'],
+        visual: 'compat'
+      },
+      {
+        title: copy('Fases de perforación', 'Piercing phases'),
+        text: copy(
+          'Organiza perforaciones por etapas para evitar saturar el cuerpo y preparar un plan más cómodo de cicatrización.',
+          'Organize piercings by stages to avoid overloading the body and prepare a calmer healing plan.'
+        ),
+        tags: ['Fase 1', 'Fase 2', 'Fase 3'],
+        visual: 'phases'
+      },
+      {
+        title: copy('Guía de cuidados', 'Care guide'),
+        text: copy(
+          'Revisa cuidados, tiempos aproximados de cicatrización, señales de alerta y errores comunes antes de tomar decisiones.',
+          'Review care, approximate healing timelines, warning signs and common mistakes before making decisions.'
+        ),
+        tags: ['Care', 'Alerts', 'Healing'],
+        visual: 'care'
+      },
+      {
+        title: copy('Para estudios', 'For studios'),
+        text: copy(
+          'Piercers y estudios pueden explicar mejor, guardar configuraciones, crear perfiles de clientes y profesionalizar la consulta.',
+          'Piercers and studios can explain more clearly, save setups, create client profiles and professionalize consultations.'
+        ),
+        tags: ['Studio', 'Clients', 'Catalog'],
+        visual: 'studio'
+      },
+      {
+        title: copy('PierceMap no reemplaza a tu piercer.', 'PierceMap does not replace your piercer.'),
+        text: copy(
+          'Esta app es una guía visual y educativa. La anatomía real debe evaluarse presencialmente por un piercer profesional capacitado.',
+          'This app is a visual and educational guide. Real anatomy must be evaluated in person by a trained professional piercer.'
+        ),
+        tags: ['Guidance only', 'In-person evaluation'],
+        visual: 'warning'
+      }
+    ];
+  }
+
+  function visualMarkup(type) {
+    const common = 'vector-effect="non-scaling-stroke"';
+    if (type === 'ear') {
+      return `<svg viewBox="0 0 260 260" role="img" aria-label="Ear Planner">
+        <path ${common} d="M156 32c-46 5-75 45-70 94 4 42 33 52 33 78 0 14 11 24 27 24 26 0 42-27 34-52-5-16 7-29 18-46 23-35 5-104-42-98z" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path ${common} d="M151 70c-22 3-36 23-32 50 3 20 20 26 21 42" fill="none" stroke="rgba(238,243,241,.42)" stroke-width="2"/>
+        ${[[122,62],[106,92],[126,114],[153,125],[166,151],[142,183],[132,212]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="5" fill="currentColor"/>`).join('')}
+      </svg>`;
+    }
+    if (type === 'phases') {
+      return `<svg viewBox="0 0 260 260" role="img" aria-label="Phases">
+        ${[64,130,196].map((x, i) => `<circle cx="${x}" cy="130" r="32" fill="none" stroke="currentColor" stroke-width="3"/><text x="${x}" y="137" text-anchor="middle" fill="#EEF3F1" font-size="22" font-weight="800">${i + 1}</text>`).join('')}
+        <path d="M96 130h34M162 130h34" stroke="rgba(95,218,168,.6)" stroke-width="2"/>
+      </svg>`;
+    }
+    if (type === 'warning') {
+      return `<svg viewBox="0 0 260 260" role="img" aria-label="Professional warning">
+        <path d="M130 42l88 156H42z" fill="none" stroke="#F4B860" stroke-width="4"/>
+        <path d="M130 96v48" stroke="#F4B860" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="130" cy="168" r="5" fill="#F4B860"/>
+      </svg>`;
+    }
+    return `<svg viewBox="0 0 260 260" role="img" aria-label="PierceMap">
+      <circle cx="130" cy="130" r="78" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M72 130h116M130 72v116M90 90l80 80M170 90l-80 80" stroke="rgba(95,218,168,.36)" stroke-width="1.4"/>
+      ${[[130,72],[188,130],[130,188],[72,130],[90,90],[170,90],[170,170],[90,170]].map(([x,y]) => `<circle cx="${x}" cy="${y}" r="6" fill="currentColor"/>`).join('')}
+    </svg>`;
+  }
+
+  function render() {
+    const data = slides();
+    const slide = data[index] || data[0];
+    const isFirst = index === 0;
+    const isLast = index === data.length - 1;
+    overlay.innerHTML = `
+      <div class="pm-onboarding-card" role="dialog" aria-modal="true" aria-label="PierceMap onboarding">
+        <div class="pm-onboarding-top">
+          <div class="pm-onboarding-brand">PierceMap</div>
+          <button class="pm-onboarding-skip" type="button" data-pm-onboarding-skip>${escapeHtml(copy('Saltar', 'Skip'))}</button>
+        </div>
+        <div class="pm-onboarding-slide" key="${index}">
+          <div class="pm-onboarding-visual">${visualMarkup(slide.visual)}</div>
+          <div class="pm-onboarding-copy">
+            <h2>${escapeHtml(slide.title)}</h2>
+            <p>${escapeHtml(slide.text)}</p>
+            <div class="pm-onboarding-tags">${slide.tags.map(tag => `<span>${escapeHtml(tag)}</span>`).join('')}</div>
+          </div>
+        </div>
+        <div class="pm-onboarding-actions">
+          <button class="btn" type="button" data-pm-onboarding-back ${isFirst ? 'disabled' : ''}>${escapeHtml(copy('Atrás', 'Back'))}</button>
+          <div class="pm-onboarding-progress" aria-hidden="true">${data.map((_, dotIndex) => `<span class="pm-onboarding-dot${dotIndex === index ? ' is-active' : ''}"></span>`).join('')}</div>
+          <button class="btn btn-primary" type="button" data-pm-onboarding-next>${escapeHtml(isFirst ? copy('Empezar', 'Start') : isLast ? copy('Entrar a PierceMap', 'Enter PierceMap') : copy('Siguiente', 'Next'))}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function close(done) {
+    if (done) markCompleted();
+    overlay?.remove();
+    overlay = null;
+    index = 0;
+  }
+
+  function show(force) {
+    if (!force && (!isSignedIn() || completed())) return;
+    index = 0;
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'pm-onboarding';
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', event => {
+        const target = event.target;
+        if (target.closest('[data-pm-onboarding-skip]')) {
+          event.preventDefault();
+          event.stopPropagation();
+          close(true);
+          return;
+        }
+        if (target.closest('[data-pm-onboarding-back]')) {
+          event.preventDefault();
+          event.stopPropagation();
+          index = Math.max(0, index - 1);
+          render();
+          return;
+        }
+        if (target.closest('[data-pm-onboarding-next]')) {
+          event.preventDefault();
+          event.stopPropagation();
+          if (index >= slides().length - 1) close(true);
+          else {
+            index += 1;
+            render();
+          }
+        }
+      });
+    }
+    render();
+  }
+
+  function injectReplayButton() {
+    const actions = document.querySelector('#view-profile-pm .b2b-hero-actions');
+    if (!actions) return;
+    const existing = actions.querySelector('[data-pm-replay-onboarding]');
+    if (existing) {
+      existing.textContent = copy('Ver tutorial otra vez', 'View tutorial again');
+      return;
+    }
+    const button = document.createElement('button');
+    button.className = 'btn pm-onboarding-reset';
+    button.type = 'button';
+    button.dataset.pmReplayOnboarding = '1';
+    button.textContent = copy('Ver tutorial otra vez', 'View tutorial again');
+    actions.appendChild(button);
+  }
+
+  document.addEventListener('click', event => {
+    if (!event.target.closest('[data-pm-replay-onboarding]')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    localStorage.removeItem(onboardingKey());
+    show(true);
+  }, true);
+
+  window.addEventListener('alicyn:supabase-auth', () => {
+    setTimeout(() => {
+      injectReplayButton();
+      show(false);
+    }, 700);
+  });
+  window.addEventListener('piercemap:view-changed', () => setTimeout(injectReplayButton, 60));
+  window.addEventListener('alicyn:language-changed', () => setTimeout(injectReplayButton, 60));
+
+  const observer = new MutationObserver(() => injectReplayButton());
+  if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+
+  function init() {
+    injectReplayButton();
+    setTimeout(() => show(false), 1000);
+  }
+
+  window.PierceMapOnboarding = { show: () => show(true), reset: () => { localStorage.removeItem(onboardingKey()); show(true); } };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init, { once: true });
