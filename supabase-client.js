@@ -457,6 +457,150 @@
   window.saveDesignProject = saveDesignProject;
   window.createCommunityExperience = createCommunityExperience;
 
+  // ── INTAKES + CONSENTS · v0.8 MVP migration (Supabase + localStorage fallback) ──
+  // Tables: intakes · consents (run supabase/intakes.sql in your Supabase SQL editor)
+  const INTAKES_KEY  = 'alicyn.intakes.v1';
+  const CONSENTS_KEY = 'alicyn.consents.v1';
+
+  function appendLocal(key, item, limit) {
+    if (limit == null) limit = 200;
+    try {
+      var list = JSON.parse(localStorage.getItem(key) || '[]');
+      list.unshift(item);
+      localStorage.setItem(key, JSON.stringify(list.slice(0, limit)));
+      return true;
+    } catch (err) { return false; }
+  }
+
+  async function saveIntake(intake) {
+    if (!intake || typeof intake !== 'object') return { ok: false, error: 'invalid_intake' };
+    var id = intake.id || ('i_' + Date.now());
+    var now = new Date().toISOString();
+    var localRow = {
+      id: id,
+      mode: intake.mode || 'standard',
+      studio: intake.studio || null,
+      intent: intake.intent || null,
+      zone: intake.zone || null,
+      specific: intake.specific || null,
+      refs: intake.refs || [],
+      client_name: (intake.data && intake.data.name) || null,
+      client_age: (intake.data && intake.data.age) ? Number(intake.data.age) : null,
+      client_email: (intake.data && intake.data.email) || null,
+      allergies: (intake.data && intake.data.allergies) || null,
+      created_at: intake.created_at || now,
+      synced: false
+    };
+    appendLocal(INTAKES_KEY, localRow);
+    if (!state.configured || !state.client) return { ok: true, source: 'local', warning: 'supabase_not_ready' };
+    var user = authUser();
+    var remoteRow = {
+      id: id,
+      user_id: user ? user.id : null,
+      studio_slug: localRow.studio,
+      mode: localRow.mode,
+      intent: localRow.intent,
+      zone: localRow.zone,
+      specific: localRow.specific,
+      refs: localRow.refs,
+      client_name: localRow.client_name,
+      client_age: localRow.client_age,
+      client_email: localRow.client_email,
+      allergies: localRow.allergies,
+      created_at: localRow.created_at
+    };
+    var result = await tryWrite('intakes insert', [
+      function () { return state.client.from('intakes').insert(remoteRow); }
+    ]);
+    if (result.ok) {
+      try {
+        var list = JSON.parse(localStorage.getItem(INTAKES_KEY) || '[]');
+        var i = list.findIndex(function (r) { return r.id === id; });
+        if (i >= 0) { list[i].synced = true; localStorage.setItem(INTAKES_KEY, JSON.stringify(list)); }
+      } catch (_) {}
+      return { ok: true, source: 'both' };
+    }
+    return { ok: true, source: 'local', warning: 'supabase_write_failed', error: result.error };
+  }
+
+  async function saveConsent(consent) {
+    if (!consent || typeof consent !== 'object') return { ok: false, error: 'invalid_consent' };
+    var id = consent.id || ('c_' + Date.now());
+    var now = new Date().toISOString();
+    var localRow = {
+      id: id,
+      intake_id: consent.intake_id || null,
+      studio: consent.studio || null,
+      version: consent.version || 'v1.0',
+      accepted_at: consent.accepted_at || now,
+      signature_present: Boolean(consent.signature),
+      signature_local: consent.signature || null,
+      client_age: consent.client_age || null,
+      synced: false
+    };
+    appendLocal(CONSENTS_KEY, localRow, 100);
+    if (!state.configured || !state.client) return { ok: true, source: 'local', warning: 'supabase_not_ready' };
+    var user = authUser();
+    var remoteRow = {
+      id: id,
+      user_id: user ? user.id : null,
+      intake_id: localRow.intake_id,
+      studio_slug: localRow.studio,
+      version: localRow.version,
+      accepted_at: localRow.accepted_at,
+      signature_present: localRow.signature_present,
+      client_age: localRow.client_age
+    };
+    var result = await tryWrite('consents insert', [
+      function () { return state.client.from('consents').insert(remoteRow); }
+    ]);
+    if (result.ok) {
+      try {
+        var list = JSON.parse(localStorage.getItem(CONSENTS_KEY) || '[]');
+        var i = list.findIndex(function (r) { return r.id === id; });
+        if (i >= 0) { list[i].synced = true; localStorage.setItem(CONSENTS_KEY, JSON.stringify(list)); }
+      } catch (_) {}
+      return { ok: true, source: 'both' };
+    }
+    return { ok: true, source: 'local', warning: 'supabase_write_failed', error: result.error };
+  }
+
+  async function listIntakes(opts) {
+    opts = opts || {};
+    var local = [];
+    try { local = JSON.parse(localStorage.getItem(INTAKES_KEY) || '[]'); } catch (_) {}
+    if (!state.client || !authUser()) return { ok: true, source: 'local', rows: local };
+    try {
+      var q = state.client.from('intakes').select('*').order('created_at', { ascending: false }).limit(opts.limit || 50);
+      var resp = await q;
+      if (resp.error) return { ok: true, source: 'local', rows: local, warning: resp.error.message };
+      return { ok: true, source: 'remote', rows: resp.data || [] };
+    } catch (err) { return { ok: true, source: 'local', rows: local, warning: String(err) }; }
+  }
+
+  // Auto-sync pending intakes on auth
+  window.addEventListener('alicyn:supabase-auth', async function () {
+    if (!authUser() || !state.client) return;
+    try {
+      var list = JSON.parse(localStorage.getItem(INTAKES_KEY) || '[]');
+      var pending = list.filter(function (r) { return !r.synced; }).slice(0, 20);
+      for (var k = 0; k < pending.length; k++) {
+        var row = pending[k];
+        var r = await tryWrite('intakes backfill', [
+          (function (rr) { return function () { return state.client.from('intakes').insert({
+            id: rr.id, user_id: authUser().id, studio_slug: rr.studio, mode: rr.mode,
+            intent: rr.intent, zone: rr.zone, specific: rr.specific, refs: rr.refs,
+            client_name: rr.client_name, client_age: rr.client_age,
+            client_email: rr.client_email, allergies: rr.allergies, created_at: rr.created_at
+          }); }; })(row)
+        ]);
+        if (r.ok) row.synced = true;
+      }
+      localStorage.setItem(INTAKES_KEY, JSON.stringify(list));
+    } catch (_) {}
+  });
+
+
   window.AlicynSupabase = {
     ready: state.ready,
     isConfigured: () => state.configured,
@@ -474,6 +618,10 @@
     saveDesignProject,
     saveProjectFallback,
     createCommunityExperience,
-    saveCommunityExperience: createCommunityExperience
+    saveCommunityExperience: createCommunityExperience,
+    // v0.8 MVP intake migration:
+    saveIntake: saveIntake,
+    saveConsent: saveConsent,
+    listIntakes: listIntakes
   };
 })();
